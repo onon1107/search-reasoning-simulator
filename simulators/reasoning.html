@@ -1,0 +1,2743 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인공지능과 학습 - 추론</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Malgun Gothic', 'Pretendard', sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+  }
+  header {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 20px 24px;
+  }
+  header h1 {
+    margin: 0 0 4px 0;
+    font-size: 22px;
+    font-weight: 800;
+  }
+  header p {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 12px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  nav span {
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #475569;
+  }
+  nav span.active {
+    background: #16a34a;
+    color: #fff;
+    font-weight: 700;
+  }
+  section.sim-block {
+    padding: 28px 24px 8px 24px;
+  }
+  section.sim-block h2 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  section.sim-block h2::before {
+    content: '';
+    width: 6px;
+    height: 18px;
+    border-radius: 3px;
+    background: #16a34a;
+    display: inline-block;
+  }
+  .iframe-wrap {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto 32px auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+  }
+  iframe {
+    width: 100%;
+    height: 92vh;
+    border: 0;
+    display: block;
+    background: #fff;
+  }
+</style>
+<style>
+  body.only-logic .sim-block:nth-of-type(2) { display: none; }
+  body.only-einstein .sim-block:nth-of-type(1) { display: none; }
+  body { background: #ffffff; }
+</style>
+</head>
+<body>
+<section class="sim-block">
+  <h2>AI 논리 추론 시뮬레이터</h2>
+  <div class="iframe-wrap">
+    <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;AI 논리 추론 시뮬레이터&lt;/title&gt;
+    &lt;script src=&quot;https://cdn.tailwindcss.com&quot;&gt;&lt;/script&gt;
+    &lt;style&gt;
+        @import url(&#x27;https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&amp;display=swap&#x27;);
+
+        body {
+            font-family: &#x27;Pretendard&#x27;, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .puzzle-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .puzzle-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .option-btn.selected {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .correct-bg {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+            color: #166534 !important;
+        }
+
+        .wrong-bg {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b !important;
+        }
+
+        /* 커스텀 스크롤바 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body class=&quot;min-h-screen p-4 md:p-8 flex flex-col items-center&quot;&gt;
+
+    &lt;header class=&quot;w-full max-w-3xl mb-8 text-center fade-enter&quot;&gt;
+        &lt;h1 class=&quot;text-3xl md:text-4xl font-bold text-slate-800 mb-2&quot;&gt;🧠 AI 논리 추론 시뮬레이터&lt;/h1&gt;
+        &lt;p class=&quot;text-slate-500&quot;&gt;AI가 데이터를 분석하고 논리적 결론을 도출하는 방식을 직접 체험해 보세요.&lt;/p&gt;
+    &lt;/header&gt;
+
+    &lt;main class=&quot;w-full max-w-3xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden fade-enter&quot; style=&quot;animation-delay: 0.1s;&quot;&gt;
+        
+        &lt;!-- 프로그레스 바 --&gt;
+        &lt;div class=&quot;w-full bg-slate-100 h-2&quot;&gt;
+            &lt;div id=&quot;progress-bar&quot; class=&quot;bg-blue-500 h-2 transition-all duration-500&quot; style=&quot;width: 0%;&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;p-6 md:p-8&quot;&gt;
+            
+            &lt;!-- 상태 표시 (몇 번 문제인지) --&gt;
+            &lt;div class=&quot;flex justify-between items-center mb-6&quot;&gt;
+                &lt;span id=&quot;puzzle-badge&quot; class=&quot;px-3 py-1 bg-indigo-100 text-indigo-700 text-sm font-semibold rounded-full&quot;&gt;
+                    준비 중...
+                &lt;/span&gt;
+                &lt;span id=&quot;score-display&quot; class=&quot;text-slate-600 font-medium&quot;&gt;정답: 0 / 0&lt;/span&gt;
+            &lt;/div&gt;
+
+            &lt;!-- 문제 내용 영역 --&gt;
+            &lt;div id=&quot;puzzle-container&quot; class=&quot;min-h-[300px] flex flex-col&quot;&gt;
+                &lt;h2 id=&quot;puzzle-title&quot; class=&quot;text-2xl font-bold text-slate-800 mb-4&quot;&gt;&lt;/h2&gt;
+                
+                &lt;div id=&quot;puzzle-desc&quot; class=&quot;text-slate-600 mb-6 leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100&quot;&gt;
+                    &lt;!-- 문제 설명이 여기에 들어갑니다 --&gt;
+                &lt;/div&gt;
+
+                &lt;!-- 선택지 영역 --&gt;
+                &lt;div id=&quot;options-container&quot; class=&quot;flex-grow grid gap-3 mb-6&quot;&gt;
+                    &lt;!-- 버튼들이 동적으로 생성됩니다 --&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;!-- AI 추론 과정 및 결과 피드백 영역 --&gt;
+            &lt;div id=&quot;feedback-container&quot; class=&quot;hidden mt-4 p-5 rounded-xl border&quot;&gt;
+                &lt;div class=&quot;flex items-center gap-2 mb-2&quot;&gt;
+                    &lt;span id=&quot;feedback-icon&quot; class=&quot;text-xl&quot;&gt;&lt;/span&gt;
+                    &lt;h3 id=&quot;feedback-title&quot; class=&quot;font-bold text-lg&quot;&gt;&lt;/h3&gt;
+                &lt;/div&gt;
+                &lt;p id=&quot;feedback-message&quot; class=&quot;text-slate-700 mb-4 leading-relaxed&quot;&gt;&lt;/p&gt;
+                
+                &lt;!-- AI의 생각의 사슬 (Chain of Thought) --&gt;
+                &lt;div class=&quot;bg-white bg-opacity-50 p-4 rounded-lg border border-current opacity-80 text-sm&quot;&gt;
+                    &lt;h4 class=&quot;font-semibold mb-2 flex items-center gap-1&quot;&gt;
+                        &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;16&quot; height=&quot;16&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6&quot;/&gt;&lt;/svg&gt;
+                        AI 추론 로그
+                    &lt;/h4&gt;
+                    &lt;ul id=&quot;ai-logic-path&quot; class=&quot;list-disc list-inside space-y-1&quot;&gt;
+                        &lt;!-- AI 추론 단계가 들어갑니다 --&gt;
+                    &lt;/ul&gt;
+                &lt;/div&gt;
+
+                &lt;!-- AI 관련성 설명 영역 추가 --&gt;
+                &lt;div id=&quot;ai-explanation-container&quot; class=&quot;mt-4 bg-indigo-50 p-4 rounded-lg border border-indigo-200 hidden transition-opacity duration-500 opacity-0&quot;&gt;
+                    &lt;h4 class=&quot;font-bold text-indigo-800 mb-2 flex items-center gap-1 text-sm&quot;&gt;
+                        &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;16&quot; height=&quot;16&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;10&quot;/&gt;&lt;path d=&quot;M12 16v-4&quot;/&gt;&lt;path d=&quot;M12 8h.01&quot;/&gt;&lt;/svg&gt;
+                        이 추론 방식은 AI와 어떤 관련이 있을까요?
+                    &lt;/h4&gt;
+                    &lt;p id=&quot;ai-explanation&quot; class=&quot;text-sm text-indigo-900 leading-relaxed&quot;&gt;&lt;/p&gt;
+                &lt;/div&gt;
+
+                &lt;div class=&quot;mt-6 flex justify-end&quot;&gt;
+                    &lt;button id=&quot;next-btn&quot; class=&quot;px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2&quot;&gt;
+                        다음 추론으로
+                    &lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;!-- 완료 화면 --&gt;
+            &lt;div id=&quot;completion-container&quot; class=&quot;hidden text-center py-10&quot;&gt;
+                &lt;div class=&quot;text-6xl mb-4&quot;&gt;🎉&lt;/div&gt;
+                &lt;h2 class=&quot;text-3xl font-bold text-slate-800 mb-2&quot;&gt;시뮬레이션 완료!&lt;/h2&gt;
+                &lt;p id=&quot;final-score-message&quot; class=&quot;text-lg text-slate-600 mb-8&quot;&gt;&lt;/p&gt;
+                &lt;div class=&quot;grid grid-cols-2 gap-4 max-w-sm mx-auto&quot;&gt;
+                    &lt;button onclick=&quot;initGame()&quot; class=&quot;px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors&quot;&gt;
+                        다시 시작
+                    &lt;/button&gt;
+                    &lt;button onclick=&quot;window.close()&quot; class=&quot;px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg transition-colors&quot;&gt;
+                        종료
+                    &lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+        &lt;/div&gt;
+    &lt;/main&gt;
+
+    &lt;script&gt;
+        // 퍼즐 데이터 배열
+        const puzzles = [
+            {
+                type: &quot;연역적 추론 (소거법)&quot;,
+                title: &quot;도둑은 누구인가?&quot;,
+                desc: `보석 가게에 도둑이 들었습니다. 용의자는 A, B, C, D 4명입니다. 경찰 조사 결과 다음 사실이 밝혀졌습니다.&lt;br&gt;&lt;br&gt;
+                1. 범인은 정확히 1명입니다.&lt;br&gt;
+                2. A: &quot;저는 훔치지 않았습니다.&quot;&lt;br&gt;
+                3. B: &quot;C가 훔쳤습니다.&quot;&lt;br&gt;
+                4. C: &quot;D가 훔쳤습니다.&quot;&lt;br&gt;
+                5. D: &quot;C는 거짓말을 하고 있습니다.&quot;&lt;br&gt;&lt;br&gt;
+                **이 중 단 한 명만 진실을 말하고 있다면**, 진짜 도둑은 누구일까요?`,
+                options: [&quot;용의자 A&quot;, &quot;용의자 B&quot;, &quot;용의자 C&quot;, &quot;용의자 D&quot;],
+                correctIndex: 0, // 수정됨 (아래 코드의 초기화 버그 대응)
+                logicPath: [
+                    &quot;조건: 4명 중 1명만 진실, 3명은 거짓말을 함.&quot;,
+                    &quot;C의 발언(D가 훔침)과 D의 발언(C가 거짓말함)은 서로 모순됨. 즉, 둘 중 하나는 반드시 참이고 하나는 반드시 거짓임.&quot;,
+                    &quot;유일한 &#x27;참&#x27;이 C나 D 중 하나에게 있으므로, A와 B의 발언은 무조건 &#x27;거짓&#x27;이 됨.&quot;,
+                    &quot;A의 발언 &#x27;저는 훔치지 않았습니다&#x27;가 거짓이므로, A가 훔친 것이 됨.&quot;,
+                    &quot;잠깐, A가 도둑이라면? B의 발언(C가 훔침)은 거짓이 됨 (성립). C의 발언(D가 훔침)도 거짓이 됨 (성립).&quot;,
+                    &quot;C의 발언이 거짓이므로, D의 발언(C가 거짓말함)은 진실이 됨 (성립).&quot;,
+                    &quot;따라서 유일하게 진실을 말한 사람은 D이며, 도둑은 A임. (AI는 모순되는 명제 쌍을 찾아 범위를 좁힙니다.)&quot;
+                ],
+                aiExplanation: &quot;이러한 추론은 AI 분야에서 &lt;strong&gt;&#x27;제약 조건 만족 문제(Constraint Satisfaction Problem, CSP)&#x27;&lt;/strong&gt;와 깊은 관련이 있습니다. 초기 인공지능(전문가 시스템)은 이처럼 수많은 명제(규칙)들 사이에서 모순되는 조건들을 소거해 나가며 유일한 해답을 찾는 논리 프로그래밍(예: Prolog) 방식을 주로 사용했습니다. 스도쿠를 푸는 AI나 체스 등에서 불가능한 경우의 수를 빠르게 가지치기할 때 이 원리가 쓰입니다.&quot;
+            },
+            {
+                type: &quot;알고리즘적 사고 (상태 공간 탐색)&quot;,
+                title: &quot;다리 건너기 문제&quot;,
+                desc: `4명의 사람(A, B, C, D)이 밤에 흔들리는 다리를 건너야 합니다. 손전등은 1개뿐이며, 다리는 최대 2명까지만 버틸 수 있습니다. 손전등 없이는 건널 수 없고, 2명이 건널 때는 더 느린 사람의 속도에 맞춰야 합니다.&lt;br&gt;&lt;br&gt;
+                - A는 건너는 데 1분 소요&lt;br&gt;
+                - B는 건너는 데 2분 소요&lt;br&gt;
+                - C는 건너는 데 5분 소요&lt;br&gt;
+                - D는 건너는 데 10분 소요&lt;br&gt;&lt;br&gt;
+                **가장 빠른 시간 안에 모두가 다리를 건너려면 최소 몇 분이 걸릴까요?**`,
+                options: [&quot;17분&quot;, &quot;19분&quot;, &quot;21분&quot;, &quot;23분&quot;],
+                correctIndex: 0, // 17분
+                logicPath: [
+                    &quot;목표: 가장 느린 사람(C, D)을 한 번에 같이 보내 시간을 절약해야 함.&quot;,
+                    &quot;가장 빠른 사람(A, B)을 손전등 셔틀로 활용.&quot;,
+                    &quot;1단계: A와 B가 건너감. (2분 경과)&quot;,
+                    &quot;2단계: A가 손전등을 가지고 돌아옴. (총 3분 경과)&quot;,
+                    &quot;3단계: 가장 느린 C와 D가 건너감. (총 13분 경과) - 핵심!&quot;,
+                    &quot;4단계: 반대편에 있던 B가 손전등을 가지고 돌아옴. (총 15분 경과)&quot;,
+                    &quot;5단계: A와 B가 다시 건너감. (총 17분 경과)&quot;,
+                    &quot;최적화 완료. 최소 소요 시간은 17분입니다. (AI는 그래프 탐색 알고리즘을 통해 최소 비용 경로를 찾습니다.)&quot;
+                ],
+                aiExplanation: &quot;이 문제는 AI의 &lt;strong&gt;&#x27;상태 공간 탐색(State Space Search)&#x27; 및 최적화(Optimization) 알고리즘&lt;/strong&gt;을 설명하는 완벽한 예시입니다. AI는 자율주행 자동차의 경로 탐색이나 물류 로봇의 동선 계획을 짤 때, 가능한 모든 이동 경로(노드)를 펼쳐놓고 &#x27;가장 비용(시간)이 적게 드는 최적의 길&#x27;을 찾는 A*(A-star) 알고리즘이나 다익스트라(Dijkstra) 알고리즘을 사용합니다.&quot;
+            },
+            {
+                type: &quot;관계 및 제약 조건 만족&quot;,
+                title: &quot;색깔 모자 퀴즈&quot;,
+                desc: `세 명의 죄수(가, 나, 다)가 일렬로 서 있습니다. &#x27;다&#x27;는 &#x27;나&#x27;와 &#x27;가&#x27;의 뒷모습을, &#x27;나&#x27;는 &#x27;가&#x27;의 뒷모습만, &#x27;가&#x27;는 아무도 볼 수 없습니다.&lt;br&gt;
+                간수는 검은 모자 3개와 흰 모자 2개를 보여준 뒤, 죄수들에게 무작위로 하나씩 씌우고 남은 2개는 숨겼습니다.&lt;br&gt;&lt;br&gt;
+                간수: &quot;자신의 모자 색을 맞추면 풀어주겠다.&quot;&lt;br&gt;
+                다: (앞의 두 명을 보고) &quot;모르겠습니다.&quot;&lt;br&gt;
+                나: (앞의 한 명을 보고) &quot;모르겠습니다.&quot;&lt;br&gt;
+                가: (아무도 못 봤지만) **&quot;제 모자는 OOO입니다!&quot;**&lt;br&gt;&lt;br&gt;
+                &#x27;가&#x27;의 모자 색깔은 무엇이며, 어떻게 알았을까요?`,
+                options: [
+                    &quot;흰색 (나와 다가 흰색이어서)&quot;,
+                    &quot;검은색 (나와 다가 모르기 때문에)&quot;,
+                    &quot;흰색 (검은 모자가 부족해서)&quot;,
+                    &quot;알 수 없음 (정보 부족)&quot;
+                ],
+                correctIndex: 1, // 검은색
+                logicPath: [
+                    &quot;조건: 검은 모자 3, 흰 모자 2.&quot;,
+                    &quot;1. &#x27;다&#x27;의 시점: 앞의 &#x27;나&#x27;와 &#x27;가&#x27;가 모두 흰 모자였다면, 남은 건 검은 모자뿐이므로 자신의 색을 알 수 있었을 것임. 하지만 모른다고 했으므로, **&#x27;나&#x27;와 &#x27;가&#x27; 중 적어도 한 명은 검은 모자**임.&quot;,
+                    &quot;2. &#x27;나&#x27;의 시점: &#x27;나&#x27;는 1번 사실을 알고 있음. 만약 앞의 &#x27;가&#x27;가 흰 모자를 쓰고 있었다면, 자신은 무조건 검은 모자여야 함(적어도 하나는 검은색이어야 하니까). 하지만 &#x27;나&#x27;도 모른다고 했음.&quot;,
+                    &quot;3. &#x27;가&#x27;의 시점: &#x27;나&#x27;가 자신의 모자 색을 유추하지 못했다는 것은, **&#x27;가&#x27; 자신이 흰 모자를 쓰고 있지 않다는 명백한 증거**임.&quot;,
+                    &quot;결론: 따라서 &#x27;가&#x27;의 모자는 반드시 검은색임. (AI는 다른 개체의 지식 상태를 추론하는 &#x27;인식적 논리&#x27;를 사용합니다.)&quot;
+                ],
+                aiExplanation: &quot;이것은 &lt;strong&gt;&#x27;인식적 논리(Epistemic Logic)&#x27;&lt;/strong&gt;와 &lt;strong&gt;&#x27;다중 에이전트 시스템(Multi-Agent System)&#x27;&lt;/strong&gt;의 개념을 보여줍니다. 고급 AI는 나 자신의 데이터뿐만 아니라, &#x27;다른 AI(또는 인간)가 무엇을 알고 있고 무엇을 모르는가&#x27;를 모델링하는 능력을 갖춥니다. 이를 &#x27;마음 이론(Theory of Mind)&#x27;이라고도 하며, 협업 로봇이나 자율주행차가 다른 차의 의도를 예측할 때 필수적인 고차원적 추론 방식입니다.&quot;
+            },
+            {
+                type: &quot;패턴 인식 및 귀납적 추론&quot;,
+                title: &quot;숫자 시퀀스&quot;,
+                desc: `다음 숫자들의 배열에는 특정한 수학적 규칙이 숨어 있습니다. 규칙을 찾아 빈칸(?)에 들어갈 숫자를 맞혀보세요.&lt;br&gt;&lt;br&gt;
+                &lt;div class=&quot;text-2xl font-mono text-center my-4 tracking-widest bg-white p-2 rounded border&quot;&gt;2, 3, 5, 9, 17, ?&lt;/div&gt;`,
+                options: [&quot;25&quot;, &quot;29&quot;, &quot;33&quot;, &quot;35&quot;],
+                correctIndex: 2, // 33
+                logicPath: [
+                    &quot;목표: 주어진 데이터 셋(시퀀스)에서 규칙성(패턴) 찾기.&quot;,
+                    &quot;단계 1: 인접한 숫자들의 차이를 계산해 봅니다.&quot;,
+                    &quot;3 - 2 = 1&quot;,
+                    &quot;5 - 3 = 2&quot;,
+                    &quot;9 - 5 = 4&quot;,
+                    &quot;17 - 9 = 8&quot;,
+                    &quot;단계 2: 차이값들의 패턴을 분석합니다. [1, 2, 4, 8] ... 이것은 2의 거듭제곱(2^n) 패턴입니다.&quot;,
+                    &quot;단계 3: 다음 차이값을 예측합니다. 8 다음은 16이 되어야 합니다.&quot;,
+                    &quot;단계 4: 마지막 숫자에 차이값을 더해 결과를 도출합니다. 17 + 16 = 33.&quot;,
+                    &quot;결론: 정답은 33입니다. (AI는 델타값을 계산하여 회귀(Regression)나 규칙 기반 패턴 매칭을 수행합니다.)&quot;
+                ],
+                aiExplanation: &quot;이 방식은 현재의 &lt;strong&gt;&#x27;머신러닝(Machine Learning)과 인공신경망&#x27;&lt;/strong&gt;이 작동하는 핵심 원리인 &lt;strong&gt;&#x27;패턴 인식(Pattern Recognition)&#x27; 및 &#x27;귀납적 추론&#x27;&lt;/strong&gt;입니다. 딥러닝 AI는 방대한 양의 과거 데이터(주어진 숫자들) 속에서 미세한 특징과 차이점(가중치)을 분석하여 숨겨진 함수(규칙)를 찾아냅니다. 그리고 이 규칙을 바탕으로 미래의 데이터(빈칸)를 예측(Prediction)하거나 분류합니다.&quot;
+            },
+            {
+                type: &quot;논리적 역설 분석&quot;,
+                title: &quot;두 문지기의 딜레마&quot;,
+                desc: `당신은 천국과 지옥으로 가는 두 개의 문 앞에 서 있습니다. 각 문 앞에는 문지기가 한 명씩 있습니다.&lt;br&gt;
+                - 한 문지기는 항상 진실만 말하고, 다른 문지기는 항상 거짓말만 합니다.&lt;br&gt;
+                - 누가 어느 문을 지키는지, 누가 진실을 말하는지 모릅니다.&lt;br&gt;&lt;br&gt;
+                당신은 **단 하나의 질문만 한 명의 문지기에게** 할 수 있습니다. 천국으로 가는 문을 확실히 찾기 위해 해야 할 가장 적절한 질문은 무엇일까요?`,
+                options: [
+                    &quot;\&quot;어느 쪽이 천국으로 가는 문입니까?\&quot;&quot;,
+                    &quot;\&quot;당신은 진실을 말하는 문지기입니까?\&quot;&quot;,
+                    &quot;\&quot;다른 문지기에게 천국이 어디냐고 묻는다면, 어느 쪽을 가리키겠습니까?\&quot;&quot;,
+                    &quot;\&quot;지옥으로 가는 문은 어느 쪽입니까?\&quot;&quot;
+                ],
+                correctIndex: 2, // 다른 문지기에게...
+                logicPath: [
+                    &quot;문제의 핵심: 누가 진실을 말하고 누가 거짓을 말하는지 모르는 상태에서, 항상 일관된 결과를 도출하는 &#x27;질문 함수&#x27;를 설계해야 함.&quot;,
+                    &quot;옵션 1 &amp; 4: 대상이 누구냐에 따라 답이 달라지므로 실패.&quot;,
+                    &quot;옵션 2: 정보는 얻을 수 있으나 문을 찾을 기회를 소진함.&quot;,
+                    &quot;옵션 3 분석: &#x27;다른 문지기가 가리킬 문&#x27;을 묻는 중첩된 논리.&quot;,
+                    &quot;경우 A (진실 문지기에게 질문): 그는 거짓 문지기가 지옥문을 가리킬 것임을 알고 있으므로, 진실하게 **지옥문**을 가리킴.&quot;,
+                    &quot;경우 B (거짓 문지기에게 질문): 그는 진실 문지기가 천국문을 가리킬 것임을 알지만, 거짓말을 해야 하므로 반대로 **지옥문**을 가리킴.&quot;,
+                    &quot;결론: 누구에게 묻든 돌아오는 대답(가리키는 문)은 **반드시 지옥문**임. 따라서 그 대답의 반대쪽 문으로 들어가면 천국임.&quot;
+                ],
+                aiExplanation: &quot;이 문제는 컴퓨터 과학의 근간이 되는 &lt;strong&gt;&#x27;논리 게이트(Logic Gate)&#x27;&lt;/strong&gt;와 &lt;strong&gt;&#x27;불 대수(Boolean Algebra)&#x27;&lt;/strong&gt;를 은유적으로 보여줍니다. 여기서 참(True)과 거짓(False)을 곱하는(AND 연산) 중첩된 질문을 던지면, &lt;code&gt;True × False = False&lt;/code&gt;, &lt;code&gt;False × True = False&lt;/code&gt;로 누가 대답하든 항상 일관된 &#x27;거짓(지옥문)&#x27;이라는 결과값을 출력하도록 제어할 수 있습니다. 최근에는 LLM(대형 언어 모델)의 논리적 허점을 파고들어 원하는 대답을 강제하는 &#x27;프롬프트 엔지니어링(Prompt Engineering)&#x27;이나 보안 테스트에도 이와 유사한 역설적 논리 구조가 활용됩니다.&quot;
+            }
+        ];
+
+        let currentPuzzleIndex = 0;
+        let score = 0;
+        let isAnswered = false;
+
+        const ui = {
+            progressBar: document.getElementById(&#x27;progress-bar&#x27;),
+            puzzleBadge: document.getElementById(&#x27;puzzle-badge&#x27;),
+            scoreDisplay: document.getElementById(&#x27;score-display&#x27;),
+            puzzleContainer: document.getElementById(&#x27;puzzle-container&#x27;),
+            puzzleTitle: document.getElementById(&#x27;puzzle-title&#x27;),
+            puzzleDesc: document.getElementById(&#x27;puzzle-desc&#x27;),
+            optionsContainer: document.getElementById(&#x27;options-container&#x27;),
+            feedbackContainer: document.getElementById(&#x27;feedback-container&#x27;),
+            feedbackIcon: document.getElementById(&#x27;feedback-icon&#x27;),
+            feedbackTitle: document.getElementById(&#x27;feedback-title&#x27;),
+            feedbackMessage: document.getElementById(&#x27;feedback-message&#x27;),
+            aiLogicPath: document.getElementById(&#x27;ai-logic-path&#x27;),
+            aiExplanationContainer: document.getElementById(&#x27;ai-explanation-container&#x27;),
+            aiExplanation: document.getElementById(&#x27;ai-explanation&#x27;),
+            nextBtn: document.getElementById(&#x27;next-btn&#x27;),
+            completionContainer: document.getElementById(&#x27;completion-container&#x27;),
+            finalScoreMessage: document.getElementById(&#x27;final-score-message&#x27;)
+        };
+
+        function initGame() {
+            currentPuzzleIndex = 0;
+            score = 0;
+            ui.completionContainer.classList.add(&#x27;hidden&#x27;);
+            ui.puzzleContainer.classList.remove(&#x27;hidden&#x27;);
+            
+            // 문제 섞기 (원하면 활성화 - 여기서는 순서대로)
+            // puzzles.sort(() =&gt; Math.random() - 0.5); 
+            
+            updateUI();
+            loadPuzzle();
+        }
+
+        function updateUI() {
+            const progress = (currentPuzzleIndex / puzzles.length) * 100;
+            ui.progressBar.style.width = `${progress}%`;
+            ui.puzzleBadge.textContent = `추론 과제 ${currentPuzzleIndex + 1} / ${puzzles.length}`;
+            ui.scoreDisplay.textContent = `정답: ${score}`;
+        }
+
+        function loadPuzzle() {
+            isAnswered = false;
+            const puzzle = puzzles[currentPuzzleIndex];
+            
+            ui.puzzleContainer.classList.remove(&#x27;fade-enter&#x27;);
+            void ui.puzzleContainer.offsetWidth; // 리플로우 강제 트리거로 애니메이션 재시작
+            ui.puzzleContainer.classList.add(&#x27;fade-enter&#x27;);
+
+            ui.puzzleTitle.textContent = puzzle.title;
+            ui.puzzleBadge.textContent = `[${puzzle.type}]`;
+            ui.puzzleDesc.innerHTML = puzzle.desc;
+            
+            // 피드백 영역 숨기기
+            ui.feedbackContainer.classList.add(&#x27;hidden&#x27;);
+            ui.optionsContainer.innerHTML = &#x27;&#x27;;
+
+            // 선택지 버튼 생성
+            puzzle.options.forEach((option, index) =&gt; {
+                const btn = document.createElement(&#x27;button&#x27;);
+                btn.className = &#x27;option-btn w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700&#x27;;
+                btn.innerHTML = `&lt;span class=&quot;inline-block w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-center leading-6 mr-3 text-sm&quot;&gt;${index + 1}&lt;/span&gt;${option}`;
+                
+                btn.onclick = () =&gt; selectOption(index, btn);
+                ui.optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(selectedIndex, selectedBtn) {
+            if (isAnswered) return; // 이미 답변했으면 무시
+            isAnswered = true;
+
+            const puzzle = puzzles[currentPuzzleIndex];
+            const isCorrect = selectedIndex === puzzle.correctIndex;
+            const allBtns = ui.optionsContainer.querySelectorAll(&#x27;button&#x27;);
+
+            // 버튼 상태 업데이트
+            allBtns.forEach((btn, idx) =&gt; {
+                btn.disabled = true;
+                btn.classList.remove(&#x27;hover:border-blue-400&#x27;, &#x27;hover:bg-blue-50&#x27;, &#x27;cursor-pointer&#x27;);
+                
+                if (idx === puzzle.correctIndex) {
+                    btn.classList.add(&#x27;correct-bg&#x27;);
+                } else if (idx === selectedIndex &amp;&amp; !isCorrect) {
+                    btn.classList.add(&#x27;wrong-bg&#x27;);
+                    btn.classList.add(&#x27;shake&#x27;); // 오답 시 흔들림 애니메이션
+                } else {
+                    btn.style.opacity = &#x27;0.5&#x27;;
+                }
+            });
+
+            if (isCorrect) {
+                score++;
+                ui.scoreDisplay.textContent = `정답: ${score}`;
+            }
+
+            showFeedback(isCorrect, puzzle);
+        }
+
+        function showFeedback(isCorrect, puzzle) {
+            ui.feedbackContainer.classList.remove(&#x27;hidden&#x27;);
+            ui.feedbackContainer.className = `mt-6 p-5 rounded-xl border fade-enter ${isCorrect ? &#x27;bg-green-50 border-green-200 text-green-900&#x27; : &#x27;bg-red-50 border-red-200 text-red-900&#x27;}`;
+            
+            ui.feedbackIcon.textContent = isCorrect ? &#x27;✅&#x27; : &#x27;❌&#x27;;
+            ui.feedbackTitle.textContent = isCorrect ? &#x27;정확한 추론입니다!&#x27; : &#x27;논리적 오류가 발생했습니다.&#x27;;
+            
+            let message = isCorrect 
+                ? &quot;제시된 정보들을 바탕으로 올바른 결론을 도출하셨습니다. 아래는 AI가 동일한 문제를 풀 때 거치는 논리적 단계입니다.&quot; 
+                : `선택하신 답은 정답이 아닙니다. 정답은 &lt;strong&gt;&#x27;${puzzle.options[puzzle.correctIndex]}&#x27;&lt;/strong&gt;입니다. AI가 어떻게 이 결론에 도달하는지 아래 추론 과정을 확인해 보세요.`;
+            
+            ui.feedbackMessage.innerHTML = message;
+
+            // AI 생각의 사슬 렌더링
+            ui.aiLogicPath.innerHTML = &#x27;&#x27;;
+            
+            // 설명 컨테이너 초기화 및 숨기기
+            ui.aiExplanationContainer.classList.add(&#x27;hidden&#x27;);
+            ui.aiExplanationContainer.classList.remove(&#x27;opacity-100&#x27;);
+            ui.aiExplanationContainer.classList.add(&#x27;opacity-0&#x27;);
+            ui.aiExplanation.innerHTML = puzzle.aiExplanation;
+
+            // 약간의 딜레이를 주어 한 줄씩 렌더링하는 효과 (타이핑 효과)
+            puzzle.logicPath.forEach((step, index) =&gt; {
+                const li = document.createElement(&#x27;li&#x27;);
+                li.innerHTML = step;
+                li.style.opacity = &#x27;0&#x27;;
+                li.style.transform = &#x27;translateX(-10px)&#x27;;
+                li.style.transition = &#x27;all 0.3s ease&#x27;;
+                ui.aiLogicPath.appendChild(li);
+
+                setTimeout(() =&gt; {
+                    li.style.opacity = &#x27;1&#x27;;
+                    li.style.transform = &#x27;translateX(0)&#x27;;
+                }, index * 200 + 100); // 0.2초 간격으로 나타남
+            });
+
+            // 논리 경로 애니메이션이 끝난 후 AI 관련성 설명 보여주기
+            const totalDelay = puzzle.logicPath.length * 200 + 400;
+            setTimeout(() =&gt; {
+                ui.aiExplanationContainer.classList.remove(&#x27;hidden&#x27;);
+                // 약간의 딜레이 후 opacity 변경으로 페이드인 효과
+                setTimeout(() =&gt; {
+                    ui.aiExplanationContainer.classList.remove(&#x27;opacity-0&#x27;);
+                    ui.aiExplanationContainer.classList.add(&#x27;opacity-100&#x27;);
+                }, 50);
+            }, totalDelay);
+
+            // 마지막 문제인 경우 버튼 텍스트 변경
+            if (currentPuzzleIndex === puzzles.length - 1) {
+                ui.nextBtn.textContent = &#x27;결과 확인하기&#x27;;
+                ui.nextBtn.classList.remove(&#x27;bg-slate-800&#x27;, &#x27;hover:bg-slate-700&#x27;);
+                ui.nextBtn.classList.add(&#x27;bg-blue-600&#x27;, &#x27;hover:bg-blue-700&#x27;);
+            } else {
+                ui.nextBtn.textContent = &#x27;다음 추론으로&#x27;;
+            }
+        }
+
+        ui.nextBtn.onclick = () =&gt; {
+            if (currentPuzzleIndex &lt; puzzles.length - 1) {
+                currentPuzzleIndex++;
+                updateUI();
+                loadPuzzle();
+            } else {
+                showCompletion();
+            }
+        };
+
+        function showCompletion() {
+            ui.progressBar.style.width = &#x27;100%&#x27;;
+            ui.puzzleContainer.classList.add(&#x27;hidden&#x27;);
+            ui.feedbackContainer.classList.add(&#x27;hidden&#x27;);
+            ui.completionContainer.classList.remove(&#x27;hidden&#x27;);
+            ui.completionContainer.classList.add(&#x27;fade-enter&#x27;);
+
+            let evalText = &quot;&quot;;
+            if (score === puzzles.length) {
+                evalText = &quot;완벽합니다! AI 수준의 논리력(또는 그 이상)을 갖추셨군요. 복잡한 알고리즘을 설계하는 데 소질이 있습니다.&quot;;
+            } else if (score &gt;= 3) {
+                evalText = &quot;훌륭합니다! 꽤 날카로운 논리적 직관을 가지고 계십니다. 일부 함정만 조심하면 완벽합니다.&quot;;
+            } else {
+                evalText = &quot;나쁘지 않은 시도입니다. 논리적 추론은 근육과 같아서 훈련할수록 발달합니다. AI의 &#x27;생각의 사슬&#x27; 과정을 참고하여 다시 도전해 보세요.&quot;;
+            }
+
+            ui.finalScoreMessage.innerHTML = `총 ${puzzles.length}개의 논리 과제 중 &lt;strong&gt;${score}개&lt;/strong&gt;를 해결하셨습니다.&lt;br&gt;&lt;br&gt;${evalText}`;
+        }
+
+        // 초기화 실행
+        window.onload = initGame;
+
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;" title="AI 논리 추론 시뮬레이터"></iframe>
+  </div>
+</section>
+
+<section class="sim-block">
+  <h2>아인슈타인 논리 수수께끼 시뮬레이터</h2>
+  <div class="iframe-wrap">
+    <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;아인슈타인 논리 수수께끼 시뮬레이터&lt;/title&gt;
+    &lt;!-- Tailwind CSS --&gt;
+    &lt;script src=&quot;https://cdn.tailwindcss.com&quot;&gt;&lt;/script&gt;
+    &lt;!-- FontAwesome Icons --&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css&quot;&gt;
+    &lt;!-- Canvas Confetti --&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js&quot;&gt;&lt;/script&gt;
+    &lt;!-- Google Fonts --&gt;
+    &lt;link href=&quot;https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+    &lt;script&gt;
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: [&#x27;Pretendard&#x27;, &#x27;sans-serif&#x27;],
+                    },
+                    colors: {
+                        brand: {
+                            50: &#x27;#f0fdf4&#x27;,
+                            100: &#x27;#dcfce7&#x27;,
+                            500: &#x27;#22c55e&#x27;,
+                            600: &#x27;#16a34a&#x27;,
+                            700: &#x27;#15803d&#x27;,
+                        }
+                    }
+                }
+            }
+        }
+    &lt;/script&gt;
+    &lt;style&gt;
+        body {
+            font-family: &#x27;Pretendard&#x27;, sans-serif;
+            user-select: none;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(51, 65, 85, 0.8);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 1);
+        }
+        @keyframes pulse-highlight {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            50% { transform: scale(1.02); box-shadow: 0 0 15px 3px rgba(34, 197, 94, 0.6); }
+        }
+        .animate-pulse-highlight {
+            animation: pulse-highlight 1.2s ease-in-out infinite;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body class=&quot;bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white&quot;&gt;
+
+    &lt;!-- Top Header --&gt;
+    &lt;header class=&quot;bg-slate-900/90 border-b border-slate-800 sticky top-0 z-30 backdrop-blur-md&quot;&gt;
+        &lt;div class=&quot;max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3&quot;&gt;
+            &lt;div class=&quot;flex items-center space-x-3&quot;&gt;
+                &lt;div class=&quot;w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20&quot;&gt;
+                    &lt;i class=&quot;fa-solid font-bold fa-brain&quot;&gt;&lt;/i&gt;
+                &lt;/div&gt;
+                &lt;div&gt;
+                    &lt;h1 class=&quot;font-extrabold text-lg sm:text-xl text-white tracking-tight flex items-center gap-2&quot;&gt;
+                        아인슈타인 수수께끼 시뮬레이터
+                        &lt;span class=&quot;text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30&quot;&gt;Logic &amp; AI Engine&lt;/span&gt;
+                    &lt;/h1&gt;
+                    &lt;p class=&quot;text-xs text-slate-400&quot;&gt;상위 2%만 풀 수 있다는 논리 추론 게임 &amp; IF-THEN 추론 연쇄 시뮬레이터&lt;/p&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;!-- Controls &amp; Stats --&gt;
+            &lt;div class=&quot;flex items-center flex-wrap gap-2 sm:gap-3&quot;&gt;
+                &lt;!-- Preset Selector --&gt;
+                &lt;div class=&quot;flex items-center bg-slate-800/80 rounded-lg p-1 border border-slate-700/60&quot;&gt;
+                    &lt;button id=&quot;btn-mode-classic&quot; onclick=&quot;switchPuzzleMode(&#x27;classic&#x27;)&quot; class=&quot;px-2.5 py-1 text-xs font-semibold rounded-md transition bg-emerald-600 text-white shadow&quot;&gt;
+                        클래식 (5x5)
+                    &lt;/button&gt;
+                    &lt;button id=&quot;btn-mode-mini&quot; onclick=&quot;switchPuzzleMode(&#x27;mini&#x27;)&quot; class=&quot;px-2.5 py-1 text-xs font-semibold text-slate-300 rounded-md hover:text-white transition&quot;&gt;
+                        입문용 (3x3)
+                    &lt;/button&gt;
+                    &lt;button id=&quot;btn-mode-medium&quot; onclick=&quot;switchPuzzleMode(&#x27;medium&#x27;)&quot; class=&quot;px-2.5 py-1 text-xs font-semibold text-slate-300 rounded-md hover:text-white transition&quot;&gt;
+                        중급자 (4x4)
+                    &lt;/button&gt;
+                &lt;/div&gt;
+
+                &lt;!-- Sound Toggle --&gt;
+                &lt;button onclick=&quot;toggleAudio()&quot; id=&quot;btn-sound&quot; class=&quot;p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition&quot; title=&quot;소리 토글&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-volume-high text-sm&quot;&gt;&lt;/i&gt;
+                &lt;/button&gt;
+
+                &lt;!-- AI Concept Modal Trigger Button --&gt;
+                &lt;button onclick=&quot;openExplanationModal()&quot; class=&quot;px-3 py-1.5 text-xs font-bold bg-indigo-600/80 hover:bg-indigo-600 border border-indigo-500/50 text-indigo-100 rounded-lg transition flex items-center gap-1.5 shadow&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-robot text-indigo-300&quot;&gt;&lt;/i&gt; 풀이 &amp; AI 원리
+                &lt;/button&gt;
+
+                &lt;!-- Start / Pause Timer Button --&gt;
+                &lt;button id=&quot;btn-timer-toggle&quot; onclick=&quot;toggleTimer()&quot; class=&quot;flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-md animate-pulse&quot;&gt;
+                    &lt;i id=&quot;timer-toggle-icon&quot; class=&quot;fa-solid fa-play&quot;&gt;&lt;/i&gt;
+                    &lt;span id=&quot;timer-toggle-text&quot;&gt;시작&lt;/span&gt;
+                &lt;/button&gt;
+
+                &lt;!-- Timer Display --&gt;
+                &lt;div class=&quot;flex items-center gap-2 bg-slate-800/90 border border-slate-700/80 px-3 py-1.5 rounded-lg text-slate-200 text-xs font-mono font-bold&quot;&gt;
+                    &lt;i class=&quot;fa-regular fa-clock text-emerald-400&quot;&gt;&lt;/i&gt;
+                    &lt;span id=&quot;timer-display&quot;&gt;00:00&lt;/span&gt;
+                &lt;/div&gt;
+
+                &lt;!-- Reset Button --&gt;
+                &lt;button onclick=&quot;resetCurrentBoard()&quot; class=&quot;px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg transition flex items-center gap-1.5&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-rotate-left text-slate-400&quot;&gt;&lt;/i&gt; 초기화
+                &lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/header&gt;
+
+    &lt;!-- Main Content Container --&gt;
+    &lt;main class=&quot;max-w-7xl mx-auto w-full px-4 py-6 flex-1 flex flex-col gap-6&quot;&gt;
+        
+        &lt;!-- Game Status &amp; Action Toolbar --&gt;
+        &lt;div class=&quot;bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4&quot;&gt;
+            &lt;!-- Progress Info --&gt;
+            &lt;div class=&quot;flex items-center gap-4 w-full md:w-auto justify-between md:justify-start&quot;&gt;
+                &lt;div&gt;
+                    &lt;span class=&quot;text-xs font-medium text-slate-400 block mb-1&quot;&gt;단서 충족도&lt;/span&gt;
+                    &lt;div class=&quot;flex items-center gap-2&quot;&gt;
+                        &lt;div class=&quot;w-32 bg-slate-800 rounded-full h-2.5 overflow-hidden border border-slate-700&quot;&gt;
+                            &lt;div id=&quot;progress-bar&quot; class=&quot;bg-emerald-500 h-full transition-all duration-500 rounded-full&quot; style=&quot;width: 0%&quot;&gt;&lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;span id=&quot;progress-text&quot; class=&quot;text-xs font-bold text-emerald-400&quot;&gt;0 / 15&lt;/span&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+
+                &lt;div class=&quot;h-8 w-[1px] bg-slate-800 hidden sm:block&quot;&gt;&lt;/div&gt;
+
+                &lt;div&gt;
+                    &lt;span class=&quot;text-xs font-medium text-slate-400 block mb-1&quot;&gt;입력 완료도&lt;/span&gt;
+                    &lt;span id=&quot;completion-status&quot; class=&quot;text-xs font-bold text-slate-300&quot;&gt;0% 채움&lt;/span&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;!-- Action Buttons --&gt;
+            &lt;div class=&quot;flex items-center gap-2 w-full md:w-auto justify-end flex-wrap&quot;&gt;
+                &lt;button onclick=&quot;togglePencilMode()&quot; id=&quot;btn-pencil-mode&quot; class=&quot;px-3 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition flex items-center gap-2&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-pencil text-amber-400&quot;&gt;&lt;/i&gt; 후보 메모: &lt;span id=&quot;pencil-status-text&quot; class=&quot;text-rose-400&quot;&gt;OFF&lt;/span&gt;
+                &lt;/button&gt;
+                &lt;button onclick=&quot;provideHint()&quot; class=&quot;px-3.5 py-2 text-xs font-bold rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition flex items-center gap-2 shadow-sm&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-lightbulb&quot;&gt;&lt;/i&gt; AI 논리 힌트
+                &lt;/button&gt;
+                &lt;button onclick=&quot;autoSolveStepByStep()&quot; class=&quot;px-3.5 py-2 text-xs font-bold rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 transition flex items-center gap-2&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-wand-magic-sparkles&quot;&gt;&lt;/i&gt; 자동 솔버
+                &lt;/button&gt;
+                &lt;button onclick=&quot;checkFinalAnswerModal()&quot; class=&quot;px-4 py-2 text-xs font-extrabold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 shadow-lg shadow-emerald-500/20 transition flex items-center gap-2&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-circle-check&quot;&gt;&lt;/i&gt; 최종 정답 확인
+                &lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Puzzle Arena Grid Layout --&gt;
+        &lt;div class=&quot;grid grid-cols-1 lg:grid-cols-12 gap-6 items-start&quot;&gt;
+            
+            &lt;!-- Left Side: House Cards + Unassigned Attributes Palette + IF-THEN Inference Log Stream (lg:col-span-8) --&gt;
+            &lt;section class=&quot;lg:col-span-8 space-y-5&quot;&gt;
+                &lt;div class=&quot;flex items-center justify-between px-1&quot;&gt;
+                    &lt;h2 class=&quot;text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2&quot;&gt;
+                        &lt;i class=&quot;fa-solid fa-house-user text-emerald-400&quot;&gt;&lt;/i&gt; 집 배치 보드
+                    &lt;/h2&gt;
+                    &lt;span class=&quot;text-xs text-slate-400&quot;&gt;셀을 클릭하여 특성을 지정하거나 후보 메모를 등록하세요.&lt;/span&gt;
+                &lt;/div&gt;
+
+                &lt;!-- House Cards Container --&gt;
+                &lt;div id=&quot;houses-container&quot; class=&quot;grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 overflow-x-auto pb-1 custom-scrollbar&quot;&gt;
+                    &lt;!-- Houses injected dynamically via JS --&gt;
+                &lt;/div&gt;
+
+                &lt;!-- Unassigned Attributes Palette Drawer --&gt;
+                &lt;div class=&quot;bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3&quot;&gt;
+                    &lt;div class=&quot;flex items-center justify-between&quot;&gt;
+                        &lt;h3 class=&quot;text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2&quot;&gt;
+                            &lt;i class=&quot;fa-solid fa-layer-group text-teal-400&quot;&gt;&lt;/i&gt; 남은 항목 팔레트 (선택 가능한 요소들)
+                        &lt;/h3&gt;
+                        &lt;span class=&quot;text-[11px] text-slate-500&quot;&gt;배치되지 않은 항목 목록&lt;/span&gt;
+                    &lt;/div&gt;
+                    &lt;div id=&quot;unassigned-palette&quot; class=&quot;flex flex-wrap gap-2 text-xs&quot;&gt;
+                        &lt;!-- Unassigned items dynamically generated --&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+
+                &lt;!-- IF ~ THEN ~ Logic Deduction Stream Panel --&gt;
+                &lt;div class=&quot;bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-4 shadow-xl space-y-3 relative overflow-hidden backdrop-blur-md&quot;&gt;
+                    &lt;div class=&quot;absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none&quot;&gt;&lt;/div&gt;
+                    
+                    &lt;div class=&quot;flex items-center justify-between border-b border-slate-800/80 pb-2.5&quot;&gt;
+                        &lt;div class=&quot;flex items-center gap-2&quot;&gt;
+                            &lt;span class=&quot;w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xs font-extrabold&quot;&gt;
+                                &lt;i class=&quot;fa-solid fa-code-branch&quot;&gt;&lt;/i&gt;
+                            &lt;/span&gt;
+                            &lt;h3 class=&quot;text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-2&quot;&gt;
+                                단서 융합 논리 추론 스트림 (IF - THEN)
+                                &lt;span id=&quot;if-then-count-badge&quot; class=&quot;px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold&quot;&gt;0개 추론 생성됨&lt;/span&gt;
+                            &lt;/h3&gt;
+                        &lt;/div&gt;
+                        &lt;div class=&quot;flex items-center gap-2&quot;&gt;
+                            &lt;button onclick=&quot;clearIfThenLog()&quot; class=&quot;text-[11px] font-medium text-slate-400 hover:text-slate-200 transition flex items-center gap-1&quot;&gt;
+                                &lt;i class=&quot;fa-solid fa-trash-can text-[10px]&quot;&gt;&lt;/i&gt; 로그 비우기
+                            &lt;/button&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+
+                    &lt;!-- IF-THEN Stream Feed Items --&gt;
+                    &lt;div id=&quot;if-then-stream-container&quot; class=&quot;space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1&quot;&gt;
+                        &lt;!-- Injected via JS --&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/section&gt;
+
+            &lt;!-- Right Side: Clues List &amp; Logic Checker (lg:col-span-4) --&gt;
+            &lt;section class=&quot;lg:col-span-4 bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 flex flex-col h-[750px] shadow-xl&quot;&gt;
+                &lt;div class=&quot;flex items-center justify-between pb-3 border-b border-slate-800 gap-2&quot;&gt;
+                    &lt;!-- Tab Buttons --&gt;
+                    &lt;div class=&quot;flex items-center gap-1 bg-slate-800/90 p-1 rounded-xl border border-slate-700/80 text-xs&quot;&gt;
+                        &lt;button onclick=&quot;switchRightPanelTab(&#x27;clues&#x27;)&quot; id=&quot;tab-btn-clues&quot; class=&quot;px-2.5 py-1 rounded-lg font-bold bg-emerald-600 text-white transition flex items-center gap-1.5 shadow&quot;&gt;
+                            &lt;i class=&quot;fa-solid fa-list-check&quot;&gt;&lt;/i&gt; 단서목록
+                        &lt;/button&gt;
+                        &lt;button onclick=&quot;switchRightPanelTab(&#x27;rules&#x27;)&quot; id=&quot;tab-btn-rules&quot; class=&quot;px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition flex items-center gap-1.5 relative&quot;&gt;
+                            &lt;i class=&quot;fa-solid fa-diagram-project text-indigo-400&quot;&gt;&lt;/i&gt; 규칙 추론 피드
+                            &lt;span id=&quot;derived-facts-count-badge&quot; class=&quot;px-1.5 py-0.2 rounded-full bg-indigo-500 text-white text-[10px] font-extrabold hidden&quot;&gt;0&lt;/span&gt;
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+
+                    &lt;!-- Clue Filter buttons (only visible when clues tab active) --&gt;
+                    &lt;div id=&quot;clue-filter-container&quot; class=&quot;flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700 text-[11px]&quot;&gt;
+                        &lt;button onclick=&quot;filterClues(&#x27;all&#x27;)&quot; id=&quot;filter-all&quot; class=&quot;px-2 py-0.5 rounded font-medium bg-emerald-600 text-white&quot;&gt;전체&lt;/button&gt;
+                        &lt;button onclick=&quot;filterClues(&#x27;unsolved&#x27;)&quot; id=&quot;filter-unsolved&quot; class=&quot;px-2 py-0.5 rounded font-medium text-slate-400 hover:text-white&quot;&gt;미완료&lt;/button&gt;
+                    &lt;/div&gt;
+
+                    &lt;!-- Auto Apply All Derived Facts Button (only visible when rules tab active) --&gt;
+                    &lt;div id=&quot;rule-actions-container&quot; class=&quot;hidden&quot;&gt;
+                        &lt;button onclick=&quot;applyAllDerivedFacts()&quot; class=&quot;px-2.5 py-1 text-[11px] font-bold bg-indigo-600/80 hover:bg-indigo-600 text-indigo-100 rounded-lg transition flex items-center gap-1 shadow&quot;&gt;
+                            &lt;i class=&quot;fa-solid fa-wand-magic-sparkles&quot;&gt;&lt;/i&gt; 전체 적용
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+
+                &lt;!-- Tab Content 1: Clue Items Scroll Area --&gt;
+                &lt;div id=&quot;panel-content-clues&quot; class=&quot;flex-1 overflow-y-auto my-3 space-y-2 pr-1 custom-scrollbar&quot;&gt;
+                    &lt;!-- Clues rendered dynamically --&gt;
+                &lt;/div&gt;
+
+                &lt;!-- Tab Content 2: Rule-Based Derived Facts Feed --&gt;
+                &lt;div id=&quot;panel-content-rules&quot; class=&quot;flex-1 overflow-y-auto my-3 space-y-2.5 pr-1 custom-scrollbar hidden&quot;&gt;
+                    &lt;!-- Derived facts feed injected dynamically --&gt;
+                &lt;/div&gt;
+
+                &lt;!-- Logic Hint Explanation Box --&gt;
+                &lt;div id=&quot;hint-box&quot; class=&quot;bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-xs hidden animate-fade-in&quot;&gt;
+                    &lt;div class=&quot;flex items-center justify-between font-bold text-amber-400 mb-1&quot;&gt;
+                        &lt;span class=&quot;flex items-center gap-1.5&quot;&gt;&lt;i class=&quot;fa-solid fa-lightbulb&quot;&gt;&lt;/i&gt; AI 단서 조합 추론 힌트&lt;/span&gt;
+                        &lt;button onclick=&quot;closeHintBox()&quot; class=&quot;text-slate-500 hover:text-slate-300&quot;&gt;&lt;i class=&quot;fa-solid fa-xmark&quot;&gt;&lt;/i&gt;&lt;/button&gt;
+                    &lt;/div&gt;
+                    &lt;div id=&quot;hint-text&quot; class=&quot;text-slate-300 leading-relaxed font-normal&quot;&gt;--&lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/section&gt;
+        &lt;/div&gt;
+    &lt;/main&gt;
+
+    &lt;!-- Selection Dialog Modal --&gt;
+    &lt;div id=&quot;selection-modal&quot; class=&quot;fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden&quot;&gt;
+        &lt;div class=&quot;bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 transform transition-all scale-100&quot;&gt;
+            &lt;div class=&quot;flex items-center justify-between border-b border-slate-800 pb-3&quot;&gt;
+                &lt;div class=&quot;flex items-center gap-2&quot;&gt;
+                    &lt;span id=&quot;modal-house-badge&quot; class=&quot;px-2 py-0.5 text-xs font-bold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30&quot;&gt;House 1&lt;/span&gt;
+                    &lt;h3 id=&quot;modal-category-title&quot; class=&quot;text-sm font-bold text-white&quot;&gt;국적 선택&lt;/h3&gt;
+                &lt;/div&gt;
+                &lt;button onclick=&quot;closeSelectionModal()&quot; class=&quot;text-slate-400 hover:text-white p-1&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-xmark text-lg&quot;&gt;&lt;/i&gt;
+                &lt;/button&gt;
+            &lt;/div&gt;
+
+            &lt;p class=&quot;text-xs text-slate-400&quot;&gt;이 칸에 들어갈 요소를 선택하세요. (이미 사용 중인 요소는 표시됩니다)&lt;/p&gt;
+
+            &lt;div id=&quot;modal-options-grid&quot; class=&quot;grid grid-cols-2 gap-2 max-h-60 overflow-y-auto custom-scrollbar p-1&quot;&gt;
+                &lt;!-- Dynamic Options --&gt;
+            &lt;/div&gt;
+
+            &lt;div class=&quot;flex items-center justify-between pt-2 border-t border-slate-800&quot;&gt;
+                &lt;button onclick=&quot;clearCurrentCell()&quot; class=&quot;px-3 py-1.5 text-xs font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-trash-can mr-1&quot;&gt;&lt;/i&gt; 이 셀 지우기
+                &lt;/button&gt;
+                &lt;button onclick=&quot;closeSelectionModal()&quot; class=&quot;px-4 py-1.5 text-xs font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition&quot;&gt;
+                    닫기
+                &lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Final Mystery Question Modal --&gt;
+    &lt;div id=&quot;victory-modal&quot; class=&quot;fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden&quot;&gt;
+        &lt;div class=&quot;bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl text-center space-y-5 relative overflow-hidden&quot;&gt;
+            &lt;div class=&quot;w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-lg shadow-amber-500/20&quot;&gt;
+                &lt;i class=&quot;fa-solid fa-trophy&quot;&gt;&lt;/i&gt;
+            &lt;/div&gt;
+
+            &lt;div&gt;
+                &lt;h3 class=&quot;text-xl font-extrabold text-white&quot;&gt;아인슈타인의 질문!&lt;/h3&gt;
+                &lt;p id=&quot;target-question-text&quot; class=&quot;text-emerald-400 font-bold text-lg mt-1&quot;&gt;&quot;누가 물고기를 키우고 있습니까?&quot;&lt;/p&gt;
+                &lt;p class=&quot;text-xs text-slate-400 mt-2&quot;&gt;추론한 결론에 맞춰 질문의 정답을 선택하세요.&lt;/p&gt;
+            &lt;/div&gt;
+
+            &lt;!-- Answer Options List --&gt;
+            &lt;div id=&quot;final-answer-options&quot; class=&quot;grid grid-cols-1 sm:grid-cols-2 gap-2 text-left&quot;&gt;
+                &lt;!-- Injected via JS --&gt;
+            &lt;/div&gt;
+
+            &lt;div id=&quot;modal-result-msg&quot; class=&quot;text-xs font-semibold py-2 px-3 rounded-xl hidden&quot;&gt;&lt;/div&gt;
+
+            &lt;div class=&quot;flex flex-col sm:flex-row items-center justify-center gap-2 pt-2&quot;&gt;
+                &lt;button onclick=&quot;closeVictoryModal()&quot; class=&quot;w-full sm:w-auto px-4 py-2 text-xs font-bold text-slate-400 hover:text-white bg-slate-800 rounded-xl&quot;&gt;
+                    돌아가서 재검토
+                &lt;/button&gt;
+                &lt;button onclick=&quot;submitFinalAnswer()&quot; class=&quot;w-full sm:w-auto px-6 py-2 text-xs font-extrabold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-xl shadow-lg shadow-emerald-500/30 transition&quot;&gt;
+                    정답 최종 제출
+                &lt;/button&gt;
+                &lt;button id=&quot;btn-view-ai-explain&quot; onclick=&quot;openExplanationModal()&quot; class=&quot;w-full sm:w-auto px-4 py-2 text-xs font-bold text-indigo-200 bg-indigo-600/80 hover:bg-indigo-600 rounded-xl shadow transition hidden&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-robot mr-1&quot;&gt;&lt;/i&gt; 풀이 &amp; AI 원리 보기
+                &lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Educational Modal: Solution Process &amp; AI Concept Explanation --&gt;
+    &lt;div id=&quot;explanation-modal&quot; class=&quot;fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden&quot;&gt;
+        &lt;div class=&quot;bg-slate-900 border border-slate-700 rounded-3xl max-w-4xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden&quot;&gt;
+            &lt;!-- Modal Header --&gt;
+            &lt;div class=&quot;p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-b border-slate-800 flex items-center justify-between&quot;&gt;
+                &lt;div class=&quot;flex items-center gap-3&quot;&gt;
+                    &lt;div class=&quot;w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center text-xl&quot;&gt;
+                        &lt;i class=&quot;fa-solid fa-brain&quot;&gt;&lt;/i&gt;
+                    &lt;/div&gt;
+                    &lt;div&gt;
+                        &lt;h3 class=&quot;text-base font-extrabold text-white flex items-center gap-2&quot;&gt;
+                            논리 추론 풀이 과정 및 인공지능(AI) 활용 원리
+                        &lt;/h3&gt;
+                        &lt;p class=&quot;text-xs text-slate-400&quot;&gt;아인슈타인 수수께끼를 해독하는 논리 단계와 컴퓨터 과학/AI에서의 응용&lt;/p&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                &lt;button onclick=&quot;closeExplanationModal()&quot; class=&quot;text-slate-400 hover:text-white p-1 text-xl&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-xmark&quot;&gt;&lt;/i&gt;
+                &lt;/button&gt;
+            &lt;/div&gt;
+
+            &lt;!-- Tab Switcher --&gt;
+            &lt;div class=&quot;flex border-b border-slate-800 bg-slate-950/50 text-xs font-semibold&quot;&gt;
+                &lt;button id=&quot;tab-btn-solution&quot; onclick=&quot;switchExplainTab(&#x27;solution&#x27;)&quot; class=&quot;flex-1 py-3 border-b-2 border-emerald-500 text-emerald-400 bg-slate-900/50 flex items-center justify-center gap-2&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-route&quot;&gt;&lt;/i&gt; 단계별 논리 풀이 과정
+                &lt;/button&gt;
+                &lt;button id=&quot;tab-btn-ai&quot; onclick=&quot;switchExplainTab(&#x27;ai&#x27;)&quot; class=&quot;flex-1 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-2&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-microchip&quot;&gt;&lt;/i&gt; AI 및 인공지능 활용 원리
+                &lt;/button&gt;
+            &lt;/div&gt;
+
+            &lt;!-- Scrollable Content Area --&gt;
+            &lt;div class=&quot;p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 text-slate-300 text-xs sm:text-sm leading-relaxed&quot;&gt;
+                
+                &lt;!-- TAB 1: Step-by-Step Solution --&gt;
+                &lt;div id=&quot;tab-content-solution&quot; class=&quot;space-y-4&quot;&gt;
+                    &lt;div class=&quot;bg-slate-950/60 border border-slate-800 p-4 rounded-2xl flex items-center justify-between&quot;&gt;
+                        &lt;div&gt;
+                            &lt;span class=&quot;text-xs font-bold text-emerald-400 uppercase tracking-wider block&quot;&gt;현재 모드&lt;/span&gt;
+                            &lt;h4 id=&quot;solution-mode-title&quot; class=&quot;text-base font-extrabold text-white&quot;&gt;클래식 아인슈타인 수수께끼 (5x5)&lt;/h4&gt;
+                        &lt;/div&gt;
+                        &lt;span class=&quot;px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20&quot;&gt;
+                            연쇄 소거법 (Forward Checking)
+                        &lt;/span&gt;
+                    &lt;/div&gt;
+
+                    &lt;!-- Steps dynamic container --&gt;
+                    &lt;div id=&quot;solution-steps-list&quot; class=&quot;space-y-3&quot;&gt;
+                        &lt;!-- Step items rendered via JS --&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+
+                &lt;!-- TAB 2: AI Logic Principles --&gt;
+                &lt;div id=&quot;tab-content-ai&quot; class=&quot;space-y-6 hidden&quot;&gt;
+                    
+                    &lt;!-- Top Intro --&gt;
+                    &lt;div class=&quot;bg-gradient-to-r from-indigo-950/60 to-purple-950/40 border border-indigo-800/50 p-4 rounded-2xl&quot;&gt;
+                        &lt;h4 class=&quot;text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2&quot;&gt;
+                            &lt;i class=&quot;fa-solid fa-lightbulb&quot;&gt;&lt;/i&gt; 수수께끼 추론은 인공지능의 핵심 알고리즘입니다!
+                        &lt;/h4&gt;
+                        &lt;p class=&quot;text-slate-300 text-xs leading-relaxed&quot;&gt;
+                            사람이 눈앞의 단서를 종합하여 답을 도출하는 과정은 인공지능이 &lt;strong&gt;제약 조건을 해결하고 최적의 솔루션을 찾는 알고리즘&lt;/strong&gt;과 일치합니다.
+                            이 퍼즐은 단순히 재미있는 게임이 아닌, 컴퓨터 과학의 핵심 분야들과 직결되어 있습니다.
+                        &lt;/p&gt;
+                    &lt;/div&gt;
+
+                    &lt;!-- 4 Core AI Pillars --&gt;
+                    &lt;div class=&quot;grid grid-cols-1 md:grid-cols-2 gap-4&quot;&gt;
+                        
+                        &lt;!-- Core 1: CSP --&gt;
+                        &lt;div class=&quot;bg-slate-950/70 border border-slate-800 p-4 rounded-2xl space-y-2&quot;&gt;
+                            &lt;div class=&quot;flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider&quot;&gt;
+                                &lt;i class=&quot;fa-solid fa-diagram-project text-sm&quot;&gt;&lt;/i&gt; 1. 제약 충족 문제 (CSP)
+                            &lt;/div&gt;
+                            &lt;h5 class=&quot;font-bold text-white text-sm&quot;&gt;Constraint Satisfaction Problem&lt;/h5&gt;
+                            &lt;p class=&quot;text-slate-400 text-xs&quot;&gt;
+                                AI는 복잡한 문제를 &lt;strong&gt;변수(Variables)&lt;/strong&gt;, 각 변수가 가질 수 있는 &lt;strong&gt;값의 영역(Domain)&lt;/strong&gt;, 변수 간의 &lt;strong&gt;제약 조건(Constraints)&lt;/strong&gt;으로 정의합니다.
+                            &lt;/p&gt;
+                            &lt;ul class=&quot;list-disc list-inside text-[11px] text-slate-300 space-y-1 bg-slate-900/80 p-2.5 rounded-xl border border-slate-800&quot;&gt;
+                                &lt;li&gt;&lt;strong&gt;변수:&lt;/strong&gt; 5개의 집(1~5번) 및 속성(국적, 색상, 음료 등)&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;제약조건:&lt;/strong&gt; &quot;노르웨이인은 1번 집&quot;, &quot;초록 집은 하얀 집의 왼쪽&quot;&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;알고리즘:&lt;/strong&gt; 백트래킹(Backtracking)과 호 호환성(Arc Consistency AC-3)을 이용해 불가능한 후보를 사전 제거.&lt;/li&gt;
+                            &lt;/ul&gt;
+                        &lt;/div&gt;
+
+                        &lt;!-- Core 2: Symbolic AI &amp; Logic Programming --&gt;
+                        &lt;div class=&quot;bg-slate-950/70 border border-slate-800 p-4 rounded-2xl space-y-2&quot;&gt;
+                            &lt;div class=&quot;flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-wider&quot;&gt;
+                                &lt;i class=&quot;fa-solid fa-code text-sm&quot;&gt;&lt;/i&gt; 2. 기호 인공지능 &amp; 프롤로그
+                            &lt;/div&gt;
+                            &lt;h5 class=&quot;font-bold text-white text-sm&quot;&gt;Symbolic AI &amp; Logic Programming&lt;/h5&gt;
+                            &lt;p class=&quot;text-slate-400 text-xs&quot;&gt;
+                                딥러닝 이전 시대부터 발전한 &lt;strong&gt;기호 AI(Symbolic AI)&lt;/strong&gt;는 &#x27;사실(Facts)&#x27;과 &#x27;규칙(Rules)&#x27;을 수식화하여 자동 정리를 증명합니다.
+                            &lt;/p&gt;
+                            &lt;ul class=&quot;list-disc list-inside text-[11px] text-slate-300 space-y-1 bg-slate-900/80 p-2.5 rounded-xl border border-slate-800&quot;&gt;
+                                &lt;li&gt;&lt;strong&gt;Prolog(프롤로그):&lt;/strong&gt; 논리 언어로 조건만 명시하면 자동 탐색 엔진이 스스로 모든 집의 구성을 찾아냄.&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;지식 베이스(Knowledge Base):&lt;/strong&gt; 명확한 신뢰성이 필요한 지식 구조화에 사용.&lt;/li&gt;
+                            &lt;/ul&gt;
+                        &lt;/div&gt;
+
+                        &lt;!-- Core 3: SAT/SMT Solvers --&gt;
+                        &lt;div class=&quot;bg-slate-950/70 border border-slate-800 p-4 rounded-2xl space-y-2&quot;&gt;
+                            &lt;div class=&quot;flex items-center gap-2 text-teal-400 font-bold text-xs uppercase tracking-wider&quot;&gt;
+                                &lt;i class=&quot;fa-solid fa-microchip text-sm&quot;&gt;&lt;/i&gt; 3. SAT / SMT 솔버
+                            &lt;/div&gt;
+                            &lt;h5 class=&quot;font-bold text-white text-sm&quot;&gt;Satisfiability Solvers&lt;/h5&gt;
+                            &lt;p class=&quot;text-slate-400 text-xs&quot;&gt;
+                                명제 논리식을 참(True)으로 만드는 조합이 존재하는지 검증하는 산업용 AI 엔진입니다.
+                            &lt;/p&gt;
+                            &lt;ul class=&quot;list-disc list-inside text-[11px] text-slate-300 space-y-1 bg-slate-900/80 p-2.5 rounded-xl border border-slate-800&quot;&gt;
+                                &lt;li&gt;&lt;strong&gt;실제 활용:&lt;/strong&gt; 반도체 회로 설계 검증, 소프트웨어 버그 자동 탐지, 항공기 운항 스케줄링.&lt;/li&gt;
+                                &lt;li&gt;수십만 개의 제약 조건도 몇 초 만에 풀 수 있는 강력한 산업용 초고속 인공지능.&lt;/li&gt;
+                            &lt;/ul&gt;
+                        &lt;/div&gt;
+
+                        &lt;!-- Core 4: Modern LLM &amp; Chain-of-Thought --&gt;
+                        &lt;div class=&quot;bg-slate-950/70 border border-slate-800 p-4 rounded-2xl space-y-2&quot;&gt;
+                            &lt;div class=&quot;flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider&quot;&gt;
+                                &lt;i class=&quot;fa-solid fa-wand-magic-sparkles text-sm&quot;&gt;&lt;/i&gt; 4. 현대 LLM과 생각의 사슬 (CoT)
+                            &lt;/div&gt;
+                            &lt;h5 class=&quot;font-bold text-white text-sm&quot;&gt;Chain-of-Thought (CoT) Reasoning&lt;/h5&gt;
+                            &lt;p class=&quot;text-slate-400 text-xs&quot;&gt;
+                                최신 거대언어모델(ChatGPT, Gemini 등)이 복잡한 논리 문제를 풀 때 사용하는 기법입니다.
+                            &lt;/p&gt;
+                            &lt;ul class=&quot;list-disc list-inside text-[11px] text-slate-300 space-y-1 bg-slate-900/80 p-2.5 rounded-xl border border-slate-800&quot;&gt;
+                                &lt;li&gt;한 번에 단답을 내지 않고, &lt;strong&gt;&quot;1단계: 고정 위치 확인 -&gt; 2단계: 인접 조건 적용...&quot;&lt;/strong&gt; 처럼 단계별로 생각 과정을 생성.&lt;/li&gt;
+                                &lt;li&gt;CoT를 사용하면 LLM의 복잡 추론 정확도가 300% 이상 상승합니다.&lt;/li&gt;
+                            &lt;/ul&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+
+                    &lt;!-- Summary Footnote --&gt;
+                    &lt;div class=&quot;bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center gap-3&quot;&gt;
+                        &lt;div class=&quot;p-2 bg-emerald-500/10 text-emerald-400 rounded-xl text-lg&quot;&gt;
+                            &lt;i class=&quot;fa-solid fa-graduation-cap&quot;&gt;&lt;/i&gt;
+                        &lt;/div&gt;
+                        &lt;p class=&quot;text-xs text-slate-400&quot;&gt;
+                            결론적으로 여러분이 게임에서 candidate 메모를 지우고, 확정된 집을 토대로 다음 단서를 연결하는 행동은 &lt;strong&gt;AI 알고리즘이 복잡한 물류/스케줄링/최적화 문제를 해결하는 방식과 완전히 동일&lt;/strong&gt;합니다!
+                        &lt;/p&gt;
+                    &lt;/div&gt;
+
+                &lt;/div&gt;
+
+            &lt;/div&gt;
+
+            &lt;!-- Modal Footer --&gt;
+            &lt;div class=&quot;p-4 bg-slate-950 border-t border-slate-800 flex justify-end&quot;&gt;
+                &lt;button onclick=&quot;closeExplanationModal()&quot; class=&quot;px-5 py-2 text-xs font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-xl transition shadow&quot;&gt;
+                    확인 및 닫기
+                &lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script&gt;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let audioMuted = false;
+
+        function playTone(freq, type, duration) {
+            if (audioMuted) return;
+            try {
+                if (audioCtx.state === &#x27;suspended&#x27;) {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        const audio = {
+            click: () =&gt; playTone(600, &#x27;sine&#x27;, 0.08),
+            select: () =&gt; playTone(800, &#x27;sine&#x27;, 0.12),
+            hint: () =&gt; { playTone(523.25, &#x27;sine&#x27;, 0.15); setTimeout(() =&gt; playTone(659.25, &#x27;sine&#x27;, 0.2), 100); },
+            error: () =&gt; { playTone(220, &#x27;sawtooth&#x27;, 0.2); setTimeout(() =&gt; playTone(180, &#x27;sawtooth&#x27;, 0.25), 150); },
+            success: () =&gt; {
+                [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =&gt; {
+                    setTimeout(() =&gt; playTone(f, &#x27;triangle&#x27;, 0.25), i * 120);
+                });
+            }
+        };
+
+        function toggleAudio() {
+            audioMuted = !audioMuted;
+            const btn = document.getElementById(&#x27;btn-sound&#x27;);
+            if (btn) {
+                if (audioMuted) {
+                    btn.innerHTML = `&lt;i class=&quot;fa-solid fa-volume-xmark text-sm text-slate-500&quot;&gt;&lt;/i&gt;`;
+                } else {
+                    btn.innerHTML = `&lt;i class=&quot;fa-solid fa-volume-high text-sm&quot;&gt;&lt;/i&gt;`;
+                    audio.click();
+                }
+            }
+        }
+
+        const PUZZLE_PRESETS = {
+            classic: {
+                title: &#x27;클래식 아인슈타인 수수께끼 (5x5)&#x27;,
+                houseCount: 5,
+                targetQuestion: &#x27;&quot;누가 물고기를 키우고 있습니까?&quot;&#x27;,
+                targetCategory: &#x27;nationality&#x27;,
+                categories: [
+                    { id: &#x27;color&#x27;, name: &#x27;집 색상&#x27;, icon: &#x27;fa-paint-roller&#x27; },
+                    { id: &#x27;nationality&#x27;, name: &#x27;국적&#x27;, icon: &#x27;fa-earth-americas&#x27; },
+                    { id: &#x27;drink&#x27;, name: &#x27;음료&#x27;, icon: &#x27;fa-wine-glass&#x27; },
+                    { id: &#x27;cigar&#x27;, name: &#x27;간식&#x27;, icon: &#x27;fa-cookie-bite&#x27; },
+                    { id: &#x27;pet&#x27;, name: &#x27;반려동물&#x27;, icon: &#x27;fa-paw&#x27; }
+                ],
+                items: {
+                    color: [
+                        { name: &#x27;빨강&#x27;, colorCode: &#x27;#ef4444&#x27; },
+                        { name: &#x27;초록&#x27;, colorCode: &#x27;#22c55e&#x27; },
+                        { name: &#x27;하양&#x27;, colorCode: &#x27;#ffffff&#x27; },
+                        { name: &#x27;노랑&#x27;, colorCode: &#x27;#eab308&#x27; },
+                        { name: &#x27;파랑&#x27;, colorCode: &#x27;#3b82f6&#x27; }
+                    ],
+                    nationality: [
+                        { name: &#x27;영국인&#x27;, icon: &#x27;🇬🇧&#x27; },
+                        { name: &#x27;스웨덴인&#x27;, icon: &#x27;🇸🇪&#x27; },
+                        { name: &#x27;덴마크인&#x27;, icon: &#x27;🇩🇰&#x27; },
+                        { name: &#x27;노르웨이인&#x27;, icon: &#x27;🇳🇴&#x27; },
+                        { name: &#x27;독일인&#x27;, icon: &#x27;🇩🇪&#x27; }
+                    ],
+                    drink: [
+                        { name: &#x27;차&#x27;, icon: &#x27;🍵&#x27; },
+                        { name: &#x27;커피&#x27;, icon: &#x27;☕&#x27; },
+                        { name: &#x27;우유&#x27;, icon: &#x27;🥛&#x27; },
+                        { name: &#x27;맥주&#x27;, icon: &#x27;🍺&#x27; },
+                        { name: &#x27;물&#x27;, icon: &#x27;💧&#x27; }
+                    ],
+                    cigar: [
+                        { name: &#x27;초콜릿&#x27;, icon: &#x27;🍫&#x27; },
+                        { name: &#x27;쿠키&#x27;, icon: &#x27;🍪&#x27; },
+                        { name: &#x27;사탕&#x27;, icon: &#x27;🍬&#x27; },
+                        { name: &#x27;감자칩&#x27;, icon: &#x27;🥔&#x27; },
+                        { name: &#x27;케이크&#x27;, icon: &#x27;🍰&#x27; }
+                    ],
+                    pet: [
+                        { name: &#x27;개&#x27;, icon: &#x27;🐶&#x27; },
+                        { name: &#x27;새&#x27;, icon: &#x27;🐦&#x27; },
+                        { name: &#x27;고양이&#x27;, icon: &#x27;🐱&#x27; },
+                        { name: &#x27;말&#x27;, icon: &#x27;🐴&#x27; },
+                        { name: &#x27;물고기&#x27;, icon: &#x27;🐠&#x27; }
+                    ]
+                },
+                clues: [
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;nationality&#x27;, val: &#x27;영국인&#x27; }, b: { cat: &#x27;color&#x27;, val: &#x27;빨강&#x27; }, text: &#x27;1. 영국인은 빨간 집에 삽니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;nationality&#x27;, val: &#x27;스웨덴인&#x27; }, b: { cat: &#x27;pet&#x27;, val: &#x27;개&#x27; }, text: &#x27;2. 스웨덴인은 개를 키웁니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;nationality&#x27;, val: &#x27;덴마크인&#x27; }, b: { cat: &#x27;drink&#x27;, val: &#x27;차&#x27; }, text: &#x27;3. 덴마크인은 차를 마십니다.&#x27; },
+                    { type: &#x27;left_of&#x27;, left: { cat: &#x27;color&#x27;, val: &#x27;초록&#x27; }, right: { cat: &#x27;color&#x27;, val: &#x27;하양&#x27; }, text: &#x27;4. 초록 집은 하얀 집의 바로 왼쪽에 있습니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;color&#x27;, val: &#x27;초록&#x27; }, b: { cat: &#x27;drink&#x27;, val: &#x27;커피&#x27; }, text: &#x27;5. 초록 집 주인은 커피를 마십니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;cigar&#x27;, val: &#x27;초콜릿&#x27; }, b: { cat: &#x27;pet&#x27;, val: &#x27;새&#x27; }, text: &#x27;6. 초콜릿을 먹는 사람은 새를 키웁니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;color&#x27;, val: &#x27;노랑&#x27; }, b: { cat: &#x27;cigar&#x27;, val: &#x27;쿠키&#x27; }, text: &#x27;7. 노란 집 주인은 쿠키를 먹습니다.&#x27; },
+                    { type: &#x27;fixed&#x27;, house: 3, cat: &#x27;drink&#x27;, val: &#x27;우유&#x27;, text: &#x27;8. 한가운데(3번) 집에 사는 사람은 우유를 마십니다.&#x27; },
+                    { type: &#x27;fixed&#x27;, house: 1, cat: &#x27;nationality&#x27;, val: &#x27;노르웨이인&#x27;, text: &#x27;9. 노르웨이인은 첫 번째(1번) 집에 삽니다.&#x27; },
+                    { type: &#x27;neighbor&#x27;, a: { cat: &#x27;cigar&#x27;, val: &#x27;사탕&#x27; }, b: { cat: &#x27;pet&#x27;, val: &#x27;고양이&#x27; }, text: &#x27;10. 사탕을 먹는 사람은 고양이를 키우는 사람 옆집에 삽니다.&#x27; },
+                    { type: &#x27;neighbor&#x27;, a: { cat: &#x27;pet&#x27;, val: &#x27;말&#x27; }, b: { cat: &#x27;cigar&#x27;, val: &#x27;쿠키&#x27; }, text: &#x27;11. 말을 키우는 사람은 쿠키를 먹는 사람 옆집에 삽니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;cigar&#x27;, val: &#x27;감자칩&#x27; }, b: { cat: &#x27;drink&#x27;, val: &#x27;맥주&#x27; }, text: &#x27;12. 감자칩을 먹는 사람은 맥주를 마십니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;nationality&#x27;, val: &#x27;독일인&#x27; }, b: { cat: &#x27;cigar&#x27;, val: &#x27;케이크&#x27; }, text: &#x27;13. 독일인은 케이크를 먹습니다.&#x27; },
+                    { type: &#x27;neighbor&#x27;, a: { cat: &#x27;nationality&#x27;, val: &#x27;노르웨이인&#x27; }, b: { cat: &#x27;color&#x27;, val: &#x27;파랑&#x27; }, text: &#x27;14. 노르웨이인은 파란 집 옆집에 삽니다.&#x27; },
+                    { type: &#x27;neighbor&#x27;, a: { cat: &#x27;cigar&#x27;, val: &#x27;사탕&#x27; }, b: { cat: &#x27;drink&#x27;, val: &#x27;물&#x27; }, text: &#x27;15. 사탕을 먹는 사람은 물을 마시는 사람 옆집에 삽니다.&#x27; }
+                ],
+                solution: [
+                    { house: 1, color: &#x27;노랑&#x27;, nationality: &#x27;노르웨이인&#x27;, drink: &#x27;물&#x27;, cigar: &#x27;쿠키&#x27;, pet: &#x27;고양이&#x27; },
+                    { house: 2, color: &#x27;파랑&#x27;, nationality: &#x27;덴마크인&#x27;, drink: &#x27;차&#x27;, cigar: &#x27;사탕&#x27;, pet: &#x27;말&#x27; },
+                    { house: 3, color: &#x27;빨강&#x27;, nationality: &#x27;영국인&#x27;, drink: &#x27;우유&#x27;, cigar: &#x27;초콜릿&#x27;, pet: &#x27;새&#x27; },
+                    { house: 4, color: &#x27;초록&#x27;, nationality: &#x27;독일인&#x27;, drink: &#x27;커피&#x27;, cigar: &#x27;케이크&#x27;, pet: &#x27;물고기&#x27; },
+                    { house: 5, color: &#x27;하양&#x27;, nationality: &#x27;스웨덴인&#x27;, drink: &#x27;맥주&#x27;, cigar: &#x27;감자칩&#x27;, pet: &#x27;개&#x27; }
+                ],
+                solutionSteps: [
+                    { step: &quot;1단계&quot;, desc: &quot;9번 단서로 1번 집은 노르웨이인입니다. 14번 단서로 2번 집은 파란 집입니다.&quot; },
+                    { step: &quot;2단계&quot;, desc: &quot;8번 단서로 3번 집 주인은 우유를 마십니다.&quot; },
+                    { step: &quot;3단계&quot;, desc: &quot;4번 단서(초록은 하양의 바로 왼쪽)와 5번 단서(초록=커피)에 의해 초록 집은 4번, 하얀 집은 5번입니다.&quot; },
+                    { step: &quot;4단계&quot;, desc: &quot;1번 집 색상은 노랑이 되며, 7번 단서로 1번 집은 쿠키, 11번 단서로 2번 집은 말을 키웁니다.&quot; },
+                    { step: &quot;5단계&quot;, desc: &quot;1번 단서(영국인=빨간집)로 영국인은 3번 집입니다. 남은 조건들을 소거하면 물고기를 키우는 사람은 4번 집 독일인입니다!&quot; }
+                ]
+            },
+            mini: {
+                title: &#x27;입문용 수수께끼 (3x3)&#x27;,
+                houseCount: 3,
+                targetQuestion: &#x27;&quot;누가 토끼를 키우고 있습니까?&quot;&#x27;,
+                targetCategory: &#x27;nationality&#x27;,
+                categories: [
+                    { id: &#x27;color&#x27;, name: &#x27;집 색상&#x27;, icon: &#x27;fa-paint-roller&#x27; },
+                    { id: &#x27;nationality&#x27;, name: &#x27;국적&#x27;, icon: &#x27;fa-earth-americas&#x27; },
+                    { id: &#x27;pet&#x27;, name: &#x27;반려동물&#x27;, icon: &#x27;fa-paw&#x27; }
+                ],
+                items: {
+                    color: [
+                        { name: &#x27;빨강&#x27;, colorCode: &#x27;#ef4444&#x27; },
+                        { name: &#x27;파랑&#x27;, colorCode: &#x27;#3b82f6&#x27; },
+                        { name: &#x27;노랑&#x27;, colorCode: &#x27;#eab308&#x27; }
+                    ],
+                    nationality: [
+                        { name: &#x27;한국인&#x27;, icon: &#x27;🇰🇷&#x27; },
+                        { name: &#x27;미국인&#x27;, icon: &#x27;🇺🇸&#x27; },
+                        { name: &#x27;일본인&#x27;, icon: &#x27;🇯🇵&#x27; }
+                    ],
+                    pet: [
+                        { name: &#x27;개&#x27;, icon: &#x27;🐶&#x27; },
+                        { name: &#x27;고양이&#x27;, icon: &#x27;🐱&#x27; },
+                        { name: &#x27;토끼&#x27;, icon: &#x27;🐰&#x27; }
+                    ]
+                },
+                clues: [
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;nationality&#x27;, val: &#x27;한국인&#x27; }, b: { cat: &#x27;color&#x27;, val: &#x27;빨강&#x27; }, text: &#x27;1. 한국인은 빨간 집에 삽니다.&#x27; },
+                    { type: &#x27;fixed&#x27;, house: 1, cat: &#x27;pet&#x27;, val: &#x27;개&#x27;, text: &#x27;2. 개를 키우는 사람은 1번 집에 삽니다.&#x27; },
+                    { type: &#x27;left_of&#x27;, left: { cat: &#x27;pet&#x27;, val: &#x27;고양이&#x27; }, right: { cat: &#x27;color&#x27;, val: &#x27;노랑&#x27; }, text: &#x27;3. 고양이를 키우는 집은 노란 집 바로 왼쪽에 있습니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;nationality&#x27;, val: &#x27;일본인&#x27; }, b: { cat: &#x27;color&#x27;, val: &#x27;노랑&#x27; }, text: &#x27;4. 일본인은 노란 집에 삽니다.&#x27; },
+                    { type: &#x27;fixed&#x27;, house: 2, cat: &#x27;nationality&#x27;, val: &#x27;미국인&#x27;, text: &#x27;5. 미국인은 2번 집에 삽니다.&#x27; }
+                ],
+                solution: [
+                    { house: 1, color: &#x27;빨강&#x27;, nationality: &#x27;한국인&#x27;, pet: &#x27;개&#x27; },
+                    { house: 2, color: &#x27;파랑&#x27;, nationality: &#x27;미국인&#x27;, pet: &#x27;고양이&#x27; },
+                    { house: 3, color: &#x27;노랑&#x27;, nationality: &#x27;일본인&#x27;, pet: &#x27;토끼&#x27; }
+                ],
+                solutionSteps: [
+                    { step: &quot;1단계&quot;, desc: &quot;2번 단서로 1번 집은 개를 키웁니다. 5번 단서로 2번 집은 미국인입니다.&quot; },
+                    { step: &quot;2단계&quot;, desc: &quot;4번 단서로 노란 집은 일본인이며, 3번 단서(고양이는 노랑의 왼쪽)에 의해 노랑은 3번 집, 고양이는 2번 집입니다.&quot; },
+                    { step: &quot;3단계&quot;, desc: &quot;따라서 3번 집 주인은 일본인이고 토끼를 키웁니다!&quot; }
+                ]
+            },
+            medium: {
+                title: &#x27;중급자 수수께끼 (4x4)&#x27;,
+                houseCount: 4,
+                targetQuestion: &#x27;&quot;누가 햄스터를 키우고 있습니까?&quot;&#x27;,
+                targetCategory: &#x27;nationality&#x27;,
+                categories: [
+                    { id: &#x27;color&#x27;, name: &#x27;집 색상&#x27;, icon: &#x27;fa-paint-roller&#x27; },
+                    { id: &#x27;nationality&#x27;, name: &#x27;국적&#x27;, icon: &#x27;fa-earth-americas&#x27; },
+                    { id: &#x27;drink&#x27;, name: &#x27;음료&#x27;, icon: &#x27;fa-wine-glass&#x27; },
+                    { id: &#x27;pet&#x27;, name: &#x27;반려동물&#x27;, icon: &#x27;fa-paw&#x27; }
+                ],
+                items: {
+                    color: [
+                        { name: &#x27;빨강&#x27;, colorCode: &#x27;#ef4444&#x27; },
+                        { name: &#x27;파랑&#x27;, colorCode: &#x27;#3b82f6&#x27; },
+                        { name: &#x27;초록&#x27;, colorCode: &#x27;#22c55e&#x27; },
+                        { name: &#x27;노랑&#x27;, colorCode: &#x27;#eab308&#x27; }
+                    ],
+                    nationality: [
+                        { name: &#x27;한국인&#x27;, icon: &#x27;🇰🇷&#x27; },
+                        { name: &#x27;프랑스인&#x27;, icon: &#x27;🇫🇷&#x27; },
+                        { name: &#x27;캐나다인&#x27;, icon: &#x27;🇨🇦&#x27; },
+                        { name: &#x27;이탈리아인&#x27;, icon: &#x27;🇮🇹&#x27; }
+                    ],
+                    drink: [
+                        { name: &#x27;커피&#x27;, icon: &#x27;☕&#x27; },
+                        { name: &#x27;홍차&#x27;, icon: &#x27;🍵&#x27; },
+                        { name: &#x27;주스&#x27;, icon: &#x27;🧃&#x27; },
+                        { name: &#x27;생수&#x27;, icon: &#x27;💧&#x27; }
+                    ],
+                    pet: [
+                        { name: &#x27;개&#x27;, icon: &#x27;🐶&#x27; },
+                        { name: &#x27;고양이&#x27;, icon: &#x27;🐱&#x27; },
+                        { name: &#x27;햄스터&#x27;, icon: &#x27;🐹&#x27; },
+                        { name: &#x27;새&#x27;, icon: &#x27;🐦&#x27; }
+                    ]
+                },
+                clues: [
+                    { type: &#x27;fixed&#x27;, house: 1, cat: &#x27;nationality&#x27;, val: &#x27;한국인&#x27;, text: &#x27;1. 한국인은 1번 집에 삽니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;nationality&#x27;, val: &#x27;프랑스인&#x27; }, b: { cat: &#x27;color&#x27;, val: &#x27;빨강&#x27; }, text: &#x27;2. 프랑스인은 빨간 집에 삽니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;color&#x27;, val: &#x27;초록&#x27; }, b: { cat: &#x27;drink&#x27;, val: &#x27;커피&#x27; }, text: &#x27;3. 초록 집 주인은 커피를 마십니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;nationality&#x27;, val: &#x27;캐나다인&#x27; }, b: { cat: &#x27;pet&#x27;, val: &#x27;개&#x27; }, text: &#x27;4. 캐나다인은 개를 키웁니다.&#x27; },
+                    { type: &#x27;left_of&#x27;, left: { cat: &#x27;color&#x27;, val: &#x27;노랑&#x27; }, right: { cat: &#x27;color&#x27;, val: &#x27;파랑&#x27; }, text: &#x27;5. 노란 집은 파란 집의 바로 왼쪽에 있습니다.&#x27; },
+                    { type: &#x27;fixed&#x27;, house: 3, cat: &#x27;drink&#x27;, val: &#x27;생수&#x27;, text: &#x27;6. 3번 집 주인은 생수를 마십니다.&#x27; },
+                    { type: &#x27;same&#x27;, a: { cat: &#x27;nationality&#x27;, val: &#x27;이탈리아인&#x27; }, b: { cat: &#x27;drink&#x27;, val: &#x27;홍차&#x27; }, text: &#x27;7. 이탈리아인은 홍차를 마십니다.&#x27; },
+                    { type: &#x27;neighbor&#x27;, a: { cat: &#x27;pet&#x27;, val: &#x27;고양이&#x27; }, b: { cat: &#x27;drink&#x27;, val: &#x27;주스&#x27; }, text: &#x27;8. 고양이를 키우는 사람은 주스를 마시는 사람 옆집에 삽니다.&#x27; }
+                ],
+                solution: [
+                    { house: 1, color: &#x27;노랑&#x27;, nationality: &#x27;한국인&#x27;, drink: &#x27;주스&#x27;, pet: &#x27;새&#x27; },
+                    { house: 2, color: &#x27;파랑&#x27;, nationality: &#x27;이탈리아인&#x27;, drink: &#x27;홍차&#x27;, pet: &#x27;고양이&#x27; },
+                    { house: 3, color: &#x27;빨강&#x27;, nationality: &#x27;프랑스인&#x27;, drink: &#x27;생수&#x27;, pet: &#x27;햄스터&#x27; },
+                    { house: 4, color: &#x27;초록&#x27;, nationality: &#x27;캐나다인&#x27;, drink: &#x27;커피&#x27;, pet: &#x27;개&#x27; }
+                ],
+                solutionSteps: [
+                    { step: &quot;1단계&quot;, desc: &quot;1번 단서로 1번 집은 한국인, 6번 단서로 3번 집은 생수를 마십니다.&quot; },
+                    { step: &quot;2단계&quot;, desc: &quot;5번 단서(노랑은 파랑의 바로 왼쪽)와 3번 단서(초록=커피)를 결합하면 1번 집이 노랑, 2번 집이 파랑입니다.&quot; },
+                    { step: &quot;3단계&quot;, desc: &quot;2번 단서(프랑스인=빨간집)로 3번 집은 프랑스인과 빨간 집입니다. 4번 집은 초록 집이자 캐나다인(개)입니다.&quot; },
+                    { step: &quot;4단계&quot;, desc: &quot;7번 단서(이탈리아인=홍차)로 2번 집은 이탈리아인이며, 소거법으로 3번 집 프랑스인이 햄스터를 키웁니다!&quot; }
+                ]
+            }
+        };
+
+        let currentModeKey = &#x27;classic&#x27;;
+        let currentConfig = PUZZLE_PRESETS.classic;
+        let boardState = [];
+        let pencilModeActive = false;
+        let selectedCell = null;
+        let timerInterval = null;
+        let timerSeconds = 0;
+        let isTimerRunning = false;
+        let clueFilter = &#x27;all&#x27;;
+        let activeRightPanelTab = &#x27;clues&#x27;;
+        let derivedFactsList = [];
+        let ifThenLogs = [];
+        let solvedClueTracker = new Set(); 
+
+        window.addEventListener(&#x27;DOMContentLoaded&#x27;, () =&gt; {
+            initGame(&#x27;classic&#x27;);
+        });
+
+        function switchRightPanelTab(tabName) {
+            audio.click();
+            activeRightPanelTab = tabName;
+            const btnClues = document.getElementById(&#x27;tab-btn-clues&#x27;);
+            const btnRules = document.getElementById(&#x27;tab-btn-rules&#x27;);
+            const contentClues = document.getElementById(&#x27;panel-content-clues&#x27;);
+            const contentRules = document.getElementById(&#x27;panel-content-rules&#x27;);
+            const clueFilterBox = document.getElementById(&#x27;clue-filter-container&#x27;);
+            const ruleActionsBox = document.getElementById(&#x27;rule-actions-container&#x27;);
+
+            if (tabName === &#x27;clues&#x27;) {
+                btnClues.className = &quot;px-2.5 py-1 rounded-lg font-bold bg-emerald-600 text-white transition flex items-center gap-1.5 shadow&quot;;
+                btnRules.className = &quot;px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition flex items-center gap-1.5 relative&quot;;
+                contentClues.classList.remove(&#x27;hidden&#x27;);
+                contentRules.classList.add(&#x27;hidden&#x27;);
+                clueFilterBox.classList.remove(&#x27;hidden&#x27;);
+                ruleActionsBox.classList.add(&#x27;hidden&#x27;);
+            } else {
+                btnRules.className = &quot;px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white transition flex items-center gap-1.5 relative shadow&quot;;
+                btnClues.className = &quot;px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition flex items-center gap-1.5&quot;;
+                contentRules.classList.remove(&#x27;hidden&#x27;);
+                contentClues.classList.add(&#x27;hidden&#x27;);
+                clueFilterBox.classList.add(&#x27;hidden&#x27;);
+                ruleActionsBox.classList.remove(&#x27;hidden&#x27;);
+            }
+        }
+
+        function addIfThenLog(premiseHtml, conclusionHtml, categoryTag = &#x27;자동 논리 추론&#x27;) {
+            const logItem = {
+                id: &#x27;log_&#x27; + Date.now() + &#x27;_&#x27; + Math.random().toString(36).substr(2, 4),
+                timestamp: new Date().toLocaleTimeString(&#x27;ko-KR&#x27;, { hour12: false, hour: &#x27;2-digit&#x27;, minute: &#x27;2-digit&#x27;, second: &#x27;2-digit&#x27; }),
+                premiseHtml,
+                conclusionHtml,
+                tag: categoryTag
+            };
+            
+            if (ifThenLogs.length &gt; 0) {
+                const last = ifThenLogs[0];
+                if (last.premiseHtml === premiseHtml &amp;&amp; last.conclusionHtml === conclusionHtml) return;
+            }
+
+            ifThenLogs.unshift(logItem);
+            renderIfThenStream();
+        }
+
+        function clearIfThenLog() {
+            audio.click();
+            ifThenLogs = [];
+            renderIfThenStream();
+        }
+
+        function renderIfThenStream() {
+            const container = document.getElementById(&#x27;if-then-stream-container&#x27;);
+            const badge = document.getElementById(&#x27;if-then-count-badge&#x27;);
+            if (!container) return;
+
+            if (badge) {
+                badge.innerText = `${ifThenLogs.length}개 추론 생성됨`;
+            }
+
+            if (ifThenLogs.length === 0) {
+                container.innerHTML = `
+                    &lt;div class=&quot;text-center py-6 px-3 border border-dashed border-slate-800 rounded-xl bg-slate-950/40&quot;&gt;
+                        &lt;i class=&quot;fa-solid fa-code-branch text-slate-600 text-xl mb-1 block&quot;&gt;&lt;/i&gt;
+                        &lt;p class=&quot;text-xs text-slate-400 font-semibold&quot;&gt;아직 도출된 IF ~ THEN 논리 추론이 없습니다.&lt;/p&gt;
+                        &lt;p class=&quot;text-[11px] text-slate-600 mt-0.5&quot;&gt;단서 조건이 해결되거나 집 배치를 변경하면 이곳에 실시간 추론 과정이 기록됩니다.&lt;/p&gt;
+                    &lt;/div&gt;
+                `;
+                return;
+            }
+
+            container.innerHTML = &#x27;&#x27;;
+            ifThenLogs.forEach((log, index) =&gt; {
+                const card = document.createElement(&#x27;div&#x27;);
+                const isLatest = (index === 0);
+                const borderStyle = isLatest 
+                    ? &quot;border-emerald-500/50 bg-slate-950/90 shadow-md animate-pulse-highlight&quot; 
+                    : &quot;border-slate-800/80 bg-slate-950/60 opacity-90 hover:border-slate-700&quot;;
+
+                card.className = `p-2.5 rounded-xl border transition space-y-1 text-xs ${borderStyle}`;
+
+                card.innerHTML = `
+                    &lt;div class=&quot;flex items-center justify-between text-[10px]&quot;&gt;
+                        &lt;span class=&quot;px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1&quot;&gt;
+                            &lt;i class=&quot;fa-solid fa-lightbulb&quot;&gt;&lt;/i&gt; 추론 #${ifThenLogs.length - index} (${log.tag})
+                        &lt;/span&gt;
+                        &lt;span class=&quot;text-slate-500 font-mono&quot;&gt;${log.timestamp}&lt;/span&gt;
+                    &lt;/div&gt;
+
+                    &lt;div class=&quot;grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1&quot;&gt;
+                        &lt;!-- IF Box --&gt;
+                        &lt;div class=&quot;bg-amber-500/10 border border-amber-500/20 p-2 rounded-lg flex items-start gap-1.5 flex-col&quot;&gt;
+                            &lt;span class=&quot;px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-black text-[10px] tracking-wider uppercase whitespace-nowrap self-start&quot;&gt;IF (단서 교차 검증)&lt;/span&gt;
+                            &lt;div class=&quot;text-amber-100 font-medium text-[11px] leading-snug w-full pl-1 border-l-2 border-amber-500/50 mt-1 space-y-1&quot;&gt;
+                                ${log.premiseHtml}
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+
+                        &lt;!-- THEN Box --&gt;
+                        &lt;div class=&quot;bg-emerald-500/10 border border-emerald-500/20 p-2 rounded-lg flex items-start gap-1.5 flex-col&quot;&gt;
+                            &lt;span class=&quot;px-1.5 py-0.5 rounded bg-emerald-500/30 text-emerald-300 font-black text-[10px] tracking-wider uppercase whitespace-nowrap self-start&quot;&gt;THEN (새롭게 생성된 사실)&lt;/span&gt;
+                            &lt;div class=&quot;text-emerald-100 font-extrabold text-[11px] leading-snug w-full pl-1 border-l-2 border-emerald-500/50 mt-1&quot;&gt;
+                                ${log.conclusionHtml}
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // 제약조건 검사: 특정 집에 아이템 배치 시 어떤 단서와 충돌하는지 이유를 반환 (강화된 교차검증)
+        function getViolationReason(hNum, catId, itemVal, factsMap) {
+            const findItemHouse = (cId, iVal) =&gt; {
+                for (let i = 1; i &lt;= currentConfig.houseCount; i++) {
+                    if (factsMap[`${i}_${cId}`] === iVal) return i;
+                }
+                return null;
+            };
+
+            for (let clue of currentConfig.clues) {
+                // 단서 텍스트의 앞부분(번호 등)을 가져오기 위한 정규식 처리
+                const cluePrefixMatch = clue.text.match(/^(\d+\.)/);
+                const cluePrefix = cluePrefixMatch ? cluePrefixMatch[1] : &quot;단서&quot;;
+
+                if (clue.type === &#x27;fixed&#x27;) {
+                    if (clue.cat === catId) {
+                        if (clue.val === itemVal &amp;&amp; clue.house !== hNum) return `[${cluePrefix} 충돌] 다른 집(House ${clue.house})에 고정됨`;
+                        if (clue.val !== itemVal &amp;&amp; clue.house === hNum) return `[${cluePrefix} 충돌] 이 집은 &#x27;${clue.val}&#x27; 전용`;
+                    }
+                } else if (clue.type === &#x27;same&#x27;) {
+                    if (clue.a.cat === catId &amp;&amp; clue.a.val === itemVal) {
+                        const bVal = factsMap[`${hNum}_${clue.b.cat}`];
+                        if (bVal &amp;&amp; bVal !== clue.b.val) return `[${cluePrefix} 충돌] 짝궁(&#x27;${clue.b.val}&#x27;)이 현재 집에 들어갈 수 없음 (현재 &#x27;${bVal}&#x27;)`;
+                        const bLoc = findItemHouse(clue.b.cat, clue.b.val);
+                        if (bLoc &amp;&amp; bLoc !== hNum) return `[${cluePrefix} 충돌] 짝궁(&#x27;${clue.b.val}&#x27;)이 이미 다른 집(House ${bLoc})에 있음`;
+                    }
+                    if (clue.b.cat === catId &amp;&amp; clue.b.val === itemVal) {
+                        const aVal = factsMap[`${hNum}_${clue.a.cat}`];
+                        if (aVal &amp;&amp; aVal !== clue.a.val) return `[${cluePrefix} 충돌] 짝궁(&#x27;${clue.a.val}&#x27;)이 현재 집에 들어갈 수 없음 (현재 &#x27;${aVal}&#x27;)`;
+                        const aLoc = findItemHouse(clue.a.cat, clue.a.val);
+                        if (aLoc &amp;&amp; aLoc !== hNum) return `[${cluePrefix} 충돌] 짝궁(&#x27;${clue.a.val}&#x27;)이 이미 다른 집(House ${aLoc})에 있음`;
+                    }
+                } else if (clue.type === &#x27;left_of&#x27;) {
+                    if (clue.left.cat === catId &amp;&amp; clue.left.val === itemVal) {
+                        if (hNum === currentConfig.houseCount) return `[${cluePrefix} 충돌] 오른쪽에 집이 없음`;
+                        const rightVal = factsMap[`${hNum + 1}_${clue.right.cat}`];
+                        if (rightVal &amp;&amp; rightVal !== clue.right.val) return `[${cluePrefix} 충돌] 오른쪽 집이 &#x27;${rightVal}&#x27;임 (&#x27;${clue.right.val}&#x27;이어야 함)`;
+                        const rightLoc = findItemHouse(clue.right.cat, clue.right.val);
+                        if (rightLoc &amp;&amp; rightLoc !== hNum + 1) return `[${cluePrefix} 충돌] 오른쪽 짝궁(&#x27;${clue.right.val}&#x27;)이 이미 다른 집(House ${rightLoc})에 있음`;
+                    }
+                    if (clue.right.cat === catId &amp;&amp; clue.right.val === itemVal) {
+                        if (hNum === 1) return `[${cluePrefix} 충돌] 왼쪽에 집이 없음`;
+                        const leftVal = factsMap[`${hNum - 1}_${clue.left.cat}`];
+                        if (leftVal &amp;&amp; leftVal !== clue.left.val) return `[${cluePrefix} 충돌] 왼쪽 집이 &#x27;${leftVal}&#x27;임 (&#x27;${clue.left.val}&#x27;이어야 함)`;
+                        const leftLoc = findItemHouse(clue.left.cat, clue.left.val);
+                        if (leftLoc &amp;&amp; leftLoc !== hNum - 1) return `[${cluePrefix} 충돌] 왼쪽 짝궁(&#x27;${clue.left.val}&#x27;)이 이미 다른 집(House ${leftLoc})에 있음`;
+                    }
+                } else if (clue.type === &#x27;neighbor&#x27;) {
+                    if (clue.a.cat === catId &amp;&amp; clue.a.val === itemVal) {
+                        let leftPossible = false;
+                        let rightPossible = false;
+                        const bLoc = findItemHouse(clue.b.cat, clue.b.val);
+                        if (hNum &gt; 1) {
+                            const leftVal = factsMap[`${hNum - 1}_${clue.b.cat}`];
+                            if ((!leftVal || leftVal === clue.b.val) &amp;&amp; (!bLoc || bLoc === hNum - 1)) leftPossible = true;
+                        }
+                        if (hNum &lt; currentConfig.houseCount) {
+                            const rightVal = factsMap[`${hNum + 1}_${clue.b.cat}`];
+                            if ((!rightVal || rightVal === clue.b.val) &amp;&amp; (!bLoc || bLoc === hNum + 1)) rightPossible = true;
+                        }
+                        if (!leftPossible &amp;&amp; !rightPossible) return `[${cluePrefix} 충돌] 양옆 어느 곳에도 &#x27;${clue.b.val}&#x27; 배치 불가`;
+                    }
+                    if (clue.b.cat === catId &amp;&amp; clue.b.val === itemVal) {
+                        let leftPossible = false;
+                        let rightPossible = false;
+                        const aLoc = findItemHouse(clue.a.cat, clue.a.val);
+                        if (hNum &gt; 1) {
+                            const leftVal = factsMap[`${hNum - 1}_${clue.a.cat}`];
+                            if ((!leftVal || leftVal === clue.a.val) &amp;&amp; (!aLoc || aLoc === hNum - 1)) leftPossible = true;
+                        }
+                        if (hNum &lt; currentConfig.houseCount) {
+                            const rightVal = factsMap[`${hNum + 1}_${clue.a.cat}`];
+                            if ((!rightVal || rightVal === clue.a.val) &amp;&amp; (!aLoc || aLoc === hNum + 1)) rightPossible = true;
+                        }
+                        if (!leftPossible &amp;&amp; !rightPossible) return `[${cluePrefix} 충돌] 양옆 어느 곳에도 &#x27;${clue.a.val}&#x27; 배치 불가`;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function runRuleInferenceEngine() {
+            derivedFactsList = [];
+            let currentFactsMap = {}; 
+            boardState.forEach((h, hIdx) =&gt; {
+                currentConfig.categories.forEach(cat =&gt; {
+                    if (h[cat.id]) {
+                        currentFactsMap[`${hIdx + 1}_${cat.id}`] = h[cat.id];
+                    }
+                });
+            });
+
+            let inferredSet = new Set();
+            let passes = 0;
+            let newlyDerivedInPass = true;
+
+            while (newlyDerivedInPass &amp;&amp; passes &lt; 15) {
+                newlyDerivedInPass = false;
+                passes++;
+
+                // 1. 직접 규칙 도출 (Fixed, Same, Left-of, Neighbor)
+                currentConfig.clues.forEach((clue, idx) =&gt; {
+                    if (clue.type === &#x27;fixed&#x27;) {
+                        const key = `${clue.house}_${clue.cat}`;
+                        if (!currentFactsMap[key]) {
+                            const factObj = {
+                                id: `fact_fixed_${clue.house}_${clue.cat}`,
+                                house: clue.house,
+                                cat: clue.cat,
+                                val: clue.val,
+                                ruleName: &#x27;고정 위치 규칙&#x27;,
+                                premiseHtml: `&lt;div&gt;[단서 ${idx + 1}] &quot;${clue.text}&quot;&lt;/div&gt;`,
+                                factText: `House ${clue.house}의 ${getCategoryName(clue.cat)}은(는) [${clue.val}] 입니다.`
+                            };
+                            currentFactsMap[key] = clue.val;
+                            if (!inferredSet.has(factObj.id)) {
+                                inferredSet.add(factObj.id);
+                                derivedFactsList.push(factObj);
+                                newlyDerivedInPass = true;
+                            }
+                        }
+                    } else if (clue.type === &#x27;same&#x27;) {
+                        for (let hNum = 1; hNum &lt;= currentConfig.houseCount; hNum++) {
+                            const keyA = `${hNum}_${clue.a.cat}`;
+                            const keyB = `${hNum}_${clue.b.cat}`;
+
+                            if (currentFactsMap[keyA] === clue.a.val &amp;&amp; !currentFactsMap[keyB]) {
+                                const factObj = {
+                                    id: `fact_same_${hNum}_${clue.b.cat}`,
+                                    house: hNum,
+                                    cat: clue.b.cat,
+                                    val: clue.b.val,
+                                    ruleName: &#x27;동일 위치 귀속 규칙&#x27;,
+                                    premiseHtml: `
+                                        &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;기존 사실:&lt;/span&gt; House ${hNum} = ${clue.a.val}&lt;/div&gt;
+                                        &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;단서 ${idx + 1}:&lt;/span&gt; &quot;${clue.text}&quot;&lt;/div&gt;
+                                    `,
+                                    factText: `House ${hNum}의 ${getCategoryName(clue.b.cat)}은(는) [${clue.b.val}] 입니다.`
+                                };
+                                currentFactsMap[keyB] = clue.b.val;
+                                if (!inferredSet.has(factObj.id)) {
+                                    inferredSet.add(factObj.id);
+                                    derivedFactsList.push(factObj);
+                                    newlyDerivedInPass = true;
+                                }
+                            } else if (currentFactsMap[keyB] === clue.b.val &amp;&amp; !currentFactsMap[keyA]) {
+                                const factObj = {
+                                    id: `fact_same_${hNum}_${clue.a.cat}`,
+                                    house: hNum,
+                                    cat: clue.a.cat,
+                                    val: clue.a.val,
+                                    ruleName: &#x27;동일 위치 귀속 규칙&#x27;,
+                                    premiseHtml: `
+                                        &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;기존 사실:&lt;/span&gt; House ${hNum} = ${clue.b.val}&lt;/div&gt;
+                                        &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;단서 ${idx + 1}:&lt;/span&gt; &quot;${clue.text}&quot;&lt;/div&gt;
+                                    `,
+                                    factText: `House ${hNum}의 ${getCategoryName(clue.a.cat)}은(는) [${clue.a.val}] 입니다.`
+                                };
+                                currentFactsMap[keyA] = clue.a.val;
+                                if (!inferredSet.has(factObj.id)) {
+                                    inferredSet.add(factObj.id);
+                                    derivedFactsList.push(factObj);
+                                    newlyDerivedInPass = true;
+                                }
+                            }
+                        }
+                    }
+                    // Left_of and Neighbor basic forward chaining...
+                    else if (clue.type === &#x27;left_of&#x27;) {
+                        for (let hNum = 1; hNum &lt;= currentConfig.houseCount; hNum++) {
+                            const keyLeft = `${hNum}_${clue.left.cat}`;
+                            const keyRight = `${hNum + 1}_${clue.right.cat}`;
+
+                            if (currentFactsMap[keyLeft] === clue.left.val &amp;&amp; hNum + 1 &lt;= currentConfig.houseCount &amp;&amp; !currentFactsMap[keyRight]) {
+                                const factObj = {
+                                    id: `fact_left_${hNum + 1}_${clue.right.cat}`,
+                                    house: hNum + 1,
+                                    cat: clue.right.cat,
+                                    val: clue.right.val,
+                                    ruleName: &#x27;좌측 인접 위치 규칙&#x27;,
+                                    premiseHtml: `
+                                        &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;기존 사실:&lt;/span&gt; House ${hNum} = ${clue.left.val}&lt;/div&gt;
+                                        &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;단서 ${idx + 1}:&lt;/span&gt; &quot;${clue.text}&quot;&lt;/div&gt;
+                                    `,
+                                    factText: `House ${hNum + 1}의 ${getCategoryName(clue.right.cat)}은(는) [${clue.right.val}] 입니다.`
+                                };
+                                currentFactsMap[keyRight] = clue.right.val;
+                                if (!inferredSet.has(factObj.id)) {
+                                    inferredSet.add(factObj.id);
+                                    derivedFactsList.push(factObj);
+                                    newlyDerivedInPass = true;
+                                }
+                            } else if (currentFactsMap[keyRight] === clue.right.val &amp;&amp; hNum - 1 &gt;= 1) {
+                                const keyLPrev = `${hNum - 1}_${clue.left.cat}`;
+                                if (!currentFactsMap[keyLPrev]) {
+                                    const factObj = {
+                                        id: `fact_left_${hNum - 1}_${clue.left.cat}`,
+                                        house: hNum - 1,
+                                        cat: clue.left.cat,
+                                        val: clue.left.val,
+                                        ruleName: &#x27;우측 인접 역추론 규칙&#x27;,
+                                        premiseHtml: `
+                                            &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;기존 사실:&lt;/span&gt; House ${hNum} = ${clue.right.val}&lt;/div&gt;
+                                            &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;단서 ${idx + 1}:&lt;/span&gt; &quot;${clue.text}&quot;&lt;/div&gt;
+                                        `,
+                                        factText: `House ${hNum - 1}의 ${getCategoryName(clue.left.cat)}은(는) [${clue.left.val}] 입니다.`
+                                    };
+                                    currentFactsMap[keyLPrev] = clue.left.val;
+                                    if (!inferredSet.has(factObj.id)) {
+                                        inferredSet.add(factObj.id);
+                                        derivedFactsList.push(factObj);
+                                        newlyDerivedInPass = true;
+                                    }
+                                }
+                            }
+                        }
+                    } else if (clue.type === &#x27;neighbor&#x27;) {
+                        for (let hNum = 1; hNum &lt;= currentConfig.houseCount; hNum++) {
+                            const keyA = `${hNum}_${clue.a.cat}`;
+                            if (currentFactsMap[keyA] === clue.a.val) {
+                                const leftH = hNum - 1;
+                                const rightH = hNum + 1;
+
+                                if (leftH &lt; 1 &amp;&amp; rightH &lt;= currentConfig.houseCount) {
+                                    const keyB = `${rightH}_${clue.b.cat}`;
+                                    if (!currentFactsMap[keyB]) {
+                                        const factObj = {
+                                            id: `fact_neigh_${rightH}_${clue.b.cat}`,
+                                            house: rightH,
+                                            cat: clue.b.cat,
+                                            val: clue.b.val,
+                                            ruleName: &#x27;경계 인접 유일 규칙&#x27;,
+                                            premiseHtml: `
+                                                &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;기존 사실:&lt;/span&gt; House 1 = ${clue.a.val} &lt;span class=&quot;text-[10px] text-amber-500/80&quot;&gt;(왼쪽 이웃 없음)&lt;/span&gt;&lt;/div&gt;
+                                                &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;단서 ${idx + 1}:&lt;/span&gt; &quot;${clue.text}&quot;&lt;/div&gt;
+                                            `,
+                                            factText: `House ${rightH}의 ${getCategoryName(clue.b.cat)}은(는) [${clue.b.val}] 입니다.`
+                                        };
+                                        currentFactsMap[keyB] = clue.b.val;
+                                        if (!inferredSet.has(factObj.id)) {
+                                            inferredSet.add(factObj.id);
+                                            derivedFactsList.push(factObj);
+                                            newlyDerivedInPass = true;
+                                        }
+                                    }
+                                } else if (rightH &gt; currentConfig.houseCount &amp;&amp; leftH &gt;= 1) {
+                                    const keyB = `${leftH}_${clue.b.cat}`;
+                                    if (!currentFactsMap[keyB]) {
+                                        const factObj = {
+                                            id: `fact_neigh_${leftH}_${clue.b.cat}`,
+                                            house: leftH,
+                                            cat: clue.b.cat,
+                                            val: clue.b.val,
+                                            ruleName: &#x27;경계 인접 유일 규칙&#x27;,
+                                            premiseHtml: `
+                                                &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;기존 사실:&lt;/span&gt; House ${currentConfig.houseCount} = ${clue.a.val} &lt;span class=&quot;text-[10px] text-amber-500/80&quot;&gt;(오른쪽 이웃 없음)&lt;/span&gt;&lt;/div&gt;
+                                                &lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;단서 ${idx + 1}:&lt;/span&gt; &quot;${clue.text}&quot;&lt;/div&gt;
+                                            `,
+                                            factText: `House ${leftH}의 ${getCategoryName(clue.b.cat)}은(는) [${clue.b.val}] 입니다.`
+                                        };
+                                        currentFactsMap[keyB] = clue.b.val;
+                                        if (!inferredSet.has(factObj.id)) {
+                                            inferredSet.add(factObj.id);
+                                            derivedFactsList.push(factObj);
+                                            newlyDerivedInPass = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // 2. 나무위키식 스마트 교차검증 (항목 기준 소거법: 특정 항목이 특정 집에만 들어갈 수 있는지)
+                currentConfig.categories.forEach(cat =&gt; {
+                    const allItems = currentConfig.items[cat.id];
+                    allItems.forEach(item =&gt; {
+                        let alreadyPlaced = false;
+                        for (let i = 0; i &lt; currentConfig.houseCount; i++) {
+                            if (currentFactsMap[`${i + 1}_${cat.id}`] === item.name) {
+                                alreadyPlaced = true;
+                                break;
+                            }
+                        }
+                        if (alreadyPlaced) return;
+
+                        let validHouses = [];
+                        let eliminationReasons = {};
+
+                        for (let hNum = 1; hNum &lt;= currentConfig.houseCount; hNum++) {
+                            if (currentFactsMap[`${hNum}_${cat.id}`] &amp;&amp; currentFactsMap[`${hNum}_${cat.id}`] !== item.name) {
+                                eliminationReasons[hNum] = `이미 다른 ${cat.name}(${currentFactsMap[`${hNum}_${cat.id}`]}) 배치됨`;
+                                continue;
+                            }
+
+                            const violation = getViolationReason(hNum, cat.id, item.name, currentFactsMap);
+                            if (violation) {
+                                eliminationReasons[hNum] = violation;
+                            } else {
+                                validHouses.push(hNum);
+                            }
+                        }
+
+                        if (validHouses.length === 1) {
+                            const targetH = validHouses[0];
+                            const factId = `fact_smart_elim_item_${targetH}_${cat.id}_${item.name}`;
+                            
+                            if (!inferredSet.has(factId)) {
+                                let premiseHtml = `&lt;div class=&quot;mb-1&quot;&gt;&lt;span class=&quot;text-amber-300 font-bold&quot;&gt;항목 기준 소거:&lt;/span&gt; &#x27;&lt;span class=&quot;text-white&quot;&gt;${item.name}&lt;/span&gt;&#x27;의 배치를 다른 집들에 가정한 결과 모두 단서 모순:&lt;/div&gt;`;
+                                premiseHtml += `&lt;ul class=&quot;list-disc list-inside space-y-0.5 text-[10px] ml-1 mb-1&quot;&gt;`;
+                                for(let h = 1; h &lt;= currentConfig.houseCount; h++) {
+                                    if (h !== targetH) {
+                                        premiseHtml += `&lt;li&gt;House ${h} 불가: &lt;span class=&quot;text-slate-400&quot;&gt;${eliminationReasons[h]}&lt;/span&gt;&lt;/li&gt;`;
+                                    }
+                                }
+                                premiseHtml += `&lt;/ul&gt;`;
+                                premiseHtml += `&lt;div class=&quot;text-[11px] font-bold text-emerald-400 border-t border-amber-500/30 pt-1 mt-1&quot;&gt;&lt;i class=&quot;fa-solid fa-arrow-turn-down fa-rotate-270 mr-1.5&quot;&gt;&lt;/i&gt; 유일하게 남은 위치는 House ${targetH}뿐입니다.&lt;/div&gt;`;
+
+                                const factObj = {
+                                    id: factId,
+                                    house: targetH,
+                                    cat: cat.id,
+                                    val: item.name,
+                                    ruleName: &#x27;항목 기준 유일 자리 소거법&#x27;,
+                                    premiseHtml: premiseHtml,
+                                    factText: `House ${targetH}의 ${cat.name}은(는) [${item.name}] 입니다.`
+                                };
+                                currentFactsMap[`${targetH}_${cat.id}`] = item.name;
+                                inferredSet.add(factId);
+                                derivedFactsList.push(factObj);
+                                newlyDerivedInPass = true;
+                            }
+                        }
+                    });
+                });
+
+                // 3. 나무위키식 스마트 교차검증 (슬롯 기준 소거법: 특정 집 슬롯에 들어갈 수 있는 남은 항목이 단 1개인지)
+                for (let hNum = 1; hNum &lt;= currentConfig.houseCount; hNum++) {
+                    currentConfig.categories.forEach(cat =&gt; {
+                        if (currentFactsMap[`${hNum}_${cat.id}`]) return; // 이미 채워진 슬롯 패스
+
+                        let validItems = [];
+                        let eliminationReasons = {};
+
+                        const allItems = currentConfig.items[cat.id];
+                        const usedItems = Object.keys(currentFactsMap)
+                            .filter(k =&gt; k.endsWith(`_${cat.id}`))
+                            .map(k =&gt; currentFactsMap[k]);
+                        
+                        const unusedItems = allItems.filter(i =&gt; !usedItems.includes(i.name));
+
+                        unusedItems.forEach(item =&gt; {
+                            const violation = getViolationReason(hNum, cat.id, item.name, currentFactsMap);
+                            if (violation) {
+                                eliminationReasons[item.name] = violation;
+                            } else {
+                                validItems.push(item.name);
+                            }
+                        });
+
+                        if (validItems.length === 1) {
+                            const targetItem = validItems[0];
+                            const factId = `fact_smart_elim_slot_${hNum}_${cat.id}_${targetItem}`;
+                            
+                            if (!inferredSet.has(factId)) {
+                                let premiseHtml = `&lt;div class=&quot;mb-1&quot;&gt;&lt;span class=&quot;text-amber-300 font-bold&quot;&gt;슬롯 기준 소거:&lt;/span&gt; House ${hNum}의 &lt;span class=&quot;text-white&quot;&gt;${cat.name}&lt;/span&gt; 자리에 남은 후보들을 넣어본 결과 단서 모순 발생:&lt;/div&gt;`;
+                                premiseHtml += `&lt;ul class=&quot;list-disc list-inside space-y-0.5 text-[10px] ml-1 mb-1&quot;&gt;`;
+                                unusedItems.forEach(item =&gt; {
+                                    if (item.name !== targetItem) {
+                                        premiseHtml += `&lt;li&gt;&lt;span class=&quot;text-rose-300&quot;&gt;${item.name}&lt;/span&gt; 불가: &lt;span class=&quot;text-slate-400&quot;&gt;${eliminationReasons[item.name]}&lt;/span&gt;&lt;/li&gt;`;
+                                    }
+                                });
+                                premiseHtml += `&lt;/ul&gt;`;
+                                premiseHtml += `&lt;div class=&quot;text-[11px] font-bold text-emerald-400 border-t border-amber-500/30 pt-1 mt-1&quot;&gt;&lt;i class=&quot;fa-solid fa-arrow-turn-down fa-rotate-270 mr-1.5&quot;&gt;&lt;/i&gt; 유일하게 남은 후보는 [${targetItem}]뿐입니다.&lt;/div&gt;`;
+
+                                const factObj = {
+                                    id: factId,
+                                    house: hNum,
+                                    cat: cat.id,
+                                    val: targetItem,
+                                    ruleName: &#x27;슬롯 기준 유일 후보 소거법&#x27;,
+                                    premiseHtml: premiseHtml,
+                                    factText: `House ${hNum}의 ${cat.name}은(는) [${targetItem}] 입니다.`
+                                };
+                                currentFactsMap[`${hNum}_${cat.id}`] = targetItem;
+                                inferredSet.add(factId);
+                                derivedFactsList.push(factObj);
+                                newlyDerivedInPass = true;
+                            }
+                        }
+                    });
+                }
+            }
+
+            renderDerivedFacts();
+        }
+
+        function getCategoryName(catId) {
+            const cat = currentConfig.categories.find(c =&gt; c.id === catId);
+            return cat ? cat.name : catId;
+        }
+
+        function renderDerivedFacts() {
+            const feedEl = document.getElementById(&#x27;panel-content-rules&#x27;);
+            const badgeEl = document.getElementById(&#x27;derived-facts-count-badge&#x27;);
+            if (!feedEl) return;
+
+            feedEl.innerHTML = &#x27;&#x27;;
+
+            const newUnappliedFacts = derivedFactsList.filter(f =&gt; boardState[f.house - 1][f.cat] !== f.val);
+
+            if (newUnappliedFacts.length &gt; 0) {
+                badgeEl.innerText = newUnappliedFacts.length;
+                badgeEl.classList.remove(&#x27;hidden&#x27;);
+            } else {
+                badgeEl.classList.add(&#x27;hidden&#x27;);
+            }
+
+            if (derivedFactsList.length === 0) {
+                feedEl.innerHTML = `
+                    &lt;div class=&quot;text-center py-10 px-4 text-slate-500 space-y-2&quot;&gt;
+                        &lt;i class=&quot;fa-solid fa-diagram-project text-3xl text-slate-700&quot;&gt;&lt;/i&gt;
+                        &lt;p class=&quot;text-xs font-semibold text-slate-400&quot;&gt;현재 확정된 사실로 생성된 규칙 유추가 없습니다.&lt;/p&gt;
+                        &lt;p class=&quot;text-[11px] text-slate-600&quot;&gt;집 보드에 요소를 선택하여 배치를 시작하면 규칙 엔진이 단서 조합을 통해 새 사실을 생성합니다!&lt;/p&gt;
+                    &lt;/div&gt;
+                `;
+                return;
+            }
+
+            derivedFactsList.forEach((fact, idx) =&gt; {
+                const isAlreadyOnBoard = (boardState[fact.house - 1][fact.cat] === fact.val);
+                const itemEl = document.createElement(&#x27;div&#x27;);
+                
+                let borderBgStyle = isAlreadyOnBoard
+                    ? &quot;bg-slate-900/60 border-slate-800 opacity-60&quot;
+                    : &quot;bg-indigo-950/40 border-indigo-800/60 shadow-lg animate-pulse-highlight&quot;;
+
+                itemEl.className = `p-3 rounded-xl border space-y-2 text-xs transition ${borderBgStyle}`;
+
+                itemEl.innerHTML = `
+                    &lt;div class=&quot;flex items-center justify-between&quot;&gt;
+                        &lt;span class=&quot;px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1&quot;&gt;
+                            &lt;i class=&quot;fa-solid fa-robot&quot;&gt;&lt;/i&gt; ${fact.ruleName}
+                        &lt;/span&gt;
+                        ${isAlreadyOnBoard 
+                            ? `&lt;span class=&quot;text-[10px] text-emerald-400 font-bold flex items-center gap-1&quot;&gt;&lt;i class=&quot;fa-solid fa-check&quot;&gt;&lt;/i&gt; 적용됨&lt;/span&gt;` 
+                            : `&lt;button onclick=&quot;applyDerivedFact(${idx})&quot; class=&quot;px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] transition shadow flex items-center gap-1&quot;&gt;
+                                &lt;i class=&quot;fa-solid fa-plus&quot;&gt;&lt;/i&gt; 사실 적용
+                               &lt;/button&gt;`
+                        }
+                    &lt;/div&gt;
+
+                    &lt;div class=&quot;space-y-1&quot;&gt;
+                        &lt;div class=&quot;text-slate-100 font-extrabold text-xs flex items-center gap-1.5&quot;&gt;
+                            &lt;span class=&quot;text-amber-400&quot;&gt;✨&lt;/span&gt; ${fact.factText}
+                        &lt;/div&gt;
+                        &lt;div class=&quot;text-[11px] text-slate-400 bg-slate-950/70 p-2 rounded-lg border border-slate-800/80 flex items-start gap-1.5 leading-relaxed&quot;&gt;
+                            &lt;i class=&quot;fa-solid fa-link text-indigo-400 text-[10px] mt-0.5&quot;&gt;&lt;/i&gt;
+                            &lt;div class=&quot;flex-1 space-y-1&quot;&gt;
+                                &lt;strong&gt;추론 단서 조합 논리:&lt;/strong&gt;&lt;br/&gt;
+                                ${fact.premiseHtml}
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                `;
+
+                feedEl.appendChild(itemEl);
+            });
+        }
+
+        // 16번부터 새로운 단서가 추가되도록 동적 구현된 함수
+        function addNewClueFromFact(fact) {
+            const exists = currentConfig.clues.some(c =&gt; c.isDerived &amp;&amp; c.house === fact.house &amp;&amp; c.cat === fact.cat &amp;&amp; c.val === fact.val);
+            if (!exists) {
+                const nextNum = currentConfig.clues.length + 1;
+                currentConfig.clues.push({
+                    type: &#x27;fixed&#x27;, 
+                    isDerived: true,
+                    house: fact.house,
+                    cat: fact.cat,
+                    val: fact.val,
+                    text: `${nextNum}. &lt;span class=&quot;text-indigo-400 font-extrabold&quot;&gt;[도출된 사실]&lt;/span&gt; ${fact.factText}`
+                });
+            }
+        }
+
+        function applyDerivedFact(factIdx) {
+            audio.select();
+            const fact = derivedFactsList[factIdx];
+            if (!fact) return;
+
+            boardState[fact.house - 1][fact.cat] = fact.val;
+            boardState[fact.house - 1].candidates[fact.cat] = [];
+
+            addNewClueFromFact(fact);
+
+            addIfThenLog(
+                fact.premiseHtml,
+                fact.factText,
+                fact.ruleName
+            );
+
+            renderBoard();
+            renderClues();
+            updateProgress();
+        }
+
+        function applyAllDerivedFacts() {
+            audio.success();
+            derivedFactsList.forEach((fact, idx) =&gt; {
+                if (boardState[fact.house - 1][fact.cat] !== fact.val) {
+                    boardState[fact.house - 1][fact.cat] = fact.val;
+                    boardState[fact.house - 1].candidates[fact.cat] = [];
+                    
+                    addNewClueFromFact(fact);
+
+                    addIfThenLog(
+                        fact.premiseHtml,
+                        fact.factText,
+                        fact.ruleName
+                    );
+                }
+            });
+
+            renderBoard();
+            renderClues();
+            updateProgress();
+        }
+
+        function applyDerivedFactById(factId) {
+            const idx = derivedFactsList.findIndex(f =&gt; f.id === factId);
+            if (idx !== -1) {
+                applyDerivedFact(idx);
+                closeHintBox();
+            }
+        }
+
+        function switchPuzzleMode(modeKey) {
+            audio.click();
+            currentModeKey = modeKey;
+            
+            [&#x27;classic&#x27;, &#x27;mini&#x27;, &#x27;medium&#x27;].forEach(m =&gt; {
+                const btn = document.getElementById(`btn-mode-${m}`);
+                if (m === modeKey) {
+                    btn.className = &quot;px-2.5 py-1 text-xs font-semibold rounded-md transition bg-emerald-600 text-white shadow&quot;;
+                } else {
+                    btn.className = &quot;px-2.5 py-1 text-xs font-semibold text-slate-300 rounded-md hover:text-white transition&quot;;
+                }
+            });
+
+            initGame(modeKey);
+        }
+
+        function initGame(modeKey) {
+            currentConfig = PUZZLE_PRESETS[modeKey];
+            
+            // 기존에 동적으로 추가된 &quot;새로운 사실&quot; 단서들을 제거하여 초기 상태 복구
+            if (currentConfig.clues) {
+                currentConfig.clues = currentConfig.clues.filter(c =&gt; !c.isDerived);
+            }
+
+            pencilModeActive = false;
+            document.getElementById(&#x27;pencil-status-text&#x27;).innerText = &#x27;OFF&#x27;;
+            document.getElementById(&#x27;pencil-status-text&#x27;).className = &#x27;text-rose-400&#x27;;
+            
+            boardState = Array.from({ length: currentConfig.houseCount }, (_, i) =&gt; {
+                const cellObj = { house: i + 1 };
+                const candObj = {};
+                currentConfig.categories.forEach(cat =&gt; {
+                    cellObj[cat.id] = null;
+                    candObj[cat.id] = [];
+                });
+                cellObj.candidates = candObj;
+                return cellObj;
+            });
+
+            pauseTimer();
+            timerSeconds = 0;
+            updateTimerDisplay();
+            updateTimerBtnUI();
+
+            closeHintBox();
+            document.getElementById(&#x27;btn-view-ai-explain&#x27;).classList.add(&#x27;hidden&#x27;);
+
+            ifThenLogs = [];
+            solvedClueTracker = new Set();
+            renderIfThenStream();
+
+            renderBoard();
+            renderClues();
+            updateProgress();
+        }
+
+        function startTimer() {
+            if (isTimerRunning) return;
+            isTimerRunning = true;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() =&gt; {
+                timerSeconds++;
+                updateTimerDisplay();
+            }, 1000);
+            updateTimerBtnUI();
+        }
+
+        function pauseTimer() {
+            isTimerRunning = false;
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            updateTimerBtnUI();
+        }
+
+        function toggleTimer() {
+            audio.click();
+            if (isTimerRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function updateTimerBtnUI() {
+            const btn = document.getElementById(&#x27;btn-timer-toggle&#x27;);
+            const icon = document.getElementById(&#x27;timer-toggle-icon&#x27;);
+            const text = document.getElementById(&#x27;timer-toggle-text&#x27;);
+
+            if (!btn || !icon || !text) return;
+
+            if (isTimerRunning) {
+                btn.className = &quot;flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-md&quot;;
+                icon.className = &quot;fa-solid fa-pause&quot;;
+                text.innerText = &quot;일시정지&quot;;
+            } else if (timerSeconds &gt; 0) {
+                btn.className = &quot;flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-md animate-pulse&quot;;
+                icon.className = &quot;fa-solid fa-play&quot;;
+                text.innerText = &quot;재개&quot;;
+            } else {
+                btn.className = &quot;flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-md animate-pulse&quot;;
+                icon.className = &quot;fa-solid fa-play&quot;;
+                text.innerText = &quot;시작&quot;;
+            }
+        }
+
+        function resetCurrentBoard() {
+            audio.click();
+            initGame(currentModeKey);
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timerSeconds / 60).toString().padStart(2, &#x27;0&#x27;);
+            const s = (timerSeconds % 60).toString().padStart(2, &#x27;0&#x27;);
+            document.getElementById(&#x27;timer-display&#x27;).innerText = `${m}:${s}`;
+        }
+
+        function togglePencilMode() {
+            audio.click();
+            pencilModeActive = !pencilModeActive;
+            const text = document.getElementById(&#x27;pencil-status-text&#x27;);
+            const btn = document.getElementById(&#x27;btn-pencil-mode&#x27;);
+            if (pencilModeActive) {
+                text.innerText = &#x27;ON (후보 작성)&#x27;;
+                text.className = &#x27;text-amber-400 font-bold&#x27;;
+                btn.classList.add(&#x27;border-amber-500/50&#x27;, &#x27;bg-amber-500/10&#x27;);
+            } else {
+                text.innerText = &#x27;OFF&#x27;;
+                text.className = &#x27;text-rose-400&#x27;;
+                btn.classList.remove(&#x27;border-amber-500/50&#x27;, &#x27;bg-amber-500/10&#x27;);
+            }
+        }
+
+        function renderBoard() {
+            const container = document.getElementById(&#x27;houses-container&#x27;);
+            container.innerHTML = &#x27;&#x27;;
+
+            if (currentConfig.houseCount === 3) {
+                container.className = &quot;grid grid-cols-1 sm:grid-cols-3 gap-4&quot;;
+            } else if (currentConfig.houseCount === 4) {
+                container.className = &quot;grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3&quot;;
+            } else {
+                container.className = &quot;grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3&quot;;
+            }
+
+            boardState.forEach((houseData, idx) =&gt; {
+                const houseCard = document.createElement(&#x27;div&#x27;);
+                houseCard.className = &quot;bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col transition hover:border-slate-700 relative group&quot;;
+
+                const colorVal = houseData.color;
+                let roofBg = &quot;bg-slate-800&quot;;
+                let roofStyle = &quot;&quot;;
+                if (colorVal) {
+                    const foundColor = currentConfig.items.color.find(c =&gt; c.name === colorVal);
+                    if (foundColor) {
+                        roofStyle = `background-color: ${foundColor.colorCode}`;
+                    }
+                }
+
+                const roofEl = document.createElement(&#x27;div&#x27;);
+                roofEl.className = &quot;p-3 flex items-center justify-between border-b border-slate-800/80 transition-colors duration-300&quot;;
+                roofEl.style = roofStyle || &quot;&quot;;
+                if (!roofStyle) roofEl.classList.add(roofBg);
+
+                const textColorClass = (colorVal === &#x27;하양&#x27; || colorVal === &#x27;노랑&#x27;) ? &#x27;text-slate-950 font-black&#x27; : &#x27;text-white font-black&#x27;;
+
+                roofEl.innerHTML = `
+                    &lt;div class=&quot;flex items-center gap-2&quot;&gt;
+                        &lt;span class=&quot;w-6 h-6 rounded-full bg-slate-950/40 flex items-center justify-center text-xs ${textColorClass}&quot;&gt;
+                            ${idx + 1}
+                        &lt;/span&gt;
+                        &lt;span class=&quot;text-xs ${textColorClass} uppercase tracking-wider&quot;&gt;House ${idx + 1}&lt;/span&gt;
+                    &lt;/div&gt;
+                    &lt;span class=&quot;text-[11px] ${textColorClass} opacity-80&quot;&gt;${colorVal || &#x27;색상 미지정&#x27;}&lt;/span&gt;
+                `;
+
+                houseCard.appendChild(roofEl);
+
+                const bodyEl = document.createElement(&#x27;div&#x27;);
+                bodyEl.className = &quot;p-2.5 space-y-2 flex-1 flex flex-col justify-between&quot;;
+
+                currentConfig.categories.forEach(cat =&gt; {
+                    const val = houseData[cat.id];
+                    const candidates = houseData.candidates[cat.id] || [];
+
+                    const slotEl = document.createElement(&#x27;div&#x27;);
+                    slotEl.onclick = () =&gt; openSelectionModal(idx, cat.id);
+                    slotEl.className = `p-2 rounded-xl border transition cursor-pointer flex flex-col gap-1 min-h-[50px] justify-center ${
+                        val 
+                            ? &#x27;bg-slate-800/90 border-slate-700 text-slate-100 hover:border-emerald-500/50&#x27; 
+                            : &#x27;bg-slate-950/50 border-slate-800/80 text-slate-500 hover:border-slate-700 hover:bg-slate-800/40&#x27;
+                    }`;
+
+                    let itemDisplayHtml = &#x27;&#x27;;
+                    if (val) {
+                        const itemMeta = currentConfig.items[cat.id]?.find(i =&gt; i.name === val);
+                        const iconMarkup = itemMeta?.icon ? `&lt;span class=&quot;mr-1.5&quot;&gt;${itemMeta.icon}&lt;/span&gt;` : &#x27;&#x27;;
+                        const colorDot = itemMeta?.colorCode ? `&lt;span class=&quot;w-2.5 h-2.5 rounded-full inline-block mr-1.5&quot; style=&quot;background:${itemMeta.colorCode}&quot;&gt;&lt;/span&gt;` : &#x27;&#x27;;
+
+                        itemDisplayHtml = `
+                            &lt;div class=&quot;flex items-center justify-between w-full&quot;&gt;
+                                &lt;span class=&quot;text-[10px] text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1&quot;&gt;
+                                    &lt;i class=&quot;fa-solid ${cat.icon} text-emerald-400&quot;&gt;&lt;/i&gt; ${cat.name}
+                                &lt;/span&gt;
+                                &lt;i class=&quot;fa-solid fa-check text-[10px] text-emerald-400&quot;&gt;&lt;/i&gt;
+                            &lt;/div&gt;
+                            &lt;div class=&quot;text-xs font-bold text-slate-100 flex items-center mt-0.5&quot;&gt;
+                                ${colorDot}${iconMarkup}${val}
+                            &lt;/div&gt;
+                        `;
+                    } else if (candidates.length &gt; 0) {
+                        itemDisplayHtml = `
+                            &lt;div class=&quot;flex items-center justify-between w-full&quot;&gt;
+                                &lt;span class=&quot;text-[10px] text-amber-400/80 font-semibold uppercase tracking-wider flex items-center gap-1&quot;&gt;
+                                    &lt;i class=&quot;fa-solid ${cat.icon}&quot;&gt;&lt;/i&gt; ${cat.name} (후보)
+                                &lt;/span&gt;
+                            &lt;/div&gt;
+                            &lt;div class=&quot;flex flex-wrap gap-1 mt-0.5&quot;&gt;
+                                ${candidates.map(c =&gt; `&lt;span class=&quot;px-1 py-0.2 bg-amber-500/10 text-amber-300 border border-amber-500/20 rounded text-[9px]&quot;&gt;${c}&lt;/span&gt;`).join(&#x27;&#x27;)}
+                            &lt;/div&gt;
+                        `;
+                    } else {
+                        itemDisplayHtml = `
+                            &lt;div class=&quot;flex items-center justify-between w-full&quot;&gt;
+                                &lt;span class=&quot;text-[10px] text-slate-500 font-semibold uppercase tracking-wider flex items-center gap-1&quot;&gt;
+                                    &lt;i class=&quot;fa-solid ${cat.icon}&quot;&gt;&lt;/i&gt; ${cat.name}
+                                &lt;/span&gt;
+                                &lt;span class=&quot;text-[10px] text-slate-600&quot;&gt;+ 선택&lt;/span&gt;
+                            &lt;/div&gt;
+                            &lt;div class=&quot;text-xs text-slate-600 italic&quot;&gt;비어 있음&lt;/div&gt;
+                        `;
+                    }
+
+                    slotEl.innerHTML = itemDisplayHtml;
+                    bodyEl.appendChild(slotEl);
+                });
+
+                houseCard.appendChild(bodyEl);
+                container.appendChild(houseCard);
+            });
+
+            renderUnassignedPalette();
+        }
+
+        function renderUnassignedPalette() {
+            const paletteEl = document.getElementById(&#x27;unassigned-palette&#x27;);
+            paletteEl.innerHTML = &#x27;&#x27;;
+
+            currentConfig.categories.forEach(cat =&gt; {
+                const allItems = currentConfig.items[cat.id];
+                const usedItems = boardState.map(h =&gt; h[cat.id]).filter(Boolean);
+                const remaining = allItems.filter(i =&gt; !usedItems.includes(i.name));
+
+                remaining.forEach(item =&gt; {
+                    const tag = document.createElement(&#x27;span&#x27;);
+                    tag.className = &quot;px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700/80 text-slate-300 flex items-center gap-1.5 shadow-sm text-xs&quot;;
+                    const iconMarkup = item.icon ? `&lt;span&gt;${item.icon}&lt;/span&gt;` : &#x27;&#x27;;
+                    const colorDot = item.colorCode ? `&lt;span class=&quot;w-2 h-2 rounded-full inline-block&quot; style=&quot;background:${item.colorCode}&quot;&gt;&lt;/span&gt;` : &#x27;&#x27;;
+                    tag.innerHTML = `${colorDot}${iconMarkup}&lt;span class=&quot;font-medium&quot;&gt;${item.name}&lt;/span&gt; &lt;span class=&quot;text-[10px] text-slate-500&quot;&gt;(${cat.name})&lt;/span&gt;`;
+                    paletteEl.appendChild(tag);
+                });
+            });
+
+            if (paletteEl.children.length === 0) {
+                paletteEl.innerHTML = `&lt;span class=&quot;text-xs text-emerald-400 font-semibold flex items-center gap-1&quot;&gt;&lt;i class=&quot;fa-solid fa-circle-check&quot;&gt;&lt;/i&gt; 모든 요소가 집에 지정되었습니다!&lt;/span&gt;`;
+            }
+        }
+
+        function openSelectionModal(houseIdx, catId) {
+            if (!isTimerRunning) {
+                startTimer();
+            }
+            audio.click();
+            selectedCell = { houseIdx, catId };
+            const modal = document.getElementById(&#x27;selection-modal&#x27;);
+            const houseBadge = document.getElementById(&#x27;modal-house-badge&#x27;);
+            const catTitle = document.getElementById(&#x27;modal-category-title&#x27;);
+            const optionsGrid = document.getElementById(&#x27;modal-options-grid&#x27;);
+
+            const catConfig = currentConfig.categories.find(c =&gt; c.id === catId);
+            houseBadge.innerText = `House ${houseIdx + 1}`;
+            catTitle.innerText = `${catConfig.name} 선택`;
+
+            optionsGrid.innerHTML = &#x27;&#x27;;
+
+            const items = currentConfig.items[catId];
+            const currentHouse = boardState[houseIdx];
+            const currentVal = currentHouse[catId];
+            const currentCands = currentHouse.candidates[catId] || [];
+
+            const assignedInOtherHouses = {};
+            boardState.forEach((h, idx) =&gt; {
+                if (idx !== houseIdx &amp;&amp; h[catId]) {
+                    assignedInOtherHouses[h[catId]] = idx + 1;
+                }
+            });
+
+            items.forEach(item =&gt; {
+                const isAssignedElseWhere = assignedInOtherHouses[item.name];
+                const isCurrentVal = (currentVal === item.name);
+                const isCandidate = currentCands.includes(item.name);
+
+                const optBtn = document.createElement(&#x27;button&#x27;);
+                
+                let btnStyle = &quot;bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200&quot;;
+                if (isCurrentVal) {
+                    btnStyle = &quot;bg-emerald-600 text-white border-emerald-500 font-bold shadow-md&quot;;
+                } else if (isCandidate &amp;&amp; pencilModeActive) {
+                    btnStyle = &quot;bg-amber-500/20 text-amber-300 border-amber-500/50 font-semibold&quot;;
+                } else if (isAssignedElseWhere) {
+                    btnStyle = &quot;bg-slate-900 text-slate-600 border-slate-800/80 cursor-not-allowed&quot;;
+                }
+
+                optBtn.className = `p-2.5 rounded-xl border text-left flex items-center justify-between text-xs transition ${btnStyle}`;
+
+                const iconMarkup = item.icon ? `&lt;span class=&quot;mr-1.5 text-sm&quot;&gt;${item.icon}&lt;/span&gt;` : &#x27;&#x27;;
+                const colorDot = item.colorCode ? `&lt;span class=&quot;w-3 h-3 rounded-full inline-block mr-1.5&quot; style=&quot;background:${item.colorCode}&quot;&gt;&lt;/span&gt;` : &#x27;&#x27;;
+
+                let statusBadge = &#x27;&#x27;;
+                if (isCurrentVal) statusBadge = `&lt;i class=&quot;fa-solid fa-circle-check text-emerald-300&quot;&gt;&lt;/i&gt;`;
+                else if (isAssignedElseWhere) statusBadge = `&lt;span class=&quot;text-[10px] text-slate-500&quot;&gt;House ${isAssignedElseWhere} 사용중&lt;/span&gt;`;
+                else if (isCandidate) statusBadge = `&lt;span class=&quot;text-[10px] text-amber-400&quot;&gt;메모됨&lt;/span&gt;`;
+
+                optBtn.innerHTML = `
+                    &lt;div class=&quot;flex items-center&quot;&gt;
+                        ${colorDot}${iconMarkup}&lt;span class=&quot;font-semibold&quot;&gt;${item.name}&lt;/span&gt;
+                    &lt;/div&gt;
+                    ${statusBadge}
+                `;
+
+                optBtn.onclick = () =&gt; selectItemOption(item.name, isAssignedElseWhere);
+                optionsGrid.appendChild(optBtn);
+            });
+
+            modal.classList.remove(&#x27;hidden&#x27;);
+        }
+
+        function closeSelectionModal() {
+            document.getElementById(&#x27;selection-modal&#x27;).classList.add(&#x27;hidden&#x27;);
+            selectedCell = null;
+        }
+
+        function selectItemOption(itemName, isAssignedElseWhere) {
+            if (!selectedCell) return;
+            const { houseIdx, catId } = selectedCell;
+
+            if (pencilModeActive) {
+                audio.select();
+                const cands = boardState[houseIdx].candidates[catId];
+                const candIndex = cands.indexOf(itemName);
+                if (candIndex &gt;= 0) {
+                    cands.splice(candIndex, 1);
+                } else {
+                    cands.push(itemName);
+                }
+            } else {
+                if (isAssignedElseWhere) {
+                    audio.error();
+                    return;
+                }
+                audio.select();
+                boardState[houseIdx][catId] = itemName;
+                boardState[houseIdx].candidates[catId] = [];
+            }
+
+            renderBoard();
+            renderClues();
+            updateProgress();
+            closeSelectionModal();
+        }
+
+        function clearCurrentCell() {
+            if (!selectedCell) return;
+            audio.click();
+            const { houseIdx, catId } = selectedCell;
+
+            boardState[houseIdx][catId] = null;
+            boardState[houseIdx].candidates[catId] = [];
+            renderBoard();
+            renderClues();
+            updateProgress();
+            closeSelectionModal();
+        }
+
+        function evaluateClues() {
+            return currentConfig.clues.map(clue =&gt; {
+                let status = &#x27;incomplete&#x27;;
+
+                switch (clue.type) {
+                    case &#x27;fixed&#x27;: {
+                        const h = boardState[clue.house - 1];
+                        const currentVal = h[clue.cat];
+                        if (currentVal === clue.val) status = &#x27;satisfied&#x27;;
+                        else if (currentVal !== null &amp;&amp; currentVal !== clue.val) status = &#x27;violated&#x27;;
+                        else status = &#x27;incomplete&#x27;;
+                        break;
+                    }
+                    case &#x27;same&#x27;: {
+                        let houseA = boardState.findIndex(h =&gt; h[clue.a.cat] === clue.a.val);
+                        let houseB = boardState.findIndex(h =&gt; h[clue.b.cat] === clue.b.val);
+
+                        if (houseA !== -1 &amp;&amp; houseB !== -1) {
+                            status = (houseA === houseB) ? &#x27;satisfied&#x27; : &#x27;violated&#x27;;
+                        } else if (houseA !== -1) {
+                            const otherValInB = boardState[houseA][clue.b.cat];
+                            if (otherValInB &amp;&amp; otherValInB !== clue.b.val) status = &#x27;violated&#x27;;
+                        } else if (houseB !== -1) {
+                            const otherValInA = boardState[houseB][clue.a.cat];
+                            if (otherValInA &amp;&amp; otherValInA !== clue.a.val) status = &#x27;violated&#x27;;
+                        }
+                        break;
+                    }
+                    case &#x27;left_of&#x27;: {
+                        let houseLeft = boardState.findIndex(h =&gt; h[clue.left.cat] === clue.left.val);
+                        let houseRight = boardState.findIndex(h =&gt; h[clue.right.cat] === clue.right.val);
+
+                        if (houseLeft !== -1 &amp;&amp; houseRight !== -1) {
+                            status = (houseLeft + 1 === houseRight) ? &#x27;satisfied&#x27; : &#x27;violated&#x27;;
+                        } else if (houseLeft !== -1) {
+                            if (houseLeft === currentConfig.houseCount - 1) status = &#x27;violated&#x27;;
+                        } else if (houseRight !== -1) {
+                            if (houseRight === 0) status = &#x27;violated&#x27;;
+                        }
+                        break;
+                    }
+                    case &#x27;neighbor&#x27;: {
+                        let houseA = boardState.findIndex(h =&gt; h[clue.a.cat] === clue.a.val);
+                        let houseB = boardState.findIndex(h =&gt; h[clue.b.cat] === clue.b.val);
+
+                        if (houseA !== -1 &amp;&amp; houseB !== -1) {
+                            status = (Math.abs(houseA - houseB) === 1) ? &#x27;satisfied&#x27; : &#x27;violated&#x27;;
+                        }
+                        break;
+                    }
+                }
+
+                return { ...clue, status };
+            });
+        }
+
+        function filterClues(type) {
+            audio.click();
+            clueFilter = type;
+            document.getElementById(&#x27;filter-all&#x27;).className = type === &#x27;all&#x27; ? &quot;px-2 py-0.5 rounded font-medium bg-emerald-600 text-white&quot; : &quot;px-2 py-0.5 rounded font-medium text-slate-400 hover:text-white&quot;;
+            document.getElementById(&#x27;filter-unsolved&#x27;).className = type === &#x27;unsolved&#x27; ? &quot;px-2 py-0.5 rounded font-medium bg-emerald-600 text-white&quot; : &quot;px-2 py-0.5 rounded font-medium text-slate-400 hover:text-white&quot;;
+            renderClues();
+        }
+
+        function renderClues() {
+            const listEl = document.getElementById(&#x27;panel-content-clues&#x27;);
+            if (!listEl) return;
+            listEl.innerHTML = &#x27;&#x27;;
+
+            const evaluated = evaluateClues();
+
+            const filtered = evaluated.filter(c =&gt; {
+                if (clueFilter === &#x27;unsolved&#x27;) return c.status !== &#x27;satisfied&#x27;;
+                return true;
+            });
+
+            filtered.forEach(clue =&gt; {
+                const item = document.createElement(&#x27;div&#x27;);
+                
+                let badgeStyle = &quot;bg-slate-800 text-slate-400 border-slate-700&quot;;
+                let statusIcon = &#x27;&lt;i class=&quot;fa-regular fa-circle text-slate-500&quot;&gt;&lt;/i&gt;&#x27;;
+                let statusText = &quot;미완료&quot;;
+
+                if (clue.status === &#x27;satisfied&#x27;) {
+                    badgeStyle = &quot;bg-emerald-500/10 text-emerald-400 border-emerald-500/30&quot;;
+                    statusIcon = &#x27;&lt;i class=&quot;fa-solid fa-circle-check text-emerald-400&quot;&gt;&lt;/i&gt;&#x27;;
+                    statusText = &quot;충족됨&quot;;
+                } else if (clue.status === &#x27;violated&#x27;) {
+                    badgeStyle = &quot;bg-rose-500/10 text-rose-400 border-rose-500/30&quot;;
+                    statusIcon = &#x27;&lt;i class=&quot;fa-solid fa-triangle-exclamation text-rose-400&quot;&gt;&lt;/i&gt;&#x27;;
+                    statusText = &quot;충돌 발생&quot;;
+                }
+
+                // 동적으로 추가된 단서인 경우 강조
+                let titleMarkup = clue.isDerived 
+                    ? `&lt;p class=&quot;font-medium text-indigo-300 leading-snug&quot;&gt;${clue.text}&lt;/p&gt;`
+                    : `&lt;p class=&quot;font-medium text-slate-200 leading-snug&quot;&gt;${clue.text}&lt;/p&gt;`;
+
+                item.className = `p-2.5 rounded-xl border flex items-start justify-between gap-3 text-xs transition ${badgeStyle}`;
+
+                item.innerHTML = `
+                    &lt;div class=&quot;flex items-start gap-2&quot;&gt;
+                        &lt;span class=&quot;mt-0.5&quot;&gt;${statusIcon}&lt;/span&gt;
+                        &lt;div&gt;
+                            ${titleMarkup}
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                    &lt;span class=&quot;text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-950/40 whitespace-nowrap&quot;&gt;${statusText}&lt;/span&gt;
+                `;
+
+                listEl.appendChild(item);
+            });
+        }
+
+        function updateProgress() {
+            const evaluated = evaluateClues();
+            const satisfiedCount = evaluated.filter(c =&gt; c.status === &#x27;satisfied&#x27;).length;
+            const totalClues = evaluated.length;
+
+            const percentage = Math.round((satisfiedCount / totalClues) * 100);
+            document.getElementById(&#x27;progress-bar&#x27;).style.width = `${percentage}%`;
+            document.getElementById(&#x27;progress-text&#x27;).innerText = `${satisfiedCount} / ${totalClues}`;
+
+            let totalCells = currentConfig.houseCount * currentConfig.categories.length;
+            let filledCells = 0;
+            boardState.forEach(h =&gt; {
+                currentConfig.categories.forEach(cat =&gt; {
+                    if (h[cat.id]) filledCells++;
+                });
+            });
+
+            const fillPercent = Math.round((filledCells / totalCells) * 100);
+            document.getElementById(&#x27;completion-status&#x27;).innerText = `${fillPercent}% 작성됨`;
+
+            evaluated.forEach((clue, idx) =&gt; {
+                if (clue.status === &#x27;satisfied&#x27; &amp;&amp; !solvedClueTracker.has(clue.text)) {
+                    solvedClueTracker.add(clue.text);
+                    // 동적으로 추가된 단서는 조건 충족 로그에서 제외 (중복 방지)
+                    if (!clue.isDerived) {
+                        addIfThenLog(
+                            `&lt;div&gt;&lt;span class=&quot;text-slate-400&quot;&gt;단서 ${idx + 1} 해결 조건 만족:&lt;/span&gt;&lt;br/&gt; &quot;${clue.text}&quot;&lt;/div&gt;`,
+                            `&lt;div&gt;보드의 현재 배치가 위 단서 조건을 완벽히 충족함&lt;/div&gt;`,
+                            &#x27;단서 해결 달성&#x27;
+                        );
+                    }
+                } else if (clue.status !== &#x27;satisfied&#x27; &amp;&amp; solvedClueTracker.has(clue.text)) {
+                    solvedClueTracker.delete(clue.text);
+                }
+            });
+
+            runRuleInferenceEngine();
+        }
+
+        function provideHint() {
+            audio.hint();
+            const hintBox = document.getElementById(&#x27;hint-box&#x27;);
+            const hintText = document.getElementById(&#x27;hint-text&#x27;);
+
+            const unappliedFacts = derivedFactsList.filter(f =&gt; boardState[f.house - 1][f.cat] !== f.val);
+
+            if (unappliedFacts.length &gt; 0) {
+                const fact = unappliedFacts[0];
+
+                hintText.innerHTML = `
+                    &lt;div class=&quot;mb-2 text-slate-200&quot;&gt;&lt;strong&gt;💡 단서 조합 논리 결과:&lt;/strong&gt; 나무위키 교차검증 방식을 통한 논리적 사실 도출!&lt;/div&gt;
+                    &lt;div class=&quot;bg-amber-500/10 border border-amber-500/30 p-2 rounded-lg mb-1.5&quot;&gt;
+                        &lt;span class=&quot;text-[10px] font-bold text-amber-400 block mb-1&quot;&gt;IF (단서 교차 검증)&lt;/span&gt;
+                        &lt;div class=&quot;text-[11px] text-amber-100/90 ml-1 border-l-2 border-amber-500/50 pl-2 space-y-1&quot;&gt;${fact.premiseHtml}&lt;/div&gt;
+                    &lt;/div&gt;
+                    &lt;div class=&quot;bg-emerald-500/10 border border-emerald-500/30 p-2 rounded-lg&quot;&gt;
+                        &lt;span class=&quot;text-[10px] font-bold text-emerald-400 block mb-1&quot;&gt;THEN (새롭게 생성된 사실)&lt;/span&gt;
+                        &lt;div class=&quot;text-[11px] text-emerald-300 font-extrabold ml-1 border-l-2 border-emerald-500/50 pl-2&quot;&gt;${fact.factText}&lt;/div&gt;
+                    &lt;/div&gt;
+                    &lt;div class=&quot;mt-2.5 flex justify-end&quot;&gt;
+                        &lt;button onclick=&quot;applyDerivedFactById(&#x27;${fact.id}&#x27;)&quot; class=&quot;px-3 py-1.5 text-[11px] font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow-md transition flex items-center gap-1&quot;&gt;
+                            &lt;i class=&quot;fa-solid fa-check&quot;&gt;&lt;/i&gt; 보드에 적용 및 단서 목록 등록
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+                `;
+                hintBox.classList.remove(&#x27;hidden&#x27;);
+
+                addIfThenLog(
+                    fact.premiseHtml,
+                    fact.factText,
+                    &#x27;AI 논리 힌트 제공&#x27;
+                );
+                return;
+            }
+
+            const hintTextContent = document.getElementById(&#x27;hint-text&#x27;);
+            hintTextContent.innerText = &quot;단서 목록 조합으로 도출 가능한 확실한 단일 규칙이 없습니다. 임의의 요소를 선택하여 배치를 이어나가 보거나, 모든 보드가 완성되었다면 &#x27;최종 정답 확인&#x27;을 누르세요!&quot;;
+            hintBox.classList.remove(&#x27;hidden&#x27;);
+        }
+
+        function closeHintBox() {
+            document.getElementById(&#x27;hint-box&#x27;).classList.add(&#x27;hidden&#x27;);
+        }
+
+        function autoSolveStepByStep() {
+            if (!isTimerRunning) startTimer();
+            audio.click();
+            const solution = currentConfig.solution;
+            let delay = 0;
+
+            solution.forEach((solHouse, i) =&gt; {
+                currentConfig.categories.forEach(cat =&gt; {
+                    setTimeout(() =&gt; {
+                        boardState[i][cat.id] = solHouse[cat.id];
+                        audio.select();
+                        renderBoard();
+                        renderClues();
+                        updateProgress();
+                    }, delay);
+                    delay += 200;
+                });
+            });
+        }
+
+        function checkFinalAnswerModal() {
+            audio.click();
+            const modal = document.getElementById(&#x27;victory-modal&#x27;);
+            const targetQuestionEl = document.getElementById(&#x27;target-question-text&#x27;);
+            const optionsContainer = document.getElementById(&#x27;final-answer-options&#x27;);
+            const resultMsg = document.getElementById(&#x27;modal-result-msg&#x27;);
+
+            targetQuestionEl.innerText = currentConfig.targetQuestion;
+            resultMsg.classList.add(&#x27;hidden&#x27;);
+
+            optionsContainer.innerHTML = &#x27;&#x27;;
+            const optionsCat = currentConfig.targetCategory || &#x27;nationality&#x27;;
+            const possibleItems = currentConfig.items[optionsCat];
+
+            possibleItems.forEach(item =&gt; {
+                const radioLabel = document.createElement(&#x27;label&#x27;);
+                radioLabel.className = &quot;p-3 rounded-xl border border-slate-800 bg-slate-800/60 hover:bg-slate-800 transition cursor-pointer flex items-center gap-3&quot;;
+                
+                const iconMarkup = item.icon ? `&lt;span class=&quot;text-lg&quot;&gt;${item.icon}&lt;/span&gt;` : &#x27;&#x27;;
+
+                radioLabel.innerHTML = `
+                    &lt;input type=&quot;radio&quot; name=&quot;final-answer&quot; value=&quot;${item.name}&quot; class=&quot;text-emerald-500 focus:ring-emerald-500&quot;&gt;
+                    ${iconMarkup}
+                    &lt;span class=&quot;text-xs font-bold text-slate-200&quot;&gt;${item.name}&lt;/span&gt;
+                `;
+                optionsContainer.appendChild(radioLabel);
+            });
+
+            modal.classList.remove(&#x27;hidden&#x27;);
+        }
+
+        function closeVictoryModal() {
+            document.getElementById(&#x27;victory-modal&#x27;).classList.add(&#x27;hidden&#x27;);
+        }
+
+        function submitFinalAnswer() {
+            const selectedOpt = document.querySelector(&#x27;input[name=&quot;final-answer&quot;]:checked&#x27;);
+            const resultMsg = document.getElementById(&#x27;modal-result-msg&#x27;);
+            const explainBtn = document.getElementById(&#x27;btn-view-ai-explain&#x27;);
+
+            if (!selectedOpt) {
+                resultMsg.innerText = &quot;정답 항목을 하나 선택해주세요!&quot;;
+                resultMsg.className = &quot;text-xs font-semibold py-2 px-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/30 block&quot;;
+                return;
+            }
+
+            const chosenVal = selectedOpt.value;
+            const targetCat = currentConfig.targetCategory || &#x27;nationality&#x27;;
+            
+            let correctAnswerOwner = &#x27;&#x27;;
+            let targetPetName = &#x27;&#x27;;
+            if(currentModeKey === &#x27;classic&#x27;) targetPetName = &#x27;물고기&#x27;;
+            else if(currentModeKey === &#x27;mini&#x27;) targetPetName = &#x27;토끼&#x27;;
+            else if(currentModeKey === &#x27;medium&#x27;) targetPetName = &#x27;햄스터&#x27;;
+
+            const winningHouse = currentConfig.solution.find(h =&gt; h.pet === targetPetName);
+            if(winningHouse) {
+                correctAnswerOwner = winningHouse[targetCat];
+            }
+
+
+            if (chosenVal === correctAnswerOwner) {
+                pauseTimer();
+                audio.success();
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: [&#x27;#22c55e&#x27;, &#x27;#3b82f6&#x27;, &#x27;#eab308&#x27;]
+                });
+
+                resultMsg.innerHTML = `&lt;i class=&quot;fa-solid fa-party-horn&quot;&gt;&lt;/i&gt; 정답입니다! 완벽한 논리 추론입니다.&lt;br&gt;소요 시간: ${document.getElementById(&#x27;timer-display&#x27;).innerText}`;
+                resultMsg.className = &quot;text-xs font-bold py-3 px-4 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 block&quot;;
+                explainBtn.classList.remove(&#x27;hidden&#x27;);
+            } else {
+                audio.error();
+                resultMsg.innerHTML = `&lt;i class=&quot;fa-solid fa-circle-xmark&quot;&gt;&lt;/i&gt; 아쉽습니다. &#x27;${chosenVal}&#x27;은(는) 오답입니다. 다시 한번 단서를 확인해보세요.`;
+                resultMsg.className = &quot;text-xs font-semibold py-2 px-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/30 block&quot;;
+            }
+        }
+
+        function openExplanationModal() {
+            audio.click();
+            document.getElementById(&#x27;explanation-modal&#x27;).classList.remove(&#x27;hidden&#x27;);
+            document.getElementById(&#x27;solution-mode-title&#x27;).innerText = currentConfig.title;
+            
+            const stepsList = document.getElementById(&#x27;solution-steps-list&#x27;);
+            stepsList.innerHTML = &#x27;&#x27;;
+            currentConfig.solutionSteps.forEach((s, idx) =&gt; {
+                const stepEl = document.createElement(&#x27;div&#x27;);
+                stepEl.className = &quot;flex gap-3 bg-slate-900/80 p-3.5 rounded-xl border border-slate-800/80&quot;;
+                stepEl.innerHTML = `
+                    &lt;div class=&quot;flex-shrink-0 w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex flex-col items-center justify-center font-bold&quot;&gt;
+                        &lt;span class=&quot;text-[10px] uppercase opacity-70 mb-0.5&quot;&gt;Step&lt;/span&gt;
+                        &lt;span class=&quot;text-sm&quot;&gt;${idx + 1}&lt;/span&gt;
+                    &lt;/div&gt;
+                    &lt;div class=&quot;flex flex-col justify-center&quot;&gt;
+                        &lt;h5 class=&quot;text-xs font-bold text-slate-200 mb-0.5&quot;&gt;${s.step}&lt;/h5&gt;
+                        &lt;p class=&quot;text-slate-400 text-xs leading-relaxed&quot;&gt;${s.desc}&lt;/p&gt;
+                    &lt;/div&gt;
+                `;
+                stepsList.appendChild(stepEl);
+            });
+            switchExplainTab(&#x27;solution&#x27;);
+        }
+
+        function closeExplanationModal() {
+            document.getElementById(&#x27;explanation-modal&#x27;).classList.add(&#x27;hidden&#x27;);
+        }
+
+        function switchExplainTab(tabId) {
+            audio.click();
+            const tabBtnSol = document.getElementById(&#x27;tab-btn-solution&#x27;);
+            const tabBtnAi = document.getElementById(&#x27;tab-btn-ai&#x27;);
+            const contentSol = document.getElementById(&#x27;tab-content-solution&#x27;);
+            const contentAi = document.getElementById(&#x27;tab-content-ai&#x27;);
+
+            if (tabId === &#x27;solution&#x27;) {
+                tabBtnSol.className = &quot;flex-1 py-3 border-b-2 border-emerald-500 text-emerald-400 bg-slate-900/50 flex items-center justify-center gap-2&quot;;
+                tabBtnAi.className = &quot;flex-1 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-2&quot;;
+                contentSol.classList.remove(&#x27;hidden&#x27;);
+                contentAi.classList.add(&#x27;hidden&#x27;);
+            } else {
+                tabBtnAi.className = &quot;flex-1 py-3 border-b-2 border-emerald-500 text-emerald-400 bg-slate-900/50 flex items-center justify-center gap-2&quot;;
+                tabBtnSol.className = &quot;flex-1 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-2&quot;;
+                contentAi.classList.remove(&#x27;hidden&#x27;);
+                contentSol.classList.add(&#x27;hidden&#x27;);
+            }
+        }
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;" title="아인슈타인 논리 수수께끼 시뮬레이터"></iframe>
+  </div>
+</section>
+
+<script>
+(function () {
+  var h = (location.hash || '').replace('#', '');
+  if (h === 'logic' || h === 'einstein') document.body.className = 'only-' + h;
+})();
+</script>
+</body>
+</html>

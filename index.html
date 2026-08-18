@@ -20,7 +20,7 @@
     <button class="tab-btn" data-tab="best">최상 우선 탐색</button>
     <button class="tab-btn" data-tab="astar">A* 알고리즘</button>
     <button class="tab-btn" data-tab="compare">탐색 비교하기</button>
-    <button class="tab-btn disabled" data-tab="reasoning">추론<span class="soon-badge">준비중</span></button>
+    <button class="tab-btn" data-tab="reasoning">추론</button>
 </nav>
 
 <main>
@@ -551,7 +551,7 @@
                         <div class="rule-block">
                             <h4>문제 &amp; 규칙</h4>
                             <ul>
-                                <li><strong>실제 대한민국 지도</strong> 위에 도시 27곳과 도로 38개를 놓았습니다. 도시는 <strong>실제 위치</strong>에 있고, 도로의 길이는 두 도시 사이의 <strong>실제 거리(km)</strong>입니다. 격자와 달리 <strong>길마다 비용이 다릅니다</strong>.</li>
+                                <li><strong>실제 지도</strong> 위에 도시 27곳과 도로 38개를 놓았습니다. 도시는 <strong>실제 위치</strong>에 있고, 도로의 길이는 두 도시 사이의 <strong>실제 거리(km)</strong>입니다. 격자와 달리 <strong>길마다 비용이 다릅니다</strong>. 지도는 확대·축소하며 볼 수 있습니다.</li>
                                 <li><strong>출발지와 도착지</strong>를 고르고 재생을 누르면, 탐색이 한 도시씩 진행되는 과정을 볼 수 있습니다. 지도의 도시를 클릭해 도착지를 바꿀 수도 있습니다.</li>
                                 <li>오른쪽 아래 <strong>탐색 데이터 구조</strong>에서 지금 검사 중인 도시와 대기열을 확인하세요. BFS는 <strong>큐</strong>, DFS는 <strong>스택</strong>, A*는 <strong>우선순위 큐</strong>를 씁니다.</li>
                                 <li>A*를 고르면 검사 중인 도시 옆에 <strong>f(n) = g(n) + h(n)</strong>이 함께 표시됩니다.</li>
@@ -561,6 +561,54 @@
                         </div>
                         <div class="sim-frame-wrap" style="margin-top:16px;">
                             <iframe src="simulators/pathfinding-map.html" title="실시간 길찾기 — 전국 도시 지도" style="height:760px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 추론 -->
+    <section id="tab-reasoning" class="tab-panel">
+        <div class="algo-head">
+            <h2>추론</h2>
+            <span class="algo-en">Reasoning</span>
+        </div>
+        <p class="algo-desc">
+            탐색이 <strong>가능한 상태를 훑어 목표를 찾는 것</strong>이라면, 추론은 <strong>알고 있는 사실과 규칙에서 새로운 사실을 이끌어내는 것</strong>입니다.
+            주어진 단서만으로 확실한 결론에 도달하는 과정을 직접 따라가 보세요.
+        </p>
+
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">AI 논리 추론</span>
+                        <span class="en">Rule-Based Inference</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="sim-frame-wrap">
+                            <iframe src="simulators/reasoning.html#logic" title="AI 논리 추론 시뮬레이터" style="height:900px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">아인슈타인 논리 수수께끼</span>
+                        <span class="en">Einstein's Riddle</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="sim-frame-wrap">
+                            <iframe src="simulators/reasoning.html#einstein" title="아인슈타인 논리 수수께끼 시뮬레이터" style="height:900px; min-height:0;"></iframe>
                         </div>
                     </div>
                 </div>
