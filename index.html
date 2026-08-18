@@ -430,12 +430,13 @@
                         <div class="rule-block">
                             <h4>문제 &amp; 규칙</h4>
                             <ul>
-                                <li>탐색을 시작하면 시작 노드는 곧바로 <strong>CLOSE 리스트</strong>에 들어가고, 그 자식 노드들이 <strong>OPEN 리스트</strong>에 추가됩니다.</li>
-                                <li>평가 함숫값 <strong>f(n)</strong>은 그 노드에서 목표 상태까지 걸리는 <strong>예상 비용(시간)</strong>이며, <strong>값이 작을수록 더 좋은</strong> 노드입니다.</li>
-                                <li>매 단계, OPEN 리스트에 있는 노드 중 <strong>f(n)이 가장 작은 노드</strong>를 클릭하세요. 그 노드는 CLOSE 리스트로 옮겨지고, 자식 노드들이 새로 OPEN 리스트에 추가됩니다.</li>
-                                <li>한 번 지나친 노드(예: 상대적으로 f(n)이 나빴던 형제 노드)도 <strong>OPEN 리스트에 남아 있는 한 다시 선택될 수 있습니다.</strong> — 언덕 등반 탐색과 다른 점입니다.</li>
-                                <li>노란 점선 노드가 <strong>목표 상태</strong>입니다. 목표 상태가 OPEN 리스트에서 선택되면(f(n) = 0) 탐색이 종료됩니다.</li>
-                                <li><strong>연습 문제 불러오기</strong>를 누르면 새로운 트리와 평가 함숫값으로 다시 연습할 수 있습니다.</li>
+                                <li>교과서의 <strong>부산 → 서울 지도 전체</strong>(도시 12개, 길 16개)를 그대로 씁니다. 길 위의 숫자는 두 도시 사이를 이동하는 데 걸리는 <strong>시간(분)</strong>입니다.</li>
+                                <li>평가 함숫값 <strong>f(n)</strong>은 그 도시에서 서울까지 걸리는 <strong>예상 시간 h(n)</strong>이며, <strong>값이 작을수록 더 좋은</strong> 도시입니다.</li>
+                                <li>먼저 왼쪽 창에서 <strong>모든 도시의 f(n)을 직접 채워 넣어야</strong> 오른쪽 탐색 창이 열립니다.</li>
+                                <li>탐색을 시작하면 부산은 곧바로 <strong>CLOSE 리스트</strong>에 들어가고, 부산과 길로 이어진 <strong>이웃 도시들이 OPEN 리스트</strong>에 추가됩니다.</li>
+                                <li>매 단계, OPEN 리스트에 있는 도시 중 <strong>f(n)이 가장 작은 도시</strong>를 클릭하세요. 그 도시는 CLOSE 리스트로 옮겨지고, 그 이웃 도시들이 새로 OPEN 리스트에 추가됩니다.</li>
+                                <li>한 번 지나친 도시도 <strong>OPEN 리스트에 남아 있는 한 다시 선택될 수 있습니다.</strong> — 언덕 등반 탐색과 다른 점입니다.</li>
+                                <li>노란 점선 도시가 <strong>목표 상태(서울)</strong>입니다. 서울이 OPEN 리스트에서 선택되면 탐색이 종료됩니다.</li>
                             </ul>
                         </div>
 
@@ -476,12 +477,13 @@
                         <div class="rule-block">
                             <h4>문제 &amp; 규칙</h4>
                             <ul>
-                                <li>평가 함수는 <strong>f(n) = g(n) + h(n)</strong>입니다. <strong>g(n)</strong>은 시작 노드에서 현재 노드까지 <strong>실제로 이동한 비용</strong>, <strong>h(n)</strong>은 현재 노드에서 목표까지 남은 <strong>예상 비용</strong>입니다.</li>
-                                <li>시작 노드는 곧바로 <strong>CLOSE 리스트</strong>에 들어가고, 그 자식 노드들이 <strong>OPEN 리스트</strong>에 추가됩니다. 간선에 적힌 숫자가 이동 비용입니다.</li>
-                                <li>매 단계, OPEN 리스트에 있는 노드 중 <strong>f(n)이 가장 작은 노드</strong>를 클릭하세요. 그 노드는 CLOSE 리스트로 옮겨지고, 자식 노드들이 새로 OPEN 리스트에 추가됩니다.</li>
-                                <li>최상 우선 탐색과 마찬가지로 지나쳤던 노드도 OPEN 리스트에 남아 있는 한 다시 선택될 수 있습니다.</li>
-                                <li>노란 점선 노드가 <strong>목표 상태</strong>입니다. 목표 상태가 OPEN 리스트에서 선택되면 탐색이 종료됩니다.</li>
-                                <li><strong>기본 예제</strong>는 앞의 최상 우선 탐색과 같은 지도이지만, g(n)을 함께 고려하기 때문에 <strong>다른 경로</strong>(부산→대구→대전→천안→서울)를 찾게 됩니다. 최상 우선 탐색 결과와 비교해 보세요.</li>
+                                <li>평가 함수는 <strong>f(n) = g(n) + h(n)</strong>입니다. <strong>g(n)</strong>은 부산에서 그 도시까지 <strong>실제로 이동한 시간</strong>, <strong>h(n)</strong>은 그 도시에서 서울까지 남은 <strong>예상 시간</strong>입니다.</li>
+                                <li>최상 우선 탐색과 <strong>똑같은 교과서 지도</strong>(도시 12개, 길 16개)를 씁니다. 길 위의 숫자가 이동 시간입니다.</li>
+                                <li>먼저 왼쪽 창에서 각 도시의 <strong>g와 h를 더해 f(n)을 채워 넣어야</strong> 오른쪽 탐색 창이 열립니다.</li>
+                                <li>탐색을 시작하면 부산은 곧바로 <strong>CLOSE 리스트</strong>에 들어가고, 이웃 도시들이 <strong>OPEN 리스트</strong>에 추가됩니다.</li>
+                                <li>매 단계, OPEN 리스트에 있는 도시 중 <strong>f(n)이 가장 작은 도시</strong>를 클릭하세요. 더 빠른 길이 발견되면 그 도시의 g(n)이 <strong>더 작은 값으로 갱신</strong>됩니다.</li>
+                                <li>노란 점선 도시가 <strong>목표 상태(서울)</strong>입니다. 서울이 선택되면 탐색이 끝나고 찾아낸 경로와 총 시간이 표시됩니다.</li>
+                                <li>같은 지도인데도 최상 우선 탐색은 <strong>부산→상주→음성→서울</strong>, A*는 <strong>부산→대구→대전→천안→서울(300분)</strong>로 <strong>서로 다른 경로</strong>를 찾습니다. 두 결과를 꼭 비교해 보세요.</li>
                             </ul>
                         </div>
 
