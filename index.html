@@ -19,6 +19,7 @@
     <button class="tab-btn" data-tab="hill">언덕 등반 탐색</button>
     <button class="tab-btn" data-tab="best">최상 우선 탐색</button>
     <button class="tab-btn" data-tab="astar">A* 알고리즘</button>
+    <button class="tab-btn" data-tab="compare">탐색 비교하기</button>
     <button class="tab-btn disabled" data-tab="reasoning">추론<span class="soon-badge">준비중</span></button>
 </nav>
 
@@ -491,6 +492,75 @@
                             <iframe src="simulators/astar.html" title="A* 알고리즘 — g(n)+h(n)" style="height:760px; min-height:0;"></iframe>
                         </div>
 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 탐색 비교하기 -->
+    <section id="tab-compare" class="tab-panel">
+        <div class="algo-head">
+            <h2>탐색 비교하기</h2>
+            <span class="algo-en">Comparing Search Algorithms</span>
+        </div>
+        <p class="algo-desc">
+            지금까지 배운 네 가지 탐색을 <strong>똑같은 문제에 나란히 적용</strong>해 보는 곳입니다.
+            같은 미로, 같은 지도인데도 어떤 알고리즘은 빙 둘러 가고 어떤 알고리즘은 곧장 목표로 향합니다.
+            <strong>얼마나 많은 칸을 살펴봤는지(탐색량)</strong>와 <strong>찾아낸 길이 얼마나 짧은지(경로의 품질)</strong>를 함께 비교해 보세요.
+        </p>
+
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">격자 길찾기</span>
+                        <span class="en">Pathfinding Visualizer — 10×10 Grid</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>10×10 격자의 <strong>왼쪽 위(초록)에서 출발</strong>해 <strong>오른쪽 아래(빨강)까지</strong> 가는 길을 찾습니다. 빈 칸을 클릭하면 <strong>벽</strong>이 됩니다.</li>
+                                <li>인접한 칸은 <strong>상(↑) → 우(→) → 하(↓) → 좌(←)</strong> 순서로 확인합니다. 같은 미로라도 이 순서 때문에 알고리즘마다 다른 길을 먼저 봅니다.</li>
+                                <li>칸 안의 <strong>숫자는 방문 순서</strong>, <strong>화살표는 그 칸으로 들어온 방향</strong>입니다. 숫자가 건너뛰면 다른 갈래로 방향을 바꾼 것입니다.</li>
+                                <li><strong>전체 알고리즘 일괄 비교</strong>를 누르면 네 알고리즘의 <strong>방문한 칸 수</strong>와 <strong>경로 길이</strong>를 한 표에서 볼 수 있습니다.</li>
+                                <li>확인해 볼 점 — <strong>BFS와 A*는 항상 가장 짧은 길</strong>을 찾지만, A*는 <strong>훨씬 적은 칸만 살펴봅니다</strong>. <strong>최상 우선</strong>은 가장 적게 살펴보는 대신 <strong>길이 돌아갈 수 있고</strong>, <strong>DFS</strong>는 운에 따라 크게 달라집니다.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/pathfinding-grid.html" title="길찾기 시각화 — 10×10 격자" style="height:880px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">전국 도시 길찾기</span>
+                        <span class="en">Real-Time Pathfinding on a City Map</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>전국 <strong>도시 27곳과 도로 38개</strong>로 이루어진 지도입니다. 도로의 길이는 두 도시 사이의 <strong>거리(km)</strong>이고, 격자와 달리 <strong>길마다 비용이 다릅니다</strong>.</li>
+                                <li><strong>출발지와 도착지</strong>를 고르고 재생을 누르면, 탐색이 한 도시씩 진행되는 과정을 볼 수 있습니다. 지도의 도시를 클릭해 도착지를 바꿀 수도 있습니다.</li>
+                                <li>오른쪽 아래 <strong>탐색 데이터 구조</strong>에서 지금 검사 중인 도시와 대기열을 확인하세요. BFS는 <strong>큐</strong>, DFS는 <strong>스택</strong>, A*는 <strong>우선순위 큐</strong>를 씁니다.</li>
+                                <li>A*를 고르면 검사 중인 도시 옆에 <strong>f(n) = g(n) + h(n)</strong>이 함께 표시됩니다.</li>
+                                <li>확인해 볼 점 — 서울에서 부산까지 가면 <strong>A*는 349km(13개 도시만 확인)</strong>, <strong>BFS는 362km(27개 전부 확인)</strong>, <strong>DFS는 365km</strong>가 나옵니다. BFS는 <strong>거쳐 가는 도시 수</strong>는 적게 만들지만 <strong>거리가 짧은 길은 아니라는 점</strong>이 핵심입니다.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/pathfinding-map.html" title="실시간 길찾기 — 전국 도시 지도" style="height:760px; min-height:0;"></iframe>
+                        </div>
                     </div>
                 </div>
             </div>

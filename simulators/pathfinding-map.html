@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>실시간 길찾기 — 전국 도시 지도</title>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700; font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400; font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700; font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF; --blue: #1C60EF; --blue-light: #DBE8FE;
+        --text: #16223f; --text-muted: #55647f;
+        --red: #ef4444; --green: #16a34a; --gold: #d4a017; --purple: #7c3aed;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+        margin: 0; height: 100%; font-family: var(--font-body); color: var(--text);
+        background: var(--white); overflow: hidden; user-select: none;
+    }
+    .app { display: flex; flex-direction: column; height: 100%; }
+
+    .topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        flex-wrap: wrap; padding: 12px 18px; border-bottom: 1px solid var(--blue-light);
+        background: #fbfcff; flex-shrink: 0;
+    }
+    .topbar h1 { font-family: var(--font-title); font-weight: 700; font-size: 15px; margin: 0; }
+    .topbar .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+    .body { flex: 1; display: flex; min-height: 0; }
+    .side {
+        flex: 0 0 268px; border-right: 1px solid var(--blue-light); background: #fbfcff;
+        padding: 14px 16px; overflow-y: auto;
+    }
+    .stage { flex: 1; min-width: 0; position: relative; background: #0f172a; overflow: hidden; }
+    .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    .side h3 {
+        font-family: var(--font-title); font-weight: 700; font-size: 12.5px;
+        margin: 0 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--blue-light);
+    }
+    .side h3:not(:first-child) { margin-top: 16px; }
+
+    .algo-row { display: flex; gap: 6px; }
+    .algo-row button {
+        flex: 1; font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
+        padding: 10px 4px; border-radius: 10px; border: 1px solid var(--blue-light);
+        background: var(--white); color: var(--text); cursor: pointer;
+    }
+    .algo-row button.on { background: var(--blue); color: var(--white); border-color: var(--blue); }
+
+    .pick-row { display: flex; gap: 8px; }
+    .pick { flex: 1; }
+    .pick label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+    .pick select {
+        width: 100%; font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
+        padding: 8px 6px; border-radius: 9px; border: 1px solid var(--blue-light);
+        background: var(--white); color: var(--text); outline: none;
+    }
+    .hintline { font-size: 10.5px; color: #a9b3c7; margin-top: 6px; line-height: 1.6; }
+
+    input[type=range] { width: 100%; accent-color: var(--blue); }
+    .speed-val { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-muted); }
+
+    .ctrl { display: flex; gap: 6px; margin-top: 8px; }
+    button.action {
+        flex: 1; font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
+        border-radius: 10px; padding: 11px 8px; border: 1px solid var(--blue-light);
+        background: var(--white); color: var(--blue); cursor: pointer;
+    }
+    button.action.play { background: var(--green); color: var(--white); border-color: var(--green); flex: 3; }
+    button.action:disabled { opacity: .5; cursor: default; }
+
+    .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 8px; }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--text-muted); }
+    .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+    .stat { display: flex; justify-content: space-between; font-size: 11.5px; padding: 5px 0; color: var(--text-muted); }
+    .stat b { font-family: var(--font-title); color: var(--blue); }
+
+    .cur-box { border: 1px solid var(--blue-light); border-radius: 10px; background: var(--white); padding: 9px 11px; }
+    .cur-line { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: 11.5px; }
+    .cur-chip { font-family: var(--font-title); font-weight: 700; font-size: 11.5px; background: var(--gold); color: #fff; border-radius: 7px; padding: 2px 9px; }
+    .fexp { font-family: var(--font-title); font-weight: 700; font-size: 11px; color: var(--blue); background: var(--blue-light); border-radius: 7px; padding: 2px 8px; }
+
+    .queue-box { border: 1px solid var(--blue-light); border-radius: 10px; background: var(--white); padding: 9px 11px; margin-top: 8px; }
+    .queue-title { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+    .queue-items { display: flex; flex-wrap: wrap; gap: 4px; }
+    .qchip { font-size: 10.5px; font-weight: 700; background: var(--blue-light); color: var(--blue); border-radius: 6px; padding: 2px 7px; }
+    .qchip.head { background: var(--blue); color: #fff; }
+    .queue-empty { font-size: 10.5px; color: #a9b3c7; font-style: italic; }
+
+    /* 지도 위 도시 */
+    .cnode { fill: #64748b; stroke: #0f172a; stroke-width: 1.5; }
+    .cnode.start { fill: #22c55e; }
+    .cnode.end { fill: #ef4444; }
+    .cnode.queued { fill: #3b82f6; }
+    .cnode.visiting { fill: #f59e0b; }
+    .cnode.done { fill: #38bdf8; }
+    .cnode.path { fill: #ef4444; }
+    .clabel { font-size: 9.5px; font-weight: 700; fill: #cbd5e1; pointer-events: none; }
+    .clink { stroke: #334155; stroke-width: 1.5; }
+    .clink.path { stroke: #ef4444; stroke-width: 3.5; }
+    .fbadge { font-size: 8.5px; font-weight: 700; fill: #fbbf24; pointer-events: none; }
+
+    .status-bar {
+        position: absolute; left: 12px; top: 12px; background: rgba(15,23,42,0.86);
+        border: 1px solid #334155; border-radius: 10px; padding: 8px 12px; color: #e2e8f0;
+        font-size: 11.5px; font-weight: 700; max-width: 70%;
+    }
+    .status-bar .done { color: #4ade80; }
+
+    @media (max-width: 860px) {
+        .body { flex-direction: column; }
+        .side { flex: 0 0 auto; border-right: 0; border-bottom: 1px solid var(--blue-light); }
+        .stage { min-height: 380px; }
+    }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1>실시간 길찾기 — 전국 도시 지도</h1>
+            <div class="sub">도시와 도로로 이루어진 지도 위에서 세 알고리즘의 탐색 과정을 한 단계씩 비교해 보세요.</div>
+        </div>
+    </div>
+
+    <div class="body">
+        <div class="side">
+            <h3>탐색 알고리즘</h3>
+            <div class="algo-row" id="algo-row">
+                <button data-k="bfs">BFS</button>
+                <button data-k="dfs">DFS</button>
+                <button data-k="astar" class="on">A* (최적)</button>
+            </div>
+
+            <h3>출발지 · 도착지</h3>
+            <div class="pick-row">
+                <div class="pick"><label>출발지 (Start)</label><select id="sel-start"></select></div>
+                <div class="pick"><label>도착지 (End)</label><select id="sel-end"></select></div>
+            </div>
+            <div class="hintline">※ 지도의 도시를 클릭하면 도착지를 바꿀 수 있습니다.</div>
+
+            <h3>시뮬레이션 속도</h3>
+            <input type="range" id="speed" min="0" max="4" step="1" value="2">
+            <div class="speed-val"><span>느림</span><span id="speed-label">400ms</span><span>빠름</span></div>
+            <div class="ctrl">
+                <button class="action play" id="btn-play">▶ 재생 시작</button>
+                <button class="action" id="btn-reset">↺</button>
+            </div>
+
+            <h3>지도 범례</h3>
+            <div class="legend">
+                <span><i style="background:#22c55e"></i>출발지</span>
+                <span><i style="background:#ef4444"></i>목적지</span>
+                <span><i style="background:#f59e0b"></i>방문 중</span>
+                <span><i style="background:#3b82f6"></i>대기열</span>
+                <span><i style="background:#38bdf8"></i>방문 완료</span>
+                <span><i style="background:#ef4444"></i>최종 경로</span>
+            </div>
+
+            <h3>탐색 데이터 구조</h3>
+            <div class="stat"><span>시뮬레이션 단계</span><b><span id="stat-step">0</span> / <span id="stat-total">0</span></b></div>
+            <div class="stat"><span>방문 완료된 도시</span><b><span id="stat-done">0</span>개</b></div>
+            <div class="cur-box">
+                <div class="cur-line">
+                    <span>현재 검사중:</span>
+                    <span class="cur-chip" id="cur-city">-</span>
+                    <span class="fexp" id="cur-f"></span>
+                </div>
+            </div>
+            <div class="queue-box">
+                <div class="queue-title"><span id="q-name">우선순위 큐 (A*)</span><span>→ (Front)</span></div>
+                <div class="queue-items" id="q-items"><span class="queue-empty">대기열 비어있음</span></div>
+            </div>
+        </div>
+
+        <div class="stage" id="stage">
+            <svg id="map"></svg>
+            <div class="status-bar" id="status-bar">재생 시작을 누르면 탐색이 진행됩니다.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // ---------- 전국 도시 지도 ----------
+    // x, y는 지도 위 위치(0~1). 도로는 [도시A, 도시B]이고 거리는 좌표에서 자동으로 계산한다.
+    var CITY = {
+        seoul:['서울',0.36,0.13], incheon:['인천',0.28,0.15], suwon:['수원',0.35,0.20],
+        chuncheon:['춘천',0.50,0.12], gangneung:['강릉',0.66,0.16], wonju:['원주',0.50,0.21],
+        cheonan:['천안',0.34,0.28], chungju:['충주',0.48,0.27], jecheon:['제천',0.54,0.23],
+        andong:['안동',0.64,0.33], daejeon:['대전',0.38,0.36], cheongju:['청주',0.41,0.29],
+        sangju:['상주',0.53,0.36], gumi:['구미',0.57,0.40], pohang:['포항',0.72,0.40],
+        jeonju:['전주',0.29,0.42], daegu:['대구',0.60,0.45], gyeongju:['경주',0.71,0.46],
+        gwangju:['광주',0.24,0.53], namwon:['남원',0.32,0.48], jinju:['진주',0.47,0.55],
+        ulsan:['울산',0.72,0.52], mokpo:['목포',0.18,0.60], suncheon:['순천',0.30,0.57],
+        changwon:['창원',0.56,0.55], busan:['부산',0.65,0.57], yeosu:['여수',0.33,0.62]
+    };
+    var ROADS = [
+        ['seoul','incheon'],['seoul','suwon'],['seoul','chuncheon'],['seoul','wonju'],
+        ['suwon','cheonan'],['chuncheon','wonju'],['chuncheon','gangneung'],
+        ['wonju','jecheon'],['gangneung','jecheon'],['jecheon','chungju'],['jecheon','andong'],
+        ['chungju','cheongju'],['cheongju','cheonan'],['cheongju','daejeon'],['cheonan','daejeon'],
+        ['chungju','sangju'],['andong','sangju'],['andong','pohang'],
+        ['daejeon','jeonju'],['daejeon','sangju'],['sangju','gumi'],['gumi','daegu'],
+        ['pohang','gyeongju'],['gyeongju','daegu'],['gyeongju','ulsan'],
+        ['jeonju','namwon'],['jeonju','gwangju'],['namwon','jinju'],['namwon','suncheon'],
+        ['gwangju','mokpo'],['gwangju','suncheon'],['suncheon','yeosu'],['suncheon','jinju'],
+        ['jinju','changwon'],['changwon','busan'],['daegu','changwon'],['daegu','busan'],
+        ['busan','ulsan']
+    ];
+    var SPEEDS = [1000, 650, 400, 220, 90];
+
+    var ids = Object.keys(CITY);
+    var adj = {};
+    ids.forEach(function (id) { adj[id] = []; });
+
+    function dist(a, b) {
+        var A = CITY[a], B = CITY[b];
+        // 지도 좌표 차이를 대략적인 거리(km)로 환산한다.
+        var dx = (A[1] - B[1]) * 480, dy = (A[2] - B[2]) * 620;
+        return Math.round(Math.sqrt(dx * dx + dy * dy));
+    }
+    ROADS.forEach(function (r) {
+        var d = dist(r[0], r[1]);
+        adj[r[0]].push({ to: r[1], cost: d });
+        adj[r[1]].push({ to: r[0], cost: d });
+    });
+
+    var startId = 'seoul', endId = 'busan', algo = 'astar';
+    var frames = [], frameIdx = 0, playing = false, timer = null;
+
+    var svg = document.getElementById('map');
+    var stage = document.getElementById('stage');
+    var statusBar = document.getElementById('status-bar');
+
+    function name(id) { return CITY[id][0]; }
+    function h(id) { return dist(id, endId); }
+
+    // ---------- 탐색: 단계별 프레임 생성 ----------
+    function buildFrames() {
+        var g = {}, parent = {}, seen = {};
+        var list = [startId];
+        g[startId] = 0; parent[startId] = null; seen[startId] = true;
+        var done = [], out = [], found = false;
+
+        function prio(id) {
+            if (algo === 'astar') return g[id] + h(id);
+            return 0;
+        }
+
+        var guard = 0;
+        while (list.length && guard++ < 400) {
+            var idx;
+            if (algo === 'bfs') idx = 0;
+            else if (algo === 'dfs') idx = list.length - 1;
+            else { idx = 0; for (var i = 1; i < list.length; i++) if (prio(list[i]) < prio(list[idx])) idx = i; }
+            var cur = list.splice(idx, 1)[0];
+            done.push(cur);
+
+            out.push({
+                cur: cur, queue: list.slice(), done: done.slice(),
+                g: g[cur], h: h(cur), parent: Object.assign({}, parent)
+            });
+
+            if (cur === endId) { found = true; break; }
+
+            adj[cur].forEach(function (e) {
+                var ng = g[cur] + e.cost;
+                if (seen[e.to] && !(algo === 'astar' && ng < g[e.to])) return;
+                seen[e.to] = true;
+                g[e.to] = ng;
+                parent[e.to] = cur;
+                if (list.indexOf(e.to) < 0) list.push(e.to);
+            });
+        }
+
+        var path = [];
+        if (found) {
+            var k = endId;
+            while (k != null) { path.unshift(k); k = parent[k]; }
+        }
+        out.forEach(function (f) { f.path = null; });
+        if (out.length) out[out.length - 1].path = path;
+        return { frames: out, path: path, found: found, total: found ? g[endId] : null };
+    }
+
+    // ---------- 그리기 ----------
+    function draw() {
+        var w = stage.clientWidth || 600, hgt = stage.clientHeight || 460;
+        svg.setAttribute('viewBox', '0 0 ' + w + ' ' + hgt);
+        var P = {};
+        ids.forEach(function (id) { P[id] = { x: CITY[id][1] * w, y: CITY[id][2] * hgt }; });
+
+        var f = frames.length ? frames[Math.min(frameIdx, frames.length - 1)] : null;
+        var doneSet = {}, queueSet = {}, pathSet = {}, pathPairs = {};
+        if (f) {
+            f.done.forEach(function (id) { doneSet[id] = true; });
+            f.queue.forEach(function (id) { queueSet[id] = true; });
+            if (f.path) {
+                f.path.forEach(function (id) { pathSet[id] = true; });
+                for (var i = 0; i + 1 < f.path.length; i++) {
+                    pathPairs[f.path[i] + '|' + f.path[i + 1]] = true;
+                    pathPairs[f.path[i + 1] + '|' + f.path[i]] = true;
+                }
+            }
+        }
+
+        var parts = [];
+        ROADS.forEach(function (r) {
+            var a = P[r[0]], b = P[r[1]];
+            var onPath = pathPairs[r[0] + '|' + r[1]];
+            parts.push('<line class="clink' + (onPath ? ' path' : '') + '" x1="' + a.x + '" y1="' + a.y +
+                       '" x2="' + b.x + '" y2="' + b.y + '"></line>');
+        });
+        ids.forEach(function (id) {
+            var p = P[id], cls = 'cnode';
+            if (pathSet[id]) cls += ' path';
+            else if (f && f.cur === id) cls += ' visiting';
+            else if (doneSet[id]) cls += ' done';
+            else if (queueSet[id]) cls += ' queued';
+            if (id === startId) cls += ' start';
+            if (id === endId) cls += ' end';
+            var rad = (id === startId || id === endId) ? 7 : 5;
+            parts.push('<circle class="' + cls + '" cx="' + p.x + '" cy="' + p.y + '" r="' + rad +
+                       '" data-id="' + id + '" style="cursor:pointer"></circle>');
+            parts.push('<text class="clabel" x="' + (p.x + 9) + '" y="' + (p.y + 4) + '">' + name(id) + '</text>');
+            if (f && f.cur === id && algo === 'astar') {
+                parts.push('<text class="fbadge" x="' + (p.x + 9) + '" y="' + (p.y - 7) + '">f=' + (f.g + f.h) + '</text>');
+            }
+        });
+        svg.innerHTML = parts.join('');
+
+        svg.querySelectorAll('circle').forEach(function (c) {
+            c.addEventListener('click', function () {
+                var id = c.dataset.id;
+                if (id === startId) return;
+                endId = id;
+                document.getElementById('sel-end').value = id;
+                reset();
+            });
+        });
+    }
+
+    function renderSide() {
+        var f = frames.length ? frames[Math.min(frameIdx, frames.length - 1)] : null;
+        document.getElementById('stat-step').textContent = frames.length ? Math.min(frameIdx + 1, frames.length) : 0;
+        document.getElementById('stat-total').textContent = frames.length;
+        document.getElementById('stat-done').textContent = f ? f.done.length : 0;
+        document.getElementById('cur-city').textContent = f ? name(f.cur) : '-';
+        document.getElementById('cur-f').textContent =
+            (f && algo === 'astar') ? ('f(' + (f.g + f.h) + ') = g(' + f.g + ') + h(' + f.h + ')') : '';
+        document.getElementById('q-name').textContent =
+            algo === 'astar' ? '우선순위 큐 (A*)' : (algo === 'bfs' ? '큐 (BFS)' : '스택 (DFS)');
+
+        var q = document.getElementById('q-items');
+        if (!f || !f.queue.length) q.innerHTML = '<span class="queue-empty">대기열 비어있음</span>';
+        else {
+            var arr = f.queue.slice();
+            if (algo === 'dfs') arr.reverse();
+            q.innerHTML = arr.slice(0, 12).map(function (id, i) {
+                return '<span class="qchip' + (i === 0 ? ' head' : '') + '">' + name(id) + '</span>';
+            }).join('') + (arr.length > 12 ? '<span class="qchip">+' + (arr.length - 12) + '</span>' : '');
+        }
+    }
+
+    // ---------- 재생 ----------
+    function reset() {
+        stop();
+        var r = buildFrames();
+        frames = r.frames;
+        frameIdx = 0;
+        window.__result = r;
+        statusBar.innerHTML = '재생 시작을 누르면 탐색이 진행됩니다.';
+        draw(); renderSide();
+    }
+
+    function stop() {
+        playing = false;
+        if (timer) { clearTimeout(timer); timer = null; }
+        document.getElementById('btn-play').textContent = '▶ 재생 시작';
+    }
+
+    function play() {
+        if (playing) { stop(); return; }
+        if (frameIdx >= frames.length - 1) { frameIdx = 0; }
+        playing = true;
+        document.getElementById('btn-play').textContent = '⏸ 일시정지';
+        step();
+    }
+
+    function step() {
+        if (!playing) return;
+        draw(); renderSide();
+        var r = window.__result;
+        if (frameIdx >= frames.length - 1) {
+            stop();
+            statusBar.innerHTML = r.found
+                ? '<span class="done">도착!</span> ' + r.path.map(name).join(' → ') + ' · 총 ' + r.total + 'km · 방문 ' + frames.length + '개 도시'
+                : '경로를 찾지 못했습니다.';
+            draw();
+            return;
+        }
+        frameIdx++;
+        timer = setTimeout(step, SPEEDS[Number(document.getElementById('speed').value)]);
+    }
+
+    // ---------- UI ----------
+    function fillSelects() {
+        var sorted = ids.slice().sort(function (a, b) { return name(a).localeCompare(name(b), 'ko'); });
+        ['sel-start', 'sel-end'].forEach(function (sid) {
+            var sel = document.getElementById(sid);
+            sel.innerHTML = sorted.map(function (id) { return '<option value="' + id + '">' + name(id) + '</option>'; }).join('');
+        });
+        document.getElementById('sel-start').value = startId;
+        document.getElementById('sel-end').value = endId;
+    }
+
+    document.getElementById('sel-start').addEventListener('change', function () { startId = this.value; reset(); });
+    document.getElementById('sel-end').addEventListener('change', function () { endId = this.value; reset(); });
+    document.getElementById('algo-row').addEventListener('click', function (e) {
+        var b = e.target.closest('button'); if (!b) return;
+        algo = b.dataset.k;
+        Array.prototype.forEach.call(this.querySelectorAll('button'), function (x) { x.classList.toggle('on', x === b); });
+        reset();
+    });
+    document.getElementById('btn-play').addEventListener('click', play);
+    document.getElementById('btn-reset').addEventListener('click', reset);
+    document.getElementById('speed').addEventListener('input', function () {
+        document.getElementById('speed-label').textContent = SPEEDS[Number(this.value)] + 'ms';
+    });
+
+    window.addEventListener('resize', function () { draw(); });
+    if (window.ResizeObserver) new ResizeObserver(function () { draw(); }).observe(stage);
+
+    fillSelects();
+    document.getElementById('speed-label').textContent = SPEEDS[2] + 'ms';
+    reset();
+})();
+</script>
+</body>
+</html>

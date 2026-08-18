@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>길찾기 시각화 — 10×10 격자</title>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700; font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400; font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700; font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF; --blue: #1C60EF; --blue-light: #DBE8FE;
+        --text: #16223f; --text-muted: #55647f;
+        --red: #ef4444; --green: #16a34a; --gold: #d4a017;
+        --purple: #7c3aed; --purple-light: #ede9fe;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+        margin: 0; height: 100%; font-family: var(--font-body); color: var(--text);
+        background: var(--white); overflow: hidden; user-select: none;
+    }
+    .app { display: flex; flex-direction: column; height: 100%; }
+
+    .topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        flex-wrap: wrap; padding: 12px 18px; border-bottom: 1px solid var(--blue-light);
+        background: #fbfcff; flex-shrink: 0;
+    }
+    .topbar h1 { font-family: var(--font-title); font-weight: 700; font-size: 15px; margin: 0; }
+    .topbar .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .grid-tag { font-size: 11.5px; font-weight: 700; color: var(--blue); background: var(--blue-light); padding: 4px 12px; border-radius: 999px; }
+
+    .body { flex: 1; display: flex; min-height: 0; }
+    .stage { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; padding: 14px 18px; overflow: auto; }
+    .side {
+        flex: 0 0 260px; border-left: 1px solid var(--blue-light); background: #fbfcff;
+        padding: 14px 16px; overflow-y: auto;
+    }
+
+    .note {
+        border: 1px solid var(--blue-light); background: #f4f8ff; border-radius: 12px;
+        padding: 12px 14px; margin-bottom: 14px;
+    }
+    .note h4 { font-family: var(--font-title); font-weight: 700; font-size: 12.5px; margin: 0 0 6px; color: var(--blue); }
+    .note ul { margin: 0; padding-left: 16px; }
+    .note li { font-size: 11.5px; line-height: 1.75; color: var(--text-muted); }
+    .note li strong { color: var(--text); }
+
+    .board-wrap {
+        background: #1e293b; border-radius: 16px; padding: 16px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .board { display: grid; gap: 2px; }
+    .cell {
+        position: relative; background: var(--white); border-radius: 3px;
+        display: flex; align-items: center; justify-content: center;
+        font-family: var(--font-title); font-weight: 700; font-size: 11px;
+        color: #64748b; cursor: pointer; transition: background .12s ease;
+    }
+    .cell.wall { background: #334155; cursor: pointer; }
+    .cell.visited { background: #bfdbfe; color: #1e40af; }
+    .cell.frontier { background: #fde68a; color: #92700c; }
+    .cell.path { background: #fca5a5; color: #7f1d1d; }
+    .cell.start { background: #22c55e !important; color: #fff; }
+    .cell.end { background: #ef4444 !important; color: #fff; }
+    .cell .arrow { position: absolute; top: 1px; right: 2px; font-size: 9px; color: #475569; }
+    .cell.start .arrow, .cell.end .arrow { color: #fff; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
+    .legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+    .side h3 {
+        font-family: var(--font-title); font-weight: 700; font-size: 12.5px;
+        margin: 0 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--blue-light);
+    }
+    .side h3:not(:first-child) { margin-top: 18px; }
+
+    .algo-list { display: flex; flex-direction: column; gap: 6px; }
+    .algo-btn {
+        font-family: var(--font-body); font-weight: 700; font-size: 13px; text-align: left;
+        padding: 11px 14px; border-radius: 10px; border: 1px solid var(--blue-light);
+        background: var(--white); color: var(--text); cursor: pointer;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .algo-btn:hover { background: var(--blue-light); }
+    .algo-btn.on { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    .algo-btn .tip { font-size: 9.5px; font-weight: 700; background: rgba(255,255,255,0.25); border-radius: 999px; padding: 2px 7px; }
+
+    .ctrl { display: flex; flex-direction: column; gap: 7px; }
+    button.action {
+        font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
+        border-radius: 10px; padding: 11px 12px; border: 1px solid var(--blue-light);
+        background: var(--white); color: var(--blue); cursor: pointer;
+    }
+    button.action:hover:not(:disabled) { background: var(--blue-light); }
+    button.action.primary { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    button.action.compare { background: var(--purple); color: var(--white); border-color: var(--purple); }
+    button.action.warn { background: #fff1f2; color: #b91c1c; border-color: #fecdd3; }
+    button.action.soft { background: #f1f5f9; color: var(--text-muted); border-color: #e2e8f0; }
+    button.action:disabled { opacity: .5; cursor: default; }
+
+    .speed-row { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-muted); margin-top: 3px; }
+    input[type=range] { width: 100%; accent-color: var(--blue); }
+
+    .fbox { border: 1px solid var(--blue-light); border-radius: 12px; background: var(--white); padding: 12px 14px; }
+    .fbox .ftitle { font-family: var(--font-title); font-weight: 700; font-size: 12px; text-align: center; margin-bottom: 8px; }
+    .frow { display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: var(--text-muted); padding: 5px 0; }
+    .frow + .frow { border-top: 1px solid #eef2fa; }
+    .frow.total { font-weight: 700; color: var(--text); }
+    .fval { font-family: var(--font-title); font-weight: 700; font-size: 11.5px; background: #f1f5f9; border-radius: 6px; padding: 2px 9px; min-width: 34px; text-align: center; }
+    .frow.total .fval { background: var(--blue-light); color: var(--blue); }
+
+    .cmp-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    .cmp-table th, .cmp-table td { font-size: 11px; padding: 6px 4px; text-align: center; border-bottom: 1px solid #eef2fa; }
+    .cmp-table th { color: var(--text-muted); font-weight: 700; }
+    .cmp-table td { font-family: var(--font-title); font-weight: 700; }
+    .cmp-table td.name { text-align: left; }
+    .cmp-table tr.best td { color: var(--green); }
+    .cmp-empty { font-size: 11px; color: #a9b3c7; text-align: center; padding: 10px 0; }
+
+    .status { font-size: 11.5px; font-weight: 700; margin-top: 10px; text-align: center; min-height: 16px; }
+    .status.ok { color: var(--green); }
+    .status.bad { color: #b91c1c; }
+
+    @media (max-width: 860px) {
+        .body { flex-direction: column; }
+        .side { flex: 0 0 auto; border-left: 0; border-top: 1px solid var(--blue-light); }
+    }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1>길찾기 시각화 — 네 가지 탐색 비교</h1>
+            <div class="sub">같은 미로에서 A*, 최상 우선, 너비 우선, 깊이 우선이 어떻게 다르게 찾아가는지 확인해 보세요.</div>
+        </div>
+        <span class="grid-tag">10 × 10 격자</span>
+    </div>
+
+    <div class="body">
+        <div class="stage">
+            <div class="note">
+                <h4>탐색 안내 및 방향 전환</h4>
+                <ul>
+                    <li><strong>탐색 우선순위:</strong> 상(↑) → 우(→) → 하(↓) → 좌(←) 순으로 인접한 칸을 확인합니다.</li>
+                    <li><strong>숫자와 화살표:</strong> 칸 안의 숫자는 <strong>방문 순서</strong>이고, 화살표는 <strong>이 칸으로 들어온 방향</strong>입니다.</li>
+                    <li>길이 막혀 이전 갈림길로 되돌아가거나(DFS) 다른 갈래로 넘어갈 때(BFS, A*), 숫자가 건너뛰는 것으로 방향 전환을 확인할 수 있습니다.</li>
+                    <li>빈 칸을 클릭하면 <strong>벽</strong>이 되고, 벽을 다시 클릭하면 사라집니다.</li>
+                </ul>
+            </div>
+
+            <div class="board-wrap">
+                <div class="board" id="board"></div>
+            </div>
+
+            <div class="legend">
+                <span><i style="background:#22c55e"></i>출발</span>
+                <span><i style="background:#ef4444"></i>도착</span>
+                <span><i style="background:#334155"></i>벽</span>
+                <span><i style="background:#fde68a"></i>대기열(다음 후보)</span>
+                <span><i style="background:#bfdbfe"></i>방문 완료</span>
+                <span><i style="background:#fca5a5"></i>최종 경로</span>
+            </div>
+        </div>
+
+        <div class="side">
+            <h3>1. 알고리즘 선택</h3>
+            <div class="algo-list" id="algo-list"></div>
+
+            <h3>2. 실행 컨트롤</h3>
+            <div class="ctrl">
+                <button class="action primary" id="btn-run">▶ 현재 알고리즘 실행</button>
+                <button class="action compare" id="btn-compare">전체 알고리즘 일괄 비교</button>
+                <button class="action soft" id="btn-clear">경로만 지우기</button>
+                <button class="action warn" id="btn-reset">벽 포함 초기화</button>
+                <button class="action" id="btn-maze">랜덤 미로 생성 (2경로 보장)</button>
+            </div>
+            <div class="status" id="status"></div>
+
+            <h3>3. 애니메이션 속도</h3>
+            <input type="range" id="speed" min="0" max="4" step="1" value="2">
+            <div class="speed-row"><span>느림</span><span>보통</span><span>빠름</span></div>
+
+            <h3 id="fbox-title">A* 현재 평가함수</h3>
+            <div class="fbox">
+                <div class="frow"><span>g(n) 이동 비용</span><span class="fval" id="f-g">0</span></div>
+                <div class="frow"><span>h(n) 예상 거리</span><span class="fval" id="f-h">0</span></div>
+                <div class="frow total"><span>f(n) = g + h</span><span class="fval" id="f-f">0</span></div>
+            </div>
+
+            <h3>일괄 비교 결과</h3>
+            <div id="cmp-wrap"><div class="cmp-empty">아직 비교하지 않았어요</div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var N = 10;
+    var START = { r: 0, c: 0 }, END = { r: N - 1, c: N - 1 };
+    // 상 → 우 → 하 → 좌
+    var DIRS = [
+        { dr: -1, dc: 0, from: '↓' },   // 위에서 내려왔다면 이 칸은 아래로 들어온 것
+        { dr: 0, dc: 1, from: '←' },
+        { dr: 1, dc: 0, from: '↑' },
+        { dr: 0, dc: -1, from: '→' }
+    ];
+    var ALGOS = [
+        { key: 'astar',  name: 'A* (A-Star)',    tip: '추천' },
+        { key: 'greedy', name: 'Greedy (최상 우선)' },
+        { key: 'bfs',    name: 'BFS (너비 우선)' },
+        { key: 'dfs',    name: 'DFS (깊이 우선)' }
+    ];
+    var SPEEDS = [420, 240, 120, 55, 15];
+
+    var walls = {};             // "r,c" -> true
+    var algo = 'astar';
+    var running = false;
+    var timer = null;
+
+    var boardEl = document.getElementById('board');
+    var statusEl = document.getElementById('status');
+    var cells = {};
+
+    function key(r, c) { return r + ',' + c; }
+    function isStart(r, c) { return r === START.r && c === START.c; }
+    function isEnd(r, c) { return r === END.r && c === END.c; }
+    function inside(r, c) { return r >= 0 && r < N && c >= 0 && c < N; }
+    function manhattan(r, c) { return Math.abs(r - END.r) + Math.abs(c - END.c); }
+
+    // ---------- 격자 ----------
+    function buildBoard() {
+        boardEl.innerHTML = '';
+        var size = 40;
+        boardEl.style.gridTemplateColumns = 'repeat(' + N + ', ' + size + 'px)';
+        boardEl.style.gridTemplateRows = 'repeat(' + N + ', ' + size + 'px)';
+        for (var r = 0; r < N; r++) {
+            for (var c = 0; c < N; c++) {
+                var el = document.createElement('div');
+                el.className = 'cell';
+                el.dataset.r = r; el.dataset.c = c;
+                el.style.width = size + 'px'; el.style.height = size + 'px';
+                (function (rr, cc, node) {
+                    node.addEventListener('click', function () { toggleWall(rr, cc); });
+                })(r, c, el);
+                cells[key(r, c)] = el;
+                boardEl.appendChild(el);
+            }
+        }
+        paint();
+    }
+
+    function toggleWall(r, c) {
+        if (running || isStart(r, c) || isEnd(r, c)) return;
+        if (walls[key(r, c)]) delete walls[key(r, c)];
+        else walls[key(r, c)] = true;
+        clearRun();
+        paint();
+    }
+
+    function paint(state) {
+        for (var r = 0; r < N; r++) {
+            for (var c = 0; c < N; c++) {
+                var el = cells[key(r, c)];
+                var cls = 'cell';
+                if (walls[key(r, c)]) cls += ' wall';
+                if (state) {
+                    if (state.path && state.path[key(r, c)]) cls += ' path';
+                    else if (state.visited && state.visited[key(r, c)] !== undefined) cls += ' visited';
+                    else if (state.frontier && state.frontier[key(r, c)]) cls += ' frontier';
+                }
+                if (isStart(r, c)) cls += ' start';
+                if (isEnd(r, c)) cls += ' end';
+                el.className = cls;
+
+                var order = state && state.visited ? state.visited[key(r, c)] : undefined;
+                var arrow = state && state.arrow ? state.arrow[key(r, c)] : undefined;
+                el.textContent = (order !== undefined) ? order : '';
+                if (arrow) {
+                    var a = document.createElement('span');
+                    a.className = 'arrow';
+                    a.textContent = arrow;
+                    el.appendChild(a);
+                }
+            }
+        }
+    }
+
+    // ---------- 탐색 ----------
+    // 네 알고리즘 모두 같은 형태의 기록을 남긴다: 방문 순서, 부모, 들어온 방향
+    function search(kind) {
+        var visitedOrder = [];        // [{r,c}] 방문(확정) 순서
+        var parent = {}, arrow = {}, g = {};
+        var seen = {};
+        var found = false;
+
+        var startK = key(START.r, START.c);
+        g[startK] = 0;
+        var list = [{ r: START.r, c: START.c, k: startK }];
+        seen[startK] = true;
+
+        function priority(node) {
+            var h = manhattan(node.r, node.c);
+            if (kind === 'astar') return g[node.k] + h;
+            if (kind === 'greedy') return h;
+            return 0;
+        }
+
+        while (list.length) {
+            var idx;
+            if (kind === 'bfs') idx = 0;
+            else if (kind === 'dfs') idx = list.length - 1;
+            else {
+                idx = 0;
+                for (var i = 1; i < list.length; i++) {
+                    if (priority(list[i]) < priority(list[idx])) idx = i;
+                }
+            }
+            var cur = list.splice(idx, 1)[0];
+            visitedOrder.push(cur);
+
+            if (cur.r === END.r && cur.c === END.c) { found = true; break; }
+
+            for (var d = 0; d < DIRS.length; d++) {
+                var nr = cur.r + DIRS[d].dr, nc = cur.c + DIRS[d].dc;
+                if (!inside(nr, nc) || walls[key(nr, nc)]) continue;
+                var nk = key(nr, nc);
+                var ng = g[cur.k] + 1;
+                if (seen[nk] && !(kind === 'astar' && ng < g[nk])) continue;
+                seen[nk] = true;
+                g[nk] = ng;
+                parent[nk] = cur.k;
+                arrow[nk] = DIRS[d].from;
+                list.push({ r: nr, c: nc, k: nk });
+            }
+        }
+
+        var path = [];
+        if (found) {
+            var k = key(END.r, END.c);
+            while (k !== undefined) { path.unshift(k); k = parent[k]; }
+        }
+        return { visitedOrder: visitedOrder, arrow: arrow, g: g, path: path, found: found, list: list };
+    }
+
+    // ---------- 실행(애니메이션) ----------
+    function clearRun() {
+        if (timer) { clearTimeout(timer); timer = null; }
+        running = false;
+        setStatus('', '');
+        setF(0, 0, 0);
+        setButtons(true);
+    }
+
+    function setStatus(txt, kind) {
+        statusEl.textContent = txt;
+        statusEl.className = 'status' + (kind ? ' ' + kind : '');
+    }
+    function setF(gv, hv, fv) {
+        document.getElementById('f-g').textContent = gv;
+        document.getElementById('f-h').textContent = hv;
+        document.getElementById('f-f').textContent = fv;
+    }
+    // 실행 중에도 '경로만 지우기'는 눌러서 멈출 수 있어야 한다.
+    function setButtons(on) {
+        ['btn-run', 'btn-compare', 'btn-reset', 'btn-maze'].forEach(function (id) {
+            document.getElementById(id).disabled = !on;
+        });
+        document.getElementById('btn-clear').disabled = false;
+        document.getElementById('btn-clear').textContent = on ? '경로만 지우기' : '■ 멈추기';
+    }
+
+    function run() {
+        if (running) return;
+        clearRun();
+        running = true;
+        setButtons(false);
+        var res = search(algo);
+        var delay = SPEEDS[Number(document.getElementById('speed').value)];
+        var visited = {}, step = 0;
+
+        function tick() {
+            if (step >= res.visitedOrder.length) {
+                var pathMap = {};
+                res.path.forEach(function (k) { pathMap[k] = true; });
+                paint({ visited: visited, arrow: res.arrow, path: pathMap });
+                running = false;
+                setButtons(true);
+                if (res.found) setStatus('도착! 방문 ' + res.visitedOrder.length + '칸 · 경로 ' + res.path.length + '칸', 'ok');
+                else setStatus('도착할 수 없어요. 벽을 확인해 보세요.', 'bad');
+                return;
+            }
+            var node = res.visitedOrder[step];
+            visited[node.k] = step + 1;
+            var h = manhattan(node.r, node.c), gv = res.g[node.k];
+            setF(gv, h, gv + h);
+            paint({ visited: visited, arrow: res.arrow });
+            step++;
+            timer = setTimeout(tick, delay);
+        }
+        tick();
+    }
+
+    // ---------- 일괄 비교 ----------
+    function compareAll() {
+        clearRun();
+        var rows = ALGOS.map(function (a) {
+            var r = search(a.key);
+            return { name: a.name.split(' ')[0], visited: r.visitedOrder.length, path: r.found ? r.path.length : null };
+        });
+        var reachable = rows.filter(function (r) { return r.path !== null; });
+        var bestPath = reachable.length ? Math.min.apply(null, reachable.map(function (r) { return r.path; })) : null;
+
+        var html = '<table class="cmp-table"><thead><tr><th style="text-align:left">알고리즘</th><th>방문 칸</th><th>경로 길이</th></tr></thead><tbody>';
+        rows.forEach(function (r) {
+            var best = (r.path !== null && r.path === bestPath);
+            html += '<tr class="' + (best ? 'best' : '') + '"><td class="name">' + r.name + '</td><td>' + r.visited + '</td><td>' +
+                    (r.path === null ? '실패' : r.path) + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        document.getElementById('cmp-wrap').innerHTML = html;
+        setStatus('네 알고리즘을 모두 실행했어요. 초록색이 가장 짧은 경로입니다.', 'ok');
+        paint();
+    }
+
+    // ---------- 미로 ----------
+    function randomMaze() {
+        clearRun();
+        walls = {};
+        for (var r = 0; r < N; r++) {
+            for (var c = 0; c < N; c++) {
+                if (isStart(r, c) || isEnd(r, c)) continue;
+                if (Math.random() < 0.3) walls[key(r, c)] = true;
+            }
+        }
+        // 오른쪽/아래로만 움직이는 경로 두 개를 뚫어 항상 최소 두 갈래가 남게 한다.
+        carve(monotonePath());
+        carve(monotonePath());
+        paint();
+        document.getElementById('cmp-wrap').innerHTML = '<div class="cmp-empty">아직 비교하지 않았어요</div>';
+    }
+
+    function monotonePath() {
+        var r = START.r, c = START.c, p = [key(r, c)];
+        while (r !== END.r || c !== END.c) {
+            var canDown = r < END.r, canRight = c < END.c;
+            if (canDown && canRight) { if (Math.random() < 0.5) r++; else c++; }
+            else if (canDown) r++;
+            else c++;
+            p.push(key(r, c));
+        }
+        return p;
+    }
+
+    function carve(p) { p.forEach(function (k) { delete walls[k]; }); }
+
+    function resetAll() {
+        clearRun();
+        walls = {};
+        paint();
+        document.getElementById('cmp-wrap').innerHTML = '<div class="cmp-empty">아직 비교하지 않았어요</div>';
+    }
+
+    // ---------- UI ----------
+    function renderAlgos() {
+        var wrap = document.getElementById('algo-list');
+        wrap.innerHTML = '';
+        ALGOS.forEach(function (a) {
+            var b = document.createElement('button');
+            b.className = 'algo-btn' + (a.key === algo ? ' on' : '');
+            b.dataset.key = a.key;
+            b.innerHTML = '<span>' + a.name + '</span>' + (a.tip ? '<span class="tip">' + a.tip + '</span>' : '');
+            b.addEventListener('click', function () {
+                if (running) return;
+                algo = a.key;
+                document.getElementById('fbox-title').textContent =
+                    (a.key === 'astar') ? 'A* 현재 평가함수' : a.name.split(' ')[0] + ' 현재 평가함수';
+                renderAlgos();
+                clearRun();
+                paint();
+            });
+            wrap.appendChild(b);
+        });
+    }
+
+    document.getElementById('btn-run').addEventListener('click', run);
+    document.getElementById('btn-compare').addEventListener('click', compareAll);
+    document.getElementById('btn-clear').addEventListener('click', function () { clearRun(); paint(); });
+    document.getElementById('btn-reset').addEventListener('click', resetAll);
+    document.getElementById('btn-maze').addEventListener('click', randomMaze);
+
+    renderAlgos();
+    buildBoard();
+})();
+</script>
+</body>
+</html>
