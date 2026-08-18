@@ -184,17 +184,18 @@
 <div class="app">
     <div class="topbar">
         <div>
-            <h1 id="title-text">최상 우선 탐색 — 부산 → 서울</h1>
+            <h1 id="title-text">최상 우선 탐색</h1>
             <div class="sub">OPEN 리스트에서 평가 함숫값 f(n)이 가장 작은 도시를 골라 목표까지 이동해 보세요.</div>
         </div>
         <div class="controls">
             <button class="action" id="btn-retry">처음부터</button>
+            <button class="action primary" id="btn-new" style="display:none;">새 문제 불러오기</button>
         </div>
     </div>
 
     <div class="mission">
         <span class="mission-chip"><span class="goal-dot"></span>목표 상태 <span id="goal-text">서울</span></span>
-        <span class="mission-chip">초기 상태 부산</span>
+        <span class="mission-chip">초기 상태 <span id="start-text">부산</span></span>
         <span class="mission-chip">선택 횟수 <b id="move-count">0</b></span>
         <span class="mission-hint" id="mission-hint">왼쪽에서 모든 도시의 f(n)을 채우면 탐색을 시작할 수 있어요.</span>
     </div>
@@ -239,7 +240,7 @@
     // h: 그 도시에서 서울까지의 예상 시간(분). 부산은 초기 상태라 값이 주어지지 않는다.
     // pos: 교과서 지도에서의 위치를 0~1로 정규화한 값.
     // links: [도시A, 도시B, 걸리는 시간(분)] — 양방향이다.
-    var MAP = {
+    var TEXTBOOK = {
         label: {
             seoul: '서울', hongcheon: '홍천', jecheon: '제천', eumseong: '음성',
             cheonan: '천안', andong: '안동', sangju: '상주', uiseong: '의성',
@@ -286,22 +287,94 @@
         goal: 'seoul'
     };
 
+    // 연습 문제 지도. 좌표에서 직선거리로 h를 만들어 허용성과 일관성이 보장되며,
+    // 최상 우선 탐색이 A*보다 나쁜 경로를 고르는 문제만 골랐다.
+    var PRACTICE = [
+        {
+            name: '연습 1',
+            label: { start: '출발', A: 'A', B: 'B', C: 'C', D: 'D', E: 'E', F: 'F', G: 'G', goal: '도착' },
+            h: { start: null, A: 140, B: 390, C: 420, D: 310, E: 290, F: 260, G: 140, goal: 0 },
+            pos: { start: [0.84, 0.86], A: [0.20, 0.40], B: [0.74, 0.54], C: [0.57, 0.80], D: [0.30, 0.72], E: [0.64, 0.28], F: [0.46, 0.50], G: [0.38, 0.20], goal: [0.10, 0.14] },
+            links: [
+                ['A', 'G', 240],
+                ['D', 'F', 210],
+                ['E', 'G', 250],
+                ['start', 'C', 210],
+                ['A', 'F', 180],
+                ['A', 'goal', 180],
+                ['B', 'E', 220],
+                ['C', 'D', 180],
+                ['B', 'F', 150],
+                ['G', 'goal', 220],
+                ['B', 'C', 200]
+            ],
+            start: 'start', goal: 'goal'
+        },
+        {
+            name: '연습 2',
+            label: { start: '출발', A: 'A', B: 'B', C: 'C', D: 'D', E: 'E', F: 'F', G: 'G', goal: '도착' },
+            h: { start: null, A: 390, B: 260, C: 420, D: 140, E: 290, F: 310, G: 140, goal: 0 },
+            pos: { start: [0.84, 0.86], A: [0.74, 0.54], B: [0.46, 0.50], C: [0.57, 0.80], D: [0.20, 0.40], E: [0.64, 0.28], F: [0.30, 0.72], G: [0.38, 0.20], goal: [0.10, 0.14] },
+            links: [
+                ['D', 'G', 210],
+                ['B', 'F', 210],
+                ['E', 'G', 170],
+                ['start', 'C', 150],
+                ['A', 'E', 180],
+                ['B', 'D', 250],
+                ['D', 'goal', 250],
+                ['C', 'F', 220],
+                ['A', 'B', 260],
+                ['G', 'goal', 220],
+                ['A', 'C', 170]
+            ],
+            start: 'start', goal: 'goal'
+        },
+        {
+            name: '연습 3',
+            label: { start: '출발', A: 'A', B: 'B', C: 'C', D: 'D', E: 'E', F: 'F', G: 'G', goal: '도착' },
+            h: { start: null, A: 310, B: 390, C: 260, D: 140, E: 290, F: 140, G: 420, goal: 0 },
+            pos: { start: [0.84, 0.86], A: [0.30, 0.72], B: [0.74, 0.54], C: [0.46, 0.50], D: [0.38, 0.20], E: [0.64, 0.28], F: [0.20, 0.40], G: [0.57, 0.80], goal: [0.10, 0.14] },
+            links: [
+                ['D', 'F', 140],
+                ['A', 'C', 150],
+                ['D', 'E', 250],
+                ['start', 'G', 210],
+                ['B', 'E', 180],
+                ['C', 'F', 180],
+                ['F', 'goal', 250],
+                ['A', 'G', 250],
+                ['B', 'C', 260],
+                ['D', 'goal', 180],
+                ['B', 'G', 200]
+            ],
+            start: 'start', goal: 'goal'
+        }
+    ];
+
+    // ?mode=practice 로 열면 연습 문제, 아니면 교과서 지도
+    var PRACTICE_MODE = /[?&]mode=practice/.test(location.search);
+    var MAP = TEXTBOOK;
+
     var NODE_W = 74, NODE_H_PREP = 52, NODE_H_MAP = 40;
     var PAD_X = 52, PAD_Y = 36;
 
     var adj = {};   // id -> [{to, cost}]
-    (function buildAdj() {
+    function buildAdj() {
+        adj = {};
         Object.keys(MAP.label).forEach(function (id) { adj[id] = []; });
         MAP.links.forEach(function (l) {
             adj[l[0]].push({ to: l[1], cost: l[2] });
             adj[l[1]].push({ to: l[0], cost: l[2] });
         });
-    })();
+    }
 
     function label(id) { return MAP.label[id]; }
     function allIds() { return Object.keys(MAP.label); }
     function gradableIds() { return allIds().filter(function (id) { return MAP.h[id] !== null; }); }
 
+    var titleEl = document.getElementById('title-text');
+    var baseTitle = titleEl.textContent;
     var prepOuter = document.getElementById('prep-outer');
     var prepInner = document.getElementById('prep-inner');
     var prepSvg = document.getElementById('prep-svg');
@@ -379,7 +452,7 @@
     function expectedF(id) { return MAP.h[id]; }
 
     function renderHTable() {
-        hTable.innerHTML = '<span class="h-label">서울까지 예상 시간 h(n)</span>' +
+        hTable.innerHTML = '<span class="h-label">' + label(MAP.goal) + '까지 예상 시간 h(n)</span>' +
             gradableIds().map(function (id) {
                 return '<span class="h-chip">' + label(id) + ' ' + MAP.h[id] + '</span>';
             }).join('');
@@ -546,7 +619,7 @@
             finished = true;
             renderLists();
             render();
-            setBanner('ok', '🎉 목표 상태 "서울"에 도달했습니다! CLOSE 리스트 순서 = ' + closeList.map(label).join(' → '));
+            setBanner('ok', '🎉 목표 상태 "' + label(MAP.goal) + '"에 도달했습니다! CLOSE 리스트 순서 = ' + closeList.map(label).join(' → '));
             fireConfetti();
             missionHint.textContent = '처음부터 버튼을 눌러 다시 해 볼 수 있어요.';
             return;
@@ -583,7 +656,7 @@
         document.getElementById('btn-check-f').disabled = false;
         paneRight.classList.add('locked');
         missionHint.textContent = '왼쪽에서 모든 도시의 f(n)을 채우면 탐색을 시작할 수 있어요.';
-        setBanner('info', '교과서 지도입니다. 각 도시의 f(n)을 채워 넣으면 탐색을 시작할 수 있어요.');
+        setBanner('info', (PRACTICE_MODE ? '연습 문제입니다. ' : '교과서 지도입니다. ') + '각 지점의 f(n)을 채워 넣으면 탐색을 시작할 수 있어요.');
         resetSearch();
         renderHTable();
         renderPrep();
@@ -596,21 +669,49 @@
     function scheduleRelayout() {
         if (pending) return;
         pending = true;
-        requestAnimationFrame(function () {
-            pending = false;
+        var ran = false;
+        function run() {
+            if (ran) return;
+            ran = true; pending = false;
             var w = mapOuter.clientWidth, h = mapOuter.clientHeight;
             if (w && (w !== lastW || h !== lastH)) { lastW = w; lastH = h; render(); }
             var pw = prepOuter.clientWidth, ph = prepOuter.clientHeight;
             if (pw && (pw !== lastPW || ph !== lastPH)) { lastPW = pw; lastPH = ph; renderPrep(); }
-        });
+        }
+        // 탭이 숨겨져 있으면 requestAnimationFrame이 멈추므로 타이머로도 한 번 더 건다.
+        requestAnimationFrame(run);
+        setTimeout(run, 250);
     }
     window.addEventListener('resize', scheduleRelayout);
+    document.addEventListener('visibilitychange', scheduleRelayout);
     if (window.ResizeObserver) {
         new ResizeObserver(scheduleRelayout).observe(mapOuter);
         new ResizeObserver(scheduleRelayout).observe(prepOuter);
     }
 
-    resetAll();
+    function loadMap(m) {
+        MAP = m;
+        buildAdj();
+        document.getElementById('goal-text').textContent = MAP.label[MAP.goal];
+        document.getElementById('start-text').textContent = MAP.label[MAP.start];
+        titleEl.textContent = baseTitle + (m === TEXTBOOK ? ' — 교과서 지도' : ' — ' + m.name);
+        resetAll();
+    }
+
+    function loadRandomPractice() {
+        var next = PRACTICE[Math.floor(Math.random() * PRACTICE.length)];
+        if (PRACTICE.length > 1 && next === MAP) next = PRACTICE[(PRACTICE.indexOf(next) + 1) % PRACTICE.length];
+        loadMap(next);
+    }
+
+    if (PRACTICE_MODE) {
+        document.getElementById('btn-new').style.display = '';
+        document.getElementById('btn-new').addEventListener('click', loadRandomPractice);
+        loadRandomPractice();
+    } else {
+        buildAdj();
+        resetAll();
+    }
 })();
 </script>
 </body>
