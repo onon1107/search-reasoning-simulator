@@ -203,7 +203,7 @@
 
     <div class="split">
         <div class="pane pane-left">
-            <div class="pane-head">① 평가 함숫값 채우기<span class="pane-sub">각 도시에 적힌 g와 h를 더해 f(n)을 적어 보세요.</span></div>
+            <div class="pane-head">평가 함숫값 채우기<span class="pane-sub">먼저 g(n)을 구하고, 맞으면 f(n) = g(n) + h(n)까지 채웁니다.</span></div>
             <div class="h-table" id="h-table"></div>
             <div class="map-outer" id="prep-outer">
                 <div class="map-inner" id="prep-inner"><svg id="prep-svg"></svg></div>
@@ -315,6 +315,7 @@
     })();
 
     function gradableIds() { return allIds().filter(function (id) { return MAP.h[id] !== null; }); }
+    function expectedG(id) { return BEST_G[id]; }
     function expectedF(id) { return BEST_G[id] + MAP.h[id]; }
 
     var prepOuter = document.getElementById('prep-outer');
@@ -332,7 +333,8 @@
     var moveCountEl = document.getElementById('move-count');
     var missionHint = document.getElementById('mission-hint');
 
-    var prepAnswers = {}, prepDone = false;
+    var prepStage = 'g';          // 'g' → 'f' → 'done'
+    var answerG = {}, answerF = {};
     var openList, closeList, gMap, parent, moveCount, finished, pathSet;
 
     function setBanner(kind, text) {
@@ -390,11 +392,17 @@
 
     // ---------- 왼쪽: f(n) = g(n) + h(n) 채우기 ----------
     function renderHTable() {
-        hTable.innerHTML =
-            '<span class="h-label">계산 방법</span>' +
-            '<span class="h-chip">g(n) = 부산에서 그 도시까지 가장 빠른 시간</span>' +
-            '<span class="h-chip">h(n) = 그 도시에서 서울까지 예상 시간</span>' +
-            '<span class="h-chip">f(n) = g(n) + h(n)</span>';
+        if (prepStage === 'g') {
+            hTable.innerHTML =
+                '<span class="h-label">① g(n) 채우기</span>' +
+                '<span class="h-chip">g(n) = 부산에서 그 도시까지 가장 빠르게 가는 시간</span>' +
+                '<span class="h-chip">길이 여러 갈래면 더 짧은 쪽을 고르세요</span>';
+        } else {
+            hTable.innerHTML =
+                '<span class="h-label">② f(n) 채우기</span>' +
+                '<span class="h-chip">h(n) = 그 도시에서 서울까지 예상 시간</span>' +
+                '<span class="h-chip">f(n) = g(n) + h(n)</span>';
+        }
     }
 
     function renderPrep() {
@@ -420,62 +428,84 @@
             if (MAP.h[id] === null) {
                 var fx = document.createElement('div');
                 fx.className = 'f-fixed';
-                fx.textContent = '초기 상태';
+                fx.textContent = '초기 상태 g=0';
                 el.appendChild(fx);
-            } else {
-                var gh = document.createElement('div');
-                gh.className = 'gh';
-                gh.textContent = 'g=' + BEST_G[id] + ' h=' + MAP.h[id];
-                el.appendChild(gh);
-
-                var input = document.createElement('input');
-                input.type = 'number';
-                input.className = 'f-input';
-                input.dataset.id = id;
-                input.setAttribute('inputmode', 'numeric');
-                input.autocomplete = 'off';
-                input.placeholder = 'f=?';
-                if (prepAnswers[id] != null) input.value = prepAnswers[id];
-                if (prepDone) input.disabled = true;
-                input.addEventListener('input', function () {
-                    prepAnswers[id] = input.value;
-                    el.classList.remove('bad', 'good');
-                });
-                input.addEventListener('keydown', function (ev) {
-                    if (ev.key === 'Enter') { ev.preventDefault(); checkPrep(); }
-                });
-                el.appendChild(input);
+                prepInner.appendChild(el);
+                return;
             }
+
+            var info = document.createElement('div');
+            info.className = 'gh';
+            // 1단계에서는 h만 주고 g를 묻는다. 2단계에서는 맞힌 g를 보여 주고 f를 묻는다.
+            info.textContent = (prepStage === 'g')
+                ? ('h=' + MAP.h[id])
+                : ('g=' + expectedG(id) + ' h=' + MAP.h[id]);
+            el.appendChild(info);
+
+            var store = (prepStage === 'g') ? answerG : answerF;
+            var input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'f-input';
+            input.dataset.id = id;
+            input.setAttribute('inputmode', 'numeric');
+            input.autocomplete = 'off';
+            input.placeholder = (prepStage === 'g') ? 'g=?' : 'f=?';
+            if (store[id] != null) input.value = store[id];
+            if (prepStage === 'done') input.disabled = true;
+            input.addEventListener('input', function () {
+                store[id] = input.value;
+                el.classList.remove('bad', 'good');
+            });
+            input.addEventListener('keydown', function (ev) {
+                if (ev.key === 'Enter') { ev.preventDefault(); checkPrep(); }
+            });
+            el.appendChild(input);
             prepInner.appendChild(el);
         });
     }
 
     function checkPrep() {
-        if (prepDone) return;
+        if (prepStage === 'done') return;
+        var store = (prepStage === 'g') ? answerG : answerF;
+        var want = (prepStage === 'g') ? expectedG : expectedF;
         var wrong = 0, blank = 0;
+
         gradableIds().forEach(function (id) {
             var el = prepInner.querySelector('.city[data-id="' + id + '"]');
             if (!el) return;
-            var raw = (prepAnswers[id] == null ? '' : String(prepAnswers[id])).trim();
+            var raw = (store[id] == null ? '' : String(store[id])).trim();
             el.classList.remove('bad', 'good');
             if (raw === '') { blank++; el.classList.add('bad'); return; }
-            if (Number(raw) === expectedF(id)) el.classList.add('good');
+            if (Number(raw) === want(id)) el.classList.add('good');
             else { wrong++; el.classList.add('bad'); }
         });
 
-        if (blank + wrong === 0) {
-            prepDone = true;
-            prepMsg.className = 'prep-msg ok';
-            prepMsg.textContent = '모두 정확합니다! 오른쪽에서 탐색을 시작하세요.';
-            prepInner.querySelectorAll('.f-input').forEach(function (i) { i.disabled = true; });
-            document.getElementById('btn-check-f').disabled = true;
-            unlockRight();
-        } else {
+        if (blank + wrong > 0) {
             prepMsg.className = 'prep-msg bad';
             prepMsg.textContent = blank
                 ? '아직 비어 있는 칸이 있어요. 모두 채워 주세요.'
-                : '틀린 칸이 ' + wrong + '개 있어요. 빨간 칸의 g + h를 다시 확인해 보세요.';
+                : (prepStage === 'g'
+                    ? '틀린 칸이 ' + wrong + '개 있어요. 부산에서 그 도시까지 가는 길을 다시 따라가 보세요.'
+                    : '틀린 칸이 ' + wrong + '개 있어요. 빨간 칸의 g + h를 다시 확인해 보세요.');
+            return;
         }
+
+        if (prepStage === 'g') {
+            prepStage = 'f';
+            prepMsg.className = 'prep-msg ok';
+            prepMsg.textContent = 'g(n) 모두 정확합니다! 이제 f(n) = g(n) + h(n)을 채워 보세요.';
+            renderHTable();
+            renderPrep();
+            missionHint.textContent = '이제 각 도시의 f(n) = g(n) + h(n)을 채우세요.';
+            return;
+        }
+
+        prepStage = 'done';
+        prepMsg.className = 'prep-msg ok';
+        prepMsg.textContent = '모두 정확합니다! 오른쪽에서 탐색을 시작하세요.';
+        prepInner.querySelectorAll('.f-input').forEach(function (i) { i.disabled = true; });
+        document.getElementById('btn-check-f').disabled = true;
+        unlockRight();
     }
 
     function unlockRight() {
@@ -631,14 +661,14 @@
     }
 
     function resetAll() {
-        prepAnswers = {};
-        prepDone = false;
+        prepStage = 'g';
+        answerG = {}; answerF = {};
         prepMsg.className = 'prep-msg';
         prepMsg.textContent = '';
         document.getElementById('btn-check-f').disabled = false;
         paneRight.classList.add('locked');
-        missionHint.textContent = '왼쪽에서 모든 도시의 f(n)을 채우면 탐색을 시작할 수 있어요.';
-        setBanner('info', '교과서 지도입니다. 각 도시의 f(n) = g(n) + h(n)을 채워 넣으면 탐색을 시작할 수 있어요.');
+        missionHint.textContent = '왼쪽에서 g(n)과 f(n)을 차례로 채우면 탐색을 시작할 수 있어요.';
+        setBanner('info', '먼저 각 도시의 g(n)을 구해 보세요. 부산에서 그 도시까지 가장 빠르게 가는 시간입니다.');
         resetSearch();
         renderHTable();
         renderPrep();

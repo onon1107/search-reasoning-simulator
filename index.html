@@ -480,7 +480,8 @@
                             <ul>
                                 <li>평가 함수는 <strong>f(n) = g(n) + h(n)</strong>입니다. <strong>g(n)</strong>은 부산에서 그 도시까지 <strong>실제로 이동한 시간</strong>, <strong>h(n)</strong>은 그 도시에서 서울까지 남은 <strong>예상 시간</strong>입니다.</li>
                                 <li>최상 우선 탐색과 <strong>똑같은 교과서 지도</strong>(도시 12개, 길 16개)를 씁니다. 길 위의 숫자가 이동 시간입니다.</li>
-                                <li>먼저 왼쪽 창에서 각 도시의 <strong>g와 h를 더해 f(n)을 채워 넣어야</strong> 오른쪽 탐색 창이 열립니다.</li>
+                                <li>왼쪽 창은 두 단계입니다. <strong>① 각 도시의 g(n)</strong>, 즉 부산에서 그 도시까지 <strong>가장 빠르게 가는 시간</strong>을 먼저 구해 넣습니다. 길이 여러 갈래인 도시는 <strong>더 짧은 쪽</strong>을 골라야 합니다.</li>
+                                <li><strong>② g(n)이 모두 맞으면</strong> 각 도시에 g가 채워지고, 이제 <strong>f(n) = g(n) + h(n)</strong>을 적습니다. 여기까지 맞혀야 오른쪽 탐색 창이 열립니다. h(n)은 최상 우선 탐색에서 쓰던 값과 같습니다.</li>
                                 <li>탐색을 시작하면 부산은 곧바로 <strong>CLOSE 리스트</strong>에 들어가고, 이웃 도시들이 <strong>OPEN 리스트</strong>에 추가됩니다.</li>
                                 <li>매 단계, OPEN 리스트에 있는 도시 중 <strong>f(n)이 가장 작은 도시</strong>를 클릭하세요. 더 빠른 길이 발견되면 그 도시의 g(n)이 <strong>더 작은 값으로 갱신</strong>됩니다.</li>
                                 <li>노란 점선 도시가 <strong>목표 상태(서울)</strong>입니다. 서울이 선택되면 탐색이 끝나고 찾아낸 경로와 총 시간이 표시됩니다.</li>
