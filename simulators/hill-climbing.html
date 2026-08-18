@@ -382,7 +382,7 @@
             <span class="mission-label">목표 상태</span>
             <div class="mini-board tiny" id="goal-board"></div>
         </div>
-        <span class="mission-hint" id="mission-hint">이웃 상태 중 평가 값이 가장 높은 상태를 클릭하세요.</span>
+        <span class="mission-hint" id="mission-hint">먼저 현재 상태의 f(n)을 구해서 입력하세요.</span>
     </div>
 
     <div class="status-banner" id="status-banner"></div>
@@ -402,7 +402,7 @@
             <div class="fn-gate-msg" id="fn-gate-msg"></div>
         </div>
 
-        <div class="arrow-down hidden" id="neighbors-label">▼ 이웃 상태 — 평가 값이 가장 높은 상태를 클릭하세요</div>
+        <div class="arrow-down hidden" id="neighbors-label">▼ 어떤 조각을 움직일까요? — 옮긴 뒤 f(n)이 가장 높아지는 이동을 클릭하세요</div>
         <div class="neighbors-row hidden" id="neighbors-row"></div>
     </div>
 
@@ -457,9 +457,9 @@
             var t = b + d;
             var ns = s.slice();
             ns[b] = s[t]; ns[t] = 0;
-            // 이동 후: 움직인 조각은 b에, 빈칸은 t에 있다. 화살표는 조각에서 빈칸 쪽을 가리킨다.
-            var dir = d === -3 ? 'up' : d === 3 ? 'down' : d === -1 ? 'left' : 'right';
-            return { state: ns, value: fn(ns), movedIdx: b, dir: dir };
+            // 선택지는 '이동 전' 판에 표시한다. 움직일 조각은 t에 있고, 빈칸 b 쪽으로 밀린다.
+            var fromDir = d === -3 ? 'down' : d === 3 ? 'up' : d === -1 ? 'right' : 'left';
+            return { state: ns, value: fn(ns), fromIdx: t, fromDir: fromDir };
         });
     }
 
@@ -546,8 +546,9 @@
 
             var board = document.createElement('div');
             board.className = 'mini-board cand';
+            // 현재 판을 그대로 두고 어떤 조각을 어느 쪽으로 밀지만 표시한다.
             // f(n) 값은 표시하지 않는다 — 학생이 직접 세어 비교해야 한다.
-            renderBoard(board, n.state, { idx: n.movedIdx, dir: n.dir });
+            renderBoard(board, state, { idx: n.fromIdx, dir: n.fromDir });
 
             card.appendChild(board);
 
@@ -562,7 +563,7 @@
             missionHint.textContent = '다시 하기 또는 새 문제 불러오기를 눌러 새로 시작해 보세요.';
         } else {
             setBanner('', '');
-            missionHint.textContent = '이웃 상태 중 평가 값이 가장 높은 상태를 클릭하세요.';
+            missionHint.textContent = '옮긴 뒤 f(n)이 가장 높아지는 이동을 클릭하세요.';
         }
     }
 
@@ -616,7 +617,7 @@
             history.push(fn(state));
             setBanner('', '');
             render();
-            missionHint.textContent = '이웃 상태 중 평가 값이 가장 높은 상태를 클릭하세요.';
+            missionHint.textContent = '옮긴 뒤 f(n)이 가장 높아지는 이동을 클릭하세요.';
         } else {
             fnGate.classList.remove('shake');
             void fnGate.offsetWidth;
