@@ -265,6 +265,149 @@
     .chip-track.close-track .chip { background: #e7e9ef; color: var(--text); }
     .chip-track .chip.best { outline: 2px solid var(--gold); }
     .chip-track .placeholder { color: #a9b3c7; font-weight: 400; font-size: 11.5px; }
+
+    /* ---------- 좌우 분할 ---------- */
+    .split { flex: 1; display: flex; min-height: 0; }
+    .pane { flex: 1 1 50%; min-width: 0; display: flex; flex-direction: column; }
+    .pane-left { border-right: 1px solid var(--blue-light); }
+    .pane-right.locked { flex: 0 0 0; overflow: hidden; border: 0; }
+    .pane-right { transition: flex-basis 0.3s ease; }
+
+    .pane-head {
+        flex-shrink: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 9px 16px;
+        background: #f2f6ff;
+        border-bottom: 1px solid var(--blue-light);
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--text);
+    }
+    .pane-head .pane-sub {
+        font-family: var(--font-body);
+        font-weight: 400;
+        font-size: 11.5px;
+        color: var(--text-muted);
+    }
+
+    /* h 목록 */
+    .h-table {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        padding: 9px 16px;
+        border-bottom: 1px solid var(--blue-light);
+        background: var(--white);
+    }
+    .h-table .h-label {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-right: 2px;
+    }
+    .h-table .h-chip {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--blue);
+        background: var(--blue-light);
+        border-radius: 999px;
+        padding: 3px 9px;
+        white-space: nowrap;
+    }
+
+    /* 왼쪽 트리의 f(n) 입력 노드 */
+    .pnode {
+        position: absolute;
+        width: 74px;
+        border-radius: 12px;
+        border: 2px solid var(--blue-light);
+        background: var(--white);
+        padding: 5px 4px 6px;
+        text-align: center;
+        box-shadow: 0 3px 8px rgba(28,96,239,0.08);
+    }
+    .pnode .nm {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 12.5px;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pnode .f-input {
+        width: 52px;
+        margin-top: 3px;
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 12.5px;
+        text-align: center;
+        color: var(--blue);
+        border: 1.5px solid var(--blue-light);
+        border-radius: 7px;
+        padding: 2px 0;
+        outline: none;
+        background: #fbfcff;
+        -moz-appearance: textfield;
+    }
+    .pnode .f-input::-webkit-outer-spin-button,
+    .pnode .f-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .pnode .f-input:focus { border-color: var(--blue); background: var(--white); }
+    .pnode .f-fixed {
+        margin-top: 3px;
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+    .pnode.bad { border-color: var(--red); animation: shakeN 0.35s ease; }
+    .pnode.bad .f-input { border-color: var(--red); color: var(--red); }
+    .pnode.good { border-color: var(--green); }
+    .pnode.good .f-input { border-color: var(--green); color: var(--green); background: var(--green-light); }
+    .pnode.is-root { border-style: dashed; }
+    @keyframes shakeN {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+    }
+
+    .pane-foot {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        border-top: 1px solid var(--blue-light);
+        background: #fbfcff;
+    }
+    .prep-msg { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+    .prep-msg.bad { color: #b91c1c; }
+    .prep-msg.ok { color: #15803d; }
+
+    .lock-note {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 24px;
+        font-size: 12.5px;
+        color: var(--text-muted);
+        line-height: 1.7;
+    }
+
+    @media (max-width: 820px) {
+        .split { flex-direction: column; }
+        .pane-left { border-right: 0; border-bottom: 1px solid var(--blue-light); }
+        .pane-right.locked { flex-basis: auto; }
+    }
 </style>
 </head>
 <body>
@@ -289,20 +432,38 @@
 
     <div class="status-banner" id="status-banner"></div>
 
-    <div class="canvas-outer" id="canvas-outer">
-        <div class="canvas-inner" id="canvas-inner">
-            <svg id="svg-layer"></svg>
+    <div class="split">
+        <div class="pane pane-left">
+            <div class="pane-head">① 평가 함숫값 채우기<span class="pane-sub">간선의 값은 도시 사이 거리입니다. 아래 목록을 보고 각 노드의 f(n)을 적어 보세요.</span></div>
+            <div class="h-table" id="h-table"></div>
+            <div class="canvas-outer" id="prep-outer">
+                <div class="canvas-inner" id="prep-inner">
+                    <svg id="prep-svg"></svg>
+                </div>
+            </div>
+            <div class="pane-foot">
+                <button class="action primary" id="btn-check-f">채점하기</button>
+                <span class="prep-msg" id="prep-msg"></span>
+            </div>
         </div>
-    </div>
 
-    <div class="footer">
-        <div class="list-row open-row">
-            <span class="list-label">OPEN 리스트</span>
-            <div class="chip-track open-track" id="open-track"></div>
-        </div>
-        <div class="list-row close-row">
-            <span class="list-label">CLOSE 리스트</span>
-            <div class="chip-track close-track" id="close-track"></div>
+        <div class="pane pane-right locked" id="pane-right">
+            <div class="pane-head">② 탐색 순서 고르기<span class="pane-sub">OPEN 리스트에서 f(n)이 가장 작은 노드를 클릭하세요.</span></div>
+            <div class="canvas-outer" id="canvas-outer">
+                <div class="canvas-inner" id="canvas-inner">
+                    <svg id="svg-layer"></svg>
+                </div>
+            </div>
+            <div class="footer">
+                <div class="list-row open-row">
+                    <span class="list-label">OPEN 리스트</span>
+                    <div class="chip-track open-track" id="open-track"></div>
+                </div>
+                <div class="list-row close-row">
+                    <span class="list-label">CLOSE 리스트</span>
+                    <div class="chip-track close-track" id="close-track"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -324,6 +485,11 @@
             busan: null, daegu: 240, sangju: 200, ulsan: 340,
             eumseong: 100, daejeon: 150, seoul: 0
         },
+        // cost: 부모에서 그 노드로 가는 간선에 적히는 값(도시 사이 거리). 자식 id를 키로 쓴다.
+        cost: {
+            daegu: 88, sangju: 180, ulsan: 65,
+            daejeon: 150, eumseong: 80, seoul: 100
+        },
         edges: {
             busan: ['daegu', 'sangju', 'ulsan'],
             daegu: ['daejeon'],
@@ -341,30 +507,35 @@
             name: '연습 1',
             root: 'A', goal: 'H',
             h: { A: null, B: 60, C: 30, D: 55, E: 20, F: 45, G: 70, H: 0, I: 40 },
+            cost: { B: 12, C: 20, D: 9, E: 14, F: 11, G: 8, H: 16, I: 7 },
             edges: { A: ['B', 'C'], B: ['D', 'E'], C: ['F'], D: [], E: ['H', 'G'], F: ['I'], G: [], H: [], I: [] }
         },
         {
             name: '연습 2',
             root: 'A', goal: 'I',
             h: { A: null, B: 50, C: 25, D: 65, E: 40, F: 10, G: 35, H: 22, I: 0, J: 15 },
+            cost: { B: 15, C: 10, D: 22, E: 13, F: 18, G: 6, H: 9, I: 12, J: 5 },
             edges: { A: ['B', 'C', 'D'], B: ['E'], C: ['F', 'G'], D: [], E: ['H'], F: ['J'], G: ['I'], H: [], I: [], J: [] }
         },
         {
             name: '연습 3',
             root: 'A', goal: 'G',
             h: { A: null, B: 20, C: 45, D: 15, E: 38, F: 60, G: 0, H: 25 },
+            cost: { B: 8, C: 17, D: 6, E: 12, F: 14, G: 19, H: 10 },
             edges: { A: ['B', 'C'], B: ['D', 'E'], C: ['F'], D: ['H'], E: [], F: ['G'], H: [] }
         },
         {
             name: '연습 4',
             root: 'A', goal: 'K',
             h: { A: null, B: 70, C: 35, D: 55, E: 42, F: 18, G: 28, H: 60, I: 24, J: 12, K: 0 },
+            cost: { B: 21, C: 9, D: 16, E: 13, F: 7, G: 11, H: 18, I: 15, J: 6, K: 10 },
             edges: { A: ['B', 'C', 'D'], B: [], C: ['E', 'F'], D: ['G'], E: ['H'], F: ['J', 'I'], G: ['K'], H: [], I: [], J: [] }
         },
         {
             name: '연습 5',
             root: 'A', goal: 'J',
             h: { A: null, B: 32, C: 48, D: 20, E: 15, F: 55, G: 40, H: 8, I: 18, J: 0 },
+            cost: { B: 11, C: 19, D: 7, E: 14, F: 22, G: 9, H: 6, I: 13, J: 8 },
             edges: { A: ['B', 'C'], B: ['D', 'E'], C: ['F', 'G'], D: [], E: ['H'], F: [], G: ['I', 'J'], H: [] }
         }
     ];
@@ -384,8 +555,18 @@
     var moveCountEl = document.getElementById('move-count');
     var missionHint = document.getElementById('mission-hint');
 
-    var current = null;    // {name, root, goal, edges, h, label}
+    var prepOuter = document.getElementById('prep-outer');
+    var prepInner = document.getElementById('prep-inner');
+    var prepSvg = document.getElementById('prep-svg');
+    var prepMsg = document.getElementById('prep-msg');
+    var hTable = document.getElementById('h-table');
+    var paneRight = document.getElementById('pane-right');
+
+    var current = null;    // {name, root, goal, edges, h, cost, label}
     var positions = {};
+    var prepPositions = {};
+    var prepAnswers = {};  // id -> 학생이 입력한 f(n)
+    var prepDone = false;
     var openList, closeList, moveCount, finished;
 
     function label(id) { return (current.label && current.label[id]) || id; }
@@ -400,18 +581,19 @@
         return found;
     }
 
-    function layout(edges, root) {
-        positions = {};
+    // 왼쪽(문제 채우기)·오른쪽(탐색) 두 캔버스에 같은 트리를 각각 배치하므로 대상을 인자로 받는다.
+    function computeLayout(edges, root, outerEl, innerEl, svgEl) {
+        var pos = {};
         var slot = { n: 0 };
         function assign(id) {
             var children = edges[id] || [];
             if (children.length === 0) {
-                positions[id] = { x: slot.n * SLOT_W, y: 0 };
+                pos[id] = { x: slot.n * SLOT_W, y: 0 };
                 slot.n++;
             } else {
                 children.forEach(assign);
-                var xs = children.map(function (c) { return positions[c].x; });
-                positions[id] = { x: (Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2, y: 0 };
+                var xs = children.map(function (c) { return pos[c].x; });
+                pos[id] = { x: (Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2, y: 0 };
             }
         }
         assign(root);
@@ -426,38 +608,71 @@
                 queue.push(c);
             });
         }
-        Object.keys(positions).forEach(function (id) { positions[id].y = depth[id] * LEVEL_H; });
+        Object.keys(pos).forEach(function (id) { pos[id].y = depth[id] * LEVEL_H; });
 
-        var outerW = canvasOuter.clientWidth;
+        var outerW = outerEl.clientWidth;
         var treeW = Math.max(slot.n * SLOT_W, SLOT_W);
         var innerW = Math.max(outerW, treeW + 120);
         var maxDepth = Math.max.apply(null, Object.values(depth));
         var innerH = (maxDepth + 1) * LEVEL_H + 60;
-        var offset = innerW / 2 - (positions[root].x + BOARD / 2);
-        Object.keys(positions).forEach(function (id) { positions[id].x += offset; });
+        var offset = innerW / 2 - (pos[root].x + BOARD / 2);
+        Object.keys(pos).forEach(function (id) { pos[id].x += offset; });
 
-        canvasInner.style.width = innerW + 'px';
-        canvasInner.style.height = innerH + 'px';
-        svg.setAttribute('width', innerW);
-        svg.setAttribute('height', innerH);
+        innerEl.style.width = innerW + 'px';
+        innerEl.style.height = innerH + 'px';
+        svgEl.setAttribute('width', innerW);
+        svgEl.setAttribute('height', innerH);
+        return pos;
+    }
+
+    function layout(edges, root) {
+        positions = computeLayout(edges, root, canvasOuter, canvasInner, svg);
+    }
+
+    // 부모에서 이 노드로 오는 간선의 값
+    function costOf(id) { return (current.cost && current.cost[id] != null) ? current.cost[id] : null; }
+
+    // 간선 하나를 그리고, 값이 있으면 중간에 라벨을 붙인다.
+    function drawEdge(svgEl, p1, p2, costText) {
+        var x1 = p1.x + BOARD / 2, y1 = p1.y + BOARD - 6;
+        var x2 = p2.x + BOARD / 2, y2 = p2.y + 18;
+        var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+        line.setAttribute('stroke', '#c7d6f9');
+        line.setAttribute('stroke-width', '2.5');
+        svgEl.appendChild(line);
+
+        if (costText == null) return;
+        var mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+        var pad = 5, w = String(costText).length * 7 + pad * 2;
+        var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', mx - w / 2); rect.setAttribute('y', my - 9);
+        rect.setAttribute('width', w); rect.setAttribute('height', 18);
+        rect.setAttribute('rx', 9);
+        rect.setAttribute('fill', '#ffffff');
+        rect.setAttribute('stroke', '#c7d6f9');
+        svgEl.appendChild(rect);
+        var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', mx); text.setAttribute('y', my + 4);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '11');
+        text.setAttribute('font-weight', '700');
+        text.setAttribute('fill', '#55647f');
+        text.textContent = costText;
+        svgEl.appendChild(text);
     }
 
     function render() {
+        // 오른쪽 창이 접혀 있으면 폭이 0이라 배치 계산이 무의미하다 — 열릴 때 다시 그린다.
+        if (!canvasOuter.clientWidth) return;
         layout(current.edges, current.root);
         canvasInner.querySelectorAll('.tnode').forEach(function (el) { el.remove(); });
         svg.innerHTML = '';
 
         Object.keys(current.edges).forEach(function (id) {
             (current.edges[id] || []).forEach(function (c) {
-                var p1 = positions[id], p2 = positions[c];
-                var x1 = p1.x + BOARD / 2, y1 = p1.y + 50 + 18;
-                var x2 = p2.x + BOARD / 2, y2 = p2.y + 18;
-                var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', x1); line.setAttribute('y1', y1);
-                line.setAttribute('x2', x2); line.setAttribute('y2', y2);
-                line.setAttribute('stroke', '#c7d6f9');
-                line.setAttribute('stroke-width', '2.5');
-                svg.appendChild(line);
+                drawEdge(svg, positions[id], positions[c], costOf(c));
             });
         });
 
@@ -496,6 +711,134 @@
             canvasInner.appendChild(el);
         });
     }
+
+    // ---------- 왼쪽 창: f(n) 채우기 ----------
+
+    // 이 시뮬레이터의 평가 함숫값은 f(n) = h(n) — 목표까지의 예상 거리.
+    function expectedF(id) { return current.h[id]; }
+
+    // 일부 트리는 잎 노드가 edges의 키로 없으므로 루트에서 순회해 노드 목록을 만든다.
+    function reachableIds() {
+        var out = [], seen = {};
+        (function walk(id) {
+            if (seen[id]) return;
+            seen[id] = true;
+            out.push(id);
+            (current.edges[id] || []).forEach(walk);
+        })(current.root);
+        return out;
+    }
+
+    function gradableIds() {
+        return reachableIds().filter(function (id) { return expectedF(id) !== null && expectedF(id) !== undefined; });
+    }
+
+    function renderHTable() {
+        var ids = gradableIds();
+        hTable.innerHTML = '<span class="h-label">목표까지 예상 거리 h(n)</span>' +
+            ids.map(function (id) {
+                return '<span class="h-chip">' + label(id) + ' ' + current.h[id] + '</span>';
+            }).join('');
+    }
+
+    function renderPrep() {
+        if (!prepOuter.clientWidth) return;
+        prepPositions = computeLayout(current.edges, current.root, prepOuter, prepInner, prepSvg);
+        prepInner.querySelectorAll('.pnode').forEach(function (el) { el.remove(); });
+        prepSvg.innerHTML = '';
+
+        Object.keys(current.edges).forEach(function (id) {
+            (current.edges[id] || []).forEach(function (c) {
+                drawEdge(prepSvg, prepPositions[id], prepPositions[c], costOf(c));
+            });
+        });
+
+        Object.keys(prepPositions).forEach(function (id) {
+            var el = document.createElement('div');
+            var isRoot = id === current.root;
+            el.className = 'pnode' + (isRoot ? ' is-root' : '');
+            el.style.left = prepPositions[id].x + 'px';
+            el.style.top = (prepPositions[id].y + 18) + 'px';
+            el.dataset.id = id;
+
+            var nm = document.createElement('div');
+            nm.className = 'nm';
+            nm.textContent = label(id);
+            el.appendChild(nm);
+
+            if (expectedF(id) === null || expectedF(id) === undefined) {
+                var fixed = document.createElement('div');
+                fixed.className = 'f-fixed';
+                fixed.textContent = '출발';
+                el.appendChild(fixed);
+            } else {
+                var input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'f-input';
+                input.dataset.id = id;
+                input.setAttribute('inputmode', 'numeric');
+                input.autocomplete = 'off';
+                if (prepAnswers[id] != null) input.value = prepAnswers[id];
+                if (prepDone) input.disabled = true;
+                input.addEventListener('input', function () {
+                    prepAnswers[id] = input.value;
+                    el.classList.remove('bad', 'good');
+                });
+                input.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter') { ev.preventDefault(); checkPrep(); }
+                });
+                el.appendChild(input);
+            }
+            prepInner.appendChild(el);
+        });
+    }
+
+    function checkPrep() {
+        if (prepDone) return;
+        var ids = gradableIds();
+        var wrong = 0, blank = 0;
+        ids.forEach(function (id) {
+            var el = prepInner.querySelector('.pnode[data-id="' + id + '"]');
+            var raw = (prepAnswers[id] == null ? '' : String(prepAnswers[id])).trim();
+            el.classList.remove('bad', 'good');
+            if (raw === '') { blank++; el.classList.add('bad'); return; }
+            if (Number(raw) === expectedF(id)) { el.classList.add('good'); }
+            else { wrong++; el.classList.add('bad'); }
+        });
+
+        if (blank + wrong === 0) {
+            prepDone = true;
+            prepMsg.className = 'prep-msg ok';
+            prepMsg.textContent = '모두 정확합니다! 오른쪽에서 탐색을 시작하세요.';
+            prepInner.querySelectorAll('.f-input').forEach(function (i) { i.disabled = true; });
+            document.getElementById('btn-check-f').disabled = true;
+            unlockRight();
+        } else {
+            prepMsg.className = 'prep-msg bad';
+            prepMsg.textContent = blank
+                ? '아직 비어 있는 칸이 있어요. 모두 채워 주세요.'
+                : '틀린 칸이 ' + wrong + '개 있어요. 빨간 칸을 다시 확인해 보세요.';
+        }
+    }
+
+    function unlockRight() {
+        paneRight.classList.remove('locked');
+        missionHint.textContent = 'OPEN 리스트 중 f(n)이 가장 작은 노드를 클릭하세요.';
+        // 창이 열리면서 폭이 변하므로 다시 배치한다.
+        setTimeout(function () { render(); renderPrep(); }, 320);
+    }
+
+    function resetPrep() {
+        prepAnswers = {};
+        prepDone = false;
+        prepMsg.className = 'prep-msg';
+        prepMsg.textContent = '';
+        document.getElementById('btn-check-f').disabled = false;
+        paneRight.classList.add('locked');
+        missionHint.textContent = '왼쪽에서 모든 노드의 f(n)을 채우면 탐색을 시작할 수 있어요.';
+    }
+
+    document.getElementById('btn-check-f').addEventListener('click', checkPrep);
 
     function renderLists() {
         moveCountEl.textContent = moveCount;
@@ -571,14 +914,16 @@
         finished = false;
         titleText.textContent = tree.name + ' — 최상 우선 탐색';
         goalText.textContent = label(tree.goal);
-        missionHint.textContent = 'OPEN 리스트 중 f(n)이 가장 작은 노드를 클릭하세요.';
+        resetPrep();
+        renderHTable();
         renderLists();
         render();
+        renderPrep();
     }
 
     function loadDefault() {
         loadTree(DEFAULT_TREE);
-        setBanner('info', '교과서 기본 예제입니다. f(n)은 그 도시에서 서울까지 걸리는 예상 시간(분)이에요. 가장 작은 값을 고르세요.');
+        setBanner('info', '교과서 기본 예제입니다. 왼쪽 트리의 각 도시에 f(n)(서울까지 예상 거리)을 채워 넣으세요.');
     }
 
     function retry() {
@@ -589,16 +934,32 @@
     function loadRandomPractice() {
         var tree = PRACTICE_TREES[Math.floor(Math.random() * PRACTICE_TREES.length)];
         loadTree(tree);
-        setBanner('info', '새 문제가 출제되었습니다. f(n)이 가장 작은 노드부터 순서대로 고르세요.');
+        setBanner('info', '새 문제가 출제되었습니다. 왼쪽 트리에 각 노드의 f(n)을 먼저 채워 넣으세요.');
     }
 
     document.getElementById('btn-default').addEventListener('click', loadDefault);
     document.getElementById('btn-retry').addEventListener('click', retry);
     document.getElementById('btn-new').addEventListener('click', loadRandomPractice);
 
-    window.addEventListener('resize', function () { render(); });
+    // 창이 열리는 애니메이션 동안 ResizeObserver가 매 프레임 터지므로,
+    // 다시 그리기는 프레임당 한 번으로 모으고 폭이 실제로 바뀐 경우만 수행한다.
+    var pending = false, lastW = 0, lastPrepW = 0;
+    function scheduleRelayout() {
+        if (pending) return;
+        pending = true;
+        requestAnimationFrame(function () {
+            pending = false;
+            var w = canvasOuter.clientWidth;
+            if (w && w !== lastW) { lastW = w; render(); }
+            var pw = prepOuter.clientWidth;
+            if (pw && pw !== lastPrepW) { lastPrepW = pw; renderPrep(); }
+        });
+    }
+
+    window.addEventListener('resize', scheduleRelayout);
     if (window.ResizeObserver) {
-        new ResizeObserver(function () { render(); }).observe(canvasOuter);
+        new ResizeObserver(scheduleRelayout).observe(canvasOuter);
+        new ResizeObserver(scheduleRelayout).observe(prepOuter);
     }
 
     loadDefault();
