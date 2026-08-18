@@ -551,11 +551,12 @@
                         <div class="rule-block">
                             <h4>문제 &amp; 규칙</h4>
                             <ul>
-                                <li>전국 <strong>도시 27곳과 도로 38개</strong>로 이루어진 지도입니다. 도로의 길이는 두 도시 사이의 <strong>거리(km)</strong>이고, 격자와 달리 <strong>길마다 비용이 다릅니다</strong>.</li>
+                                <li><strong>실제 대한민국 지도</strong> 위에 도시 27곳과 도로 38개를 놓았습니다. 도시는 <strong>실제 위치</strong>에 있고, 도로의 길이는 두 도시 사이의 <strong>실제 거리(km)</strong>입니다. 격자와 달리 <strong>길마다 비용이 다릅니다</strong>.</li>
                                 <li><strong>출발지와 도착지</strong>를 고르고 재생을 누르면, 탐색이 한 도시씩 진행되는 과정을 볼 수 있습니다. 지도의 도시를 클릭해 도착지를 바꿀 수도 있습니다.</li>
                                 <li>오른쪽 아래 <strong>탐색 데이터 구조</strong>에서 지금 검사 중인 도시와 대기열을 확인하세요. BFS는 <strong>큐</strong>, DFS는 <strong>스택</strong>, A*는 <strong>우선순위 큐</strong>를 씁니다.</li>
                                 <li>A*를 고르면 검사 중인 도시 옆에 <strong>f(n) = g(n) + h(n)</strong>이 함께 표시됩니다.</li>
-                                <li>확인해 볼 점 — 서울에서 부산까지 가면 <strong>A*는 349km(13개 도시만 확인)</strong>, <strong>BFS는 362km(27개 전부 확인)</strong>, <strong>DFS는 365km</strong>가 나옵니다. BFS는 <strong>거쳐 가는 도시 수</strong>는 적게 만들지만 <strong>거리가 짧은 길은 아니라는 점</strong>이 핵심입니다.</li>
+                                <li>확인해 볼 점 ① — <strong>서울 → 부산</strong>은 A*와 BFS가 똑같이 371km를 찾지만, <strong>A*는 도시 13곳만 확인</strong>하고 <strong>BFS는 27곳을 전부</strong> 확인합니다. 결과가 같아도 <strong>일하는 양이 다릅니다</strong>.</li>
+                                <li>확인해 볼 점 ② — <strong>서울 → 창원</strong>으로 바꿔 보세요. <strong>A* 355km</strong>, <strong>BFS 375km</strong>, <strong>DFS 419km</strong>로 셋 다 달라집니다. BFS는 <strong>거쳐 가는 도시 수</strong>를 줄일 뿐 <strong>거리가 가장 짧은 길을 보장하지는 않는다</strong>는 점이 핵심입니다.</li>
                             </ul>
                         </div>
                         <div class="sim-frame-wrap" style="margin-top:16px;">
