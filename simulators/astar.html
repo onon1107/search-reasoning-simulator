@@ -431,8 +431,13 @@
         // aspect가 지정된 지도(교과서)만 비율을 지킨다. 연습 지도는 h가 지도상
         // 거리와 무관하므로 창을 꽉 채워 선과 값이 잘 보이게 한다.
         if (MAP.aspect) {
-            if (availW / availH > MAP.aspect) { boxH = availH; boxW = availH * MAP.aspect; }
-            else { boxW = availW; boxH = availW / MAP.aspect; }
+            var fitW, fitH;
+            if (availW / availH > MAP.aspect) { fitH = availH; fitW = availH * MAP.aspect; }
+            else { fitW = availW; fitH = availW / MAP.aspect; }
+            // 비율을 지키다가 칸이 너무 작아지면(가로세로 중 한쪽 공간을 크게 못 쓰면)
+            // 노드와 간선 시간이 다닥다닥 붙어 잘 안 보인다. 그럴 땐 비율보다
+            // 꽉 채우는 쪽을 택한다.
+            if ((fitW * fitH) >= (availW * availH) * 0.85) { boxW = fitW; boxH = fitH; }
         }
         var ox = (w - boxW) / 2, oy = (h - boxH) / 2;
         var pt = {};
@@ -447,6 +452,9 @@
         svgEl.setAttribute('width', w);
         svgEl.setAttribute('height', h);
         svgEl.innerHTML = '';
+        // 선을 모두 먼저 그리고 시간 라벨을 나중에 그린다. 한 링크씩 선-라벨을
+        // 번갈아 그리면 뒤에 그려지는 다른 링크의 선이 앞 라벨 위를 덮어 시간이
+        // 안 보이는 경우가 생긴다.
         MAP.links.forEach(function (l) {
             var a = pt[l[0]], b = pt[l[1]];
             var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -455,7 +463,9 @@
             line.setAttribute('stroke', '#c7d6f9');
             line.setAttribute('stroke-width', '3');
             svgEl.appendChild(line);
-
+        });
+        MAP.links.forEach(function (l) {
+            var a = pt[l[0]], b = pt[l[1]];
             var r = (l[3] != null) ? l[3] : 0.44;
             var mx = a.x + (b.x - a.x) * r, my = a.y + (b.y - a.y) * r;
             var txt = String(l[2]) + '분';
