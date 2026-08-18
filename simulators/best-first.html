@@ -171,7 +171,6 @@
     .chip-track .chip { border-radius: 8px; padding: 3px 9px; }
     .chip-track.open-track .chip { background: var(--blue-light); color: var(--blue); }
     .chip-track.close-track .chip { background: #e7e9ef; color: var(--text); }
-    .chip-track .chip.best { outline: 2px solid var(--gold); }
     .chip-track .placeholder { color: #a9b3c7; font-weight: 400; }
 
     @media (max-width: 820px) {
@@ -519,9 +518,8 @@
         if (!openList.length) {
             openTrack.innerHTML = '<span class="placeholder">비어 있음</span>';
         } else {
-            var best = Math.min.apply(null, openList.map(function (id) { return MAP.h[id]; }));
             openTrack.innerHTML = openList.map(function (id) {
-                return '<span class="chip' + (MAP.h[id] === best ? ' best' : '') + '">' + label(id) + ' (f=' + MAP.h[id] + ')</span>';
+                return '<span class="chip">' + label(id) + ' (f=' + MAP.h[id] + ')</span>';
             }).join('');
         }
         closeTrack.innerHTML = closeList.length
