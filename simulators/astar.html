@@ -286,67 +286,67 @@
         goal: 'seoul'
     };
 
-    // 연습 문제 지도. h는 실제 최단 시간의 약 90%로 잡아 "예상 시간"으로 자연스럽고,
-    // 한 지점만 지름길처럼 보이도록 낮게 잡아 최상 우선 탐색이 함정에 빠지게 했다.
-    // 모두 허용적(h <= 실제)이라 A*는 여전히 최단 경로를 찾는다.
+    // 연습 문제 지도. 교과서와 같은 규칙으로 h(n) = 도착까지 실제 최단 시간이다.
+    // 따라서 지도의 선만 따라가면 h를 직접 구할 수 있고, 목록으로 알려 줄 필요가 없다.
+    // 셋 다 최상 우선 탐색이 A*보다 먼 길을 고른다.
     var PRACTICE = [
         {
             name: '연습 1',
-            label: { start: '출발', A: 'A', B: 'B', C: 'C', D: 'D', E: 'E', F: 'F', G: 'G', goal: '도착' },
-            h: { start: null, A: 140, B: 280, C: 580, D: 440, E: 300, F: 300, G: 150, goal: 0 },
-            pos: { start: [0.86, 0.88], A: [0.20, 0.40], B: [0.76, 0.55], C: [0.58, 0.80], D: [0.30, 0.72], E: [0.66, 0.28], F: [0.46, 0.50], G: [0.38, 0.20], goal: [0.10, 0.12] },
+            label: { goal: '도착', A: 'A', B: 'B', C: 'C', D: 'D', E: 'E', F: 'F', G: 'G', start: '출발' },
+            h: { goal: 0, A: 540, B: 620, C: 560, D: 370, E: 440, F: 530, G: 210, start: null },
+            pos: { goal: [0.07, 0.14], A: [0.72, 0.54], B: [0.60, 0.86], C: [0.30, 0.84], D: [0.44, 0.50], E: [0.30, 0.10], F: [0.82, 0.12], G: [0.16, 0.46], start: [0.93, 0.88] },
             links: [
-                ['A', 'G', 170],
-                ['D', 'F', 160],
-                ['A', 'F', 170],
-                ['B', 'E', 170],
-                ['C', 'D', 160],
-                ['E', 'G', 160],
-                ['G', 'goal', 170],
-                ['start', 'C', 160],
-                ['A', 'goal', 160],
-                ['E', 'F', 180],
-                ['B', 'C', 170]
+                ['A', 'D', 170],
+                ['D', 'G', 160],
+                ['B', 'C', 60],
+                ['B', 'start', 140],
+                ['goal', 'G', 210],
+                ['A', 'B', 120],
+                ['C', 'D', 190],
+                ['E', 'G', 230],
+                ['A', 'start', 230],
+                ['E', 'F', 90],
+                ['C', 'start', 120]
             ],
             start: 'start', goal: 'goal'
         },
         {
             name: '연습 2',
-            label: { start: '출발', A: 'A', B: 'B', C: 'C', D: 'D', E: 'E', F: 'F', G: 'G', goal: '도착' },
-            h: { start: null, A: 300, B: 160, C: 310, D: 280, E: 450, F: 140, G: 590, goal: 0 },
-            pos: { start: [0.86, 0.88], A: [0.46, 0.50], B: [0.38, 0.20], C: [0.66, 0.28], D: [0.76, 0.55], E: [0.30, 0.72], F: [0.20, 0.40], G: [0.58, 0.80], goal: [0.10, 0.12] },
+            label: { goal: '도착', A: 'A', B: 'B', C: 'C', D: 'D', E: 'E', F: 'F', G: 'G', start: '출발' },
+            h: { goal: 0, A: 90, B: 460, C: 260, D: 400, E: 460, F: 270, G: 470, start: null },
+            pos: { goal: [0.07, 0.14], A: [0.16, 0.46], B: [0.60, 0.86], C: [0.30, 0.10], D: [0.30, 0.84], E: [0.72, 0.54], F: [0.44, 0.50], G: [0.82, 0.12], start: [0.93, 0.88] },
             links: [
-                ['B', 'F', 170],
-                ['A', 'E', 170],
-                ['A', 'F', 170],
-                ['C', 'D', 160],
-                ['B', 'C', 160],
-                ['B', 'goal', 180],
-                ['E', 'G', 160],
-                ['start', 'G', 180],
-                ['A', 'C', 180],
-                ['F', 'goal', 160],
-                ['D', 'G', 190]
+                ['A', 'F', 180],
+                ['E', 'F', 190],
+                ['B', 'D', 60],
+                ['B', 'start', 70],
+                ['goal', 'A', 90],
+                ['B', 'E', 200],
+                ['D', 'F', 130],
+                ['A', 'C', 170],
+                ['E', 'start', 80],
+                ['C', 'G', 210],
+                ['D', 'start', 160]
             ],
             start: 'start', goal: 'goal'
         },
         {
             name: '연습 3',
-            label: { start: '출발', A: 'A', B: 'B', C: 'C', D: 'D', E: 'E', F: 'F', G: 'G', goal: '도착' },
-            h: { start: null, A: 280, B: 310, C: 590, D: 160, E: 320, F: 450, G: 160, goal: 0 },
-            pos: { start: [0.86, 0.88], A: [0.76, 0.55], B: [0.46, 0.50], C: [0.58, 0.80], D: [0.20, 0.40], E: [0.66, 0.28], F: [0.30, 0.72], G: [0.38, 0.20], goal: [0.10, 0.12] },
+            label: { goal: '도착', A: 'A', B: 'B', C: 'C', D: 'D', E: 'E', F: 'F', G: 'G', start: '출발' },
+            h: { goal: 0, A: 380, B: 550, C: 370, D: 450, E: 310, F: 140, G: 80, start: null },
+            pos: { goal: [0.07, 0.14], A: [0.30, 0.84], B: [0.72, 0.54], C: [0.82, 0.12], D: [0.60, 0.86], E: [0.44, 0.50], F: [0.30, 0.10], G: [0.16, 0.46], start: [0.93, 0.88] },
             links: [
-                ['D', 'G', 160],
-                ['B', 'F', 160],
+                ['B', 'E', 240],
+                ['E', 'G', 230],
+                ['A', 'D', 70],
+                ['D', 'start', 60],
+                ['goal', 'G', 80],
                 ['B', 'D', 160],
-                ['A', 'E', 150],
-                ['C', 'F', 160],
-                ['E', 'G', 180],
-                ['G', 'goal', 180],
-                ['start', 'C', 170],
-                ['B', 'E', 180],
-                ['D', 'goal', 180],
-                ['A', 'C', 170]
+                ['A', 'E', 70],
+                ['F', 'G', 60],
+                ['B', 'start', 100],
+                ['C', 'F', 230],
+                ['A', 'start', 150]
             ],
             start: 'start', goal: 'goal'
         }
@@ -426,11 +426,14 @@
         var padX = Math.min(PAD_X, w * 0.10), padY = Math.min(PAD_Y, h * 0.10);
         // 지도의 가로세로 비율을 지켜서 배치한다. 비율을 무시하고 늘리면
         // 화면상 거리가 h(직선거리)와 어긋나 보인다.
-        var aspect = MAP.aspect || 1;
         var availW = w - padX * 2, availH = h - padY * 2;
-        var boxW, boxH;
-        if (availW / availH > aspect) { boxH = availH; boxW = availH * aspect; }
-        else { boxW = availW; boxH = availW / aspect; }
+        var boxW = availW, boxH = availH;
+        // aspect가 지정된 지도(교과서)만 비율을 지킨다. 연습 지도는 h가 지도상
+        // 거리와 무관하므로 창을 꽉 채워 선과 값이 잘 보이게 한다.
+        if (MAP.aspect) {
+            if (availW / availH > MAP.aspect) { boxH = availH; boxW = availH * MAP.aspect; }
+            else { boxW = availW; boxH = availW / MAP.aspect; }
+        }
         var ox = (w - boxW) / 2, oy = (h - boxH) / 2;
         var pt = {};
         allIds().forEach(function (id) {
@@ -485,7 +488,7 @@
         } else {
             hTable.innerHTML =
                 '<span class="h-label">② f(n) 채우기</span>' +
-                '<span class="h-chip">h(n) = 그 지점에서 ' + label(MAP.goal) + '까지 예상 시간</span>' +
+                '<span class="h-chip">h(n) = 노드에 적힌 값 (' + label(MAP.goal) + '까지 가장 빠른 시간)</span>' +
                 '<span class="h-chip">f(n) = g(n) + h(n)</span>';
         }
     }
