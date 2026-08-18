@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>명제 논리 추론 &amp; 거짓말쟁이 찾기</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF;
+        --blue: #1C60EF;
+        --blue-light: #DBE8FE;
+        --text: #16223f;
+        --text-muted: #55647f;
+        --red: #ef4444;
+        --red-light: #fee2e2;
+        --green: #16a34a;
+        --green-light: #dcfce7;
+        --gold: #d4a017;
+        --gold-light: #fef3c7;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+        margin: 0;
+        height: 100%;
+        font-family: var(--font-body);
+        color: var(--text);
+        background: var(--white);
+        user-select: none;
+    }
+    .app { display: flex; flex-direction: column; min-height: 100%; }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--blue-light);
+        background: #fbfcff;
+        flex-shrink: 0;
+    }
+    .topbar h1 { font-family: var(--font-title); font-weight: 700; font-size: 15px; margin: 0; color: var(--text); }
+    .topbar .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    button.action {
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 12.5px;
+        border-radius: 8px;
+        padding: 8px 14px;
+        border: 1px solid var(--blue-light);
+        background: var(--white);
+        color: var(--blue);
+        cursor: pointer;
+    }
+    button.action:hover { background: var(--blue-light); }
+    button.action.primary { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    button.action.primary:hover { background: #164fce; }
+
+    .mission {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 18px;
+        border-bottom: 1px solid var(--blue-light);
+        background: linear-gradient(90deg, var(--blue-light), #eef4ff);
+    }
+    .mode-switch { display: flex; border: 1px solid var(--blue); border-radius: 999px; overflow: hidden; background: var(--white); }
+    .mode-switch button {
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 12.5px;
+        padding: 7px 16px;
+        border: 0;
+        background: transparent;
+        color: var(--blue);
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .mode-switch button.on { background: var(--blue); color: var(--white); }
+    .mission-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 700;
+        background: var(--white);
+        border: 1px solid rgba(28,96,239,0.22);
+        border-radius: 999px;
+        padding: 6px 14px;
+        white-space: nowrap;
+    }
+    .mission-chip b { color: var(--blue); font-family: var(--font-title); }
+    .mission-hint { font-size: 11.5px; color: var(--text-muted); margin-left: auto; }
+
+    .status-banner {
+        display: none;
+        padding: 9px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .status-banner.show { display: block; }
+    .status-banner.ok { background: var(--gold-light); color: #92700c; }
+    .status-banner.bad { background: var(--red-light); color: #b91c1c; }
+    .status-banner.info { background: var(--blue-light); color: #16419e; }
+
+    .stage { flex: 1; padding: 18px; overflow: auto; }
+    .mode-panel { display: none; }
+    .mode-panel.on { display: block; }
+
+    /* ---- 추론 연습 ---- */
+    .rule-card {
+        max-width: 560px;
+        margin: 0 auto 18px;
+        border: 1.5px solid var(--blue-light);
+        border-radius: 14px;
+        padding: 16px 18px;
+        background: #fbfcff;
+    }
+    .rule-card .kind {
+        display: inline-block;
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 11.5px;
+        color: var(--blue);
+        background: var(--blue-light);
+        border-radius: 999px;
+        padding: 3px 10px;
+        margin-bottom: 10px;
+    }
+    .rule-line { font-size: 14px; padding: 4px 0; }
+    .rule-line .tag { font-family: var(--font-title); font-weight: 700; color: var(--text-muted); font-size: 11px; margin-right: 6px; }
+    .options-col { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+    .option-btn {
+        text-align: left;
+        font-family: var(--font-body);
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--text);
+        background: var(--white);
+        border: 2px solid var(--blue-light);
+        border-radius: 12px;
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .option-btn:hover:not(.disabled) { border-color: var(--blue); transform: translateY(-1px); }
+    .option-btn.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
+    .option-btn.wrong { animation: shakeN 0.35s ease; border-color: var(--red); background: var(--red-light); }
+    .option-btn.disabled { cursor: not-allowed; opacity: 0.6; }
+    @keyframes shakeN {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    .next-wrap { max-width: 560px; margin: 14px auto 0; text-align: center; }
+
+    /* ---- 거짓말쟁이 찾기 ---- */
+    .liar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+        max-width: 680px;
+        margin: 0 auto 16px;
+    }
+    .liar-card {
+        border: 2px solid var(--blue-light);
+        border-radius: 14px;
+        padding: 14px 16px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        background: var(--white);
+    }
+    .liar-card:hover { border-color: var(--blue); }
+    .liar-card.picked { border-color: var(--gold); background: var(--gold-light); }
+    .liar-card .name { font-family: var(--font-title); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .liar-card .stmt { font-size: 12.5px; color: var(--text-muted); }
+    .liar-actions { max-width: 680px; margin: 0 auto 16px; text-align: center; }
+    .verify-wrap { max-width: 680px; margin: 0 auto; }
+    .table-scroll { overflow-x: auto; }
+    table.verify-table { border-collapse: collapse; width: 100%; min-width: 480px; font-size: 12.5px; }
+    table.verify-table th, table.verify-table td {
+        border: 1px solid var(--blue-light);
+        padding: 7px 8px;
+        text-align: center;
+    }
+    table.verify-table th { background: #f2f6ff; font-family: var(--font-title); color: var(--blue); }
+    table.verify-table td.stmt-cell { text-align: left; }
+    .badge-ok, .badge-bad {
+        font-family: var(--font-title);
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: 11.5px;
+        display: inline-block;
+    }
+    .badge-ok { background: var(--green-light); color: var(--green); }
+    .badge-bad { background: var(--red-light); color: var(--red); }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1 id="title-text">긍정 논법 &amp; 삼단 논법 연습</h1>
+            <div class="sub" id="sub-text">규칙과 사실을 보고, 올바르게 추론한 결론을 고르세요.</div>
+        </div>
+        <div class="controls">
+            <button class="action primary" id="btn-new">문제 새로 내기</button>
+        </div>
+    </div>
+
+    <div class="mission">
+        <div class="mode-switch" id="mode-switch">
+            <button data-mode="infer" class="on">긍정·삼단 논법 연습</button>
+            <button data-mode="liar">거짓말쟁이 찾기</button>
+        </div>
+        <span class="mission-chip" id="score-chip">정답 <b id="score">0</b> / <b id="attempts">0</b></span>
+        <span class="mission-hint" id="mission-hint">규칙(전제)과 사실을 보고 올바른 결론을 클릭하세요.</span>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="stage">
+        <!-- 추론 연습 -->
+        <div class="mode-panel on" id="panel-infer">
+            <div class="rule-card">
+                <span class="kind" id="kind-badge">긍정 논법 (modus ponens)</span>
+                <div id="rule-lines"></div>
+            </div>
+            <div class="options-col" id="options-col"></div>
+            <div class="next-wrap" id="next-wrap" style="display:none;">
+                <button class="action primary" id="btn-next">다음 문제</button>
+            </div>
+        </div>
+
+        <!-- 거짓말쟁이 찾기 -->
+        <div class="mode-panel" id="panel-liar">
+            <p style="max-width:680px;margin:0 auto 14px;font-size:13.5px;color:var(--text-muted);">
+                진영, 유미, 승우, 서연 네 사람 중 <strong>정확히 한 명만 거짓말쟁이</strong>입니다. 거짓말쟁이라고 생각하는 사람을 클릭한 뒤 "검증하기"를 눌러보세요.
+            </p>
+            <div class="liar-grid" id="liar-grid"></div>
+            <div class="liar-actions">
+                <button class="action primary" id="btn-verify">검증하기</button>
+            </div>
+            <div class="verify-wrap" id="verify-wrap"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // ================= 공통 =================
+    var statusBanner = document.getElementById('status-banner');
+    var missionHint = document.getElementById('mission-hint');
+    var titleText = document.getElementById('title-text');
+    var subText = document.getElementById('sub-text');
+    var modeSwitch = document.getElementById('mode-switch');
+    var panelInfer = document.getElementById('panel-infer');
+    var panelLiar = document.getElementById('panel-liar');
+    var btnNew = document.getElementById('btn-new');
+    var scoreChip = document.getElementById('score-chip');
+
+    var mode = 'infer';
+
+    function setBanner(kind, text) {
+        statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
+        statusBanner.textContent = text || '';
+    }
+
+    function fireConfetti() {
+        if (typeof confetti !== 'function') return;
+        confetti({ particleCount: 90, spread: 70, origin: { x: 0.5, y: 0.4 } });
+    }
+
+    // ================= 추론 연습 =================
+    var TRIPLES = [
+        ['민수가 행복하다', '민수는 인공지능을 공부하고 있다', '민수는 성적이 오른다'],
+        ['인공지능을 잘한다', '프로그래밍을 잘한다', '수학을 잘한다'],
+        ['비가 온다', '땅이 젖는다', '우산이 필요하다'],
+        ['열심히 운동한다', '체력이 좋아진다', '시합에서 이긴다'],
+        ['책을 많이 읽는다', '어휘력이 늘어난다', '글을 잘 쓴다'],
+        ['일찍 잠자리에 든다', '아침에 일찍 일어난다', '하루를 활기차게 시작한다']
+    ];
+
+    var kindBadge = document.getElementById('kind-badge');
+    var ruleLines = document.getElementById('rule-lines');
+    var optionsCol = document.getElementById('options-col');
+    var nextWrap = document.getElementById('next-wrap');
+    var scoreEl = document.getElementById('score');
+    var attemptsEl = document.getElementById('attempts');
+
+    var score = 0, attempts = 0, curProblem = null, solved = false;
+
+    function shuffle(arr) {
+        var a = arr.slice();
+        for (var i = a.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+    }
+
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    function makeProblem() {
+        var triple = pick(TRIPLES);
+        var A = triple[0], B = triple[1], C = triple[2];
+        var isModus = Math.random() < 0.5;
+
+        if (isModus) {
+            var lines = [
+                { tag: '규칙', text: '만약 ' + A + '면, ' + B + '.' },
+                { tag: '사실', text: A + '.' }
+            ];
+            var correct = B + '.';
+            var otherTriple = pick(TRIPLES.filter(function (t) { return t !== triple; }));
+            var options = shuffle([correct, C + '.', otherTriple[1] + '.']);
+            return { kind: '긍정 논법 (modus ponens)', lines: lines, options: options, correct: correct };
+        } else {
+            var lines2 = [
+                { tag: '규칙', text: '만약 ' + A + '면, ' + B + '.' },
+                { tag: '사실', text: '만약 ' + B + '면, ' + C + '.' }
+            ];
+            var correct2 = '만약 ' + A + '면, ' + C + '.';
+            var otherTriple2 = pick(TRIPLES.filter(function (t) { return t !== triple; }));
+            var options2 = shuffle([correct2, '만약 ' + B + '면, ' + A + '.', '만약 ' + A + '면, ' + otherTriple2[2] + '.']);
+            return { kind: '삼단 논법 (syllogism)', lines: lines2, options: options2, correct: correct2 };
+        }
+    }
+
+    function renderProblem() {
+        curProblem = makeProblem();
+        solved = false;
+        kindBadge.textContent = curProblem.kind;
+        ruleLines.innerHTML = curProblem.lines.map(function (l) {
+            return '<div class="rule-line"><span class="tag">' + l.tag + '</span>' + l.text + '</div>';
+        }).join('');
+        optionsCol.innerHTML = '';
+        curProblem.options.forEach(function (opt) {
+            var btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt;
+            btn.addEventListener('click', function () { onPickOption(opt, btn); });
+            optionsCol.appendChild(btn);
+        });
+        nextWrap.style.display = 'none';
+        setBanner('', '');
+        missionHint.textContent = '규칙(전제)과 사실을 보고 올바른 결론을 클릭하세요.';
+    }
+
+    function onPickOption(opt, btn) {
+        if (solved) return;
+        attempts++;
+        attemptsEl.textContent = attempts;
+        if (opt === curProblem.correct) {
+            solved = true;
+            score++;
+            scoreEl.textContent = score;
+            btn.classList.add('correct');
+            Array.prototype.forEach.call(optionsCol.children, function (el) {
+                if (el !== btn) el.classList.add('disabled');
+            });
+            setBanner('ok', '정답입니다! 올바르게 추론했어요.');
+            nextWrap.style.display = 'block';
+            fireConfetti();
+        } else {
+            btn.classList.remove('wrong');
+            void btn.offsetWidth;
+            btn.classList.add('wrong');
+            setBanner('bad', '틀렸어요. 규칙과 사실을 다시 살펴보고 다른 선택지를 골라보세요.');
+        }
+    }
+
+    document.getElementById('btn-next').addEventListener('click', renderProblem);
+
+    // ================= 거짓말쟁이 찾기 =================
+    var PEOPLE = ['진영', '유미', '승우', '서연'];
+    var STATEMENT_TEXT = {
+        '진영': '유미는 거짓말쟁이입니다.',
+        '유미': '거짓말쟁이는 서연입니다.',
+        '승우': '나는 거짓말쟁이가 아닙니다.',
+        '서연': '유미는 거짓말을 합니다.'
+    };
+    var STATEMENT_FN = {
+        '진영': function (liar) { return liar === '유미'; },
+        '유미': function (liar) { return liar === '서연'; },
+        '승우': function (liar) { return liar !== '승우'; },
+        '서연': function (liar) { return liar === '유미'; }
+    };
+
+    var liarGrid = document.getElementById('liar-grid');
+    var verifyWrap = document.getElementById('verify-wrap');
+    var pickedPerson = null;
+
+    function renderLiarGrid() {
+        liarGrid.innerHTML = '';
+        PEOPLE.forEach(function (person) {
+            var card = document.createElement('div');
+            card.className = 'liar-card' + (pickedPerson === person ? ' picked' : '');
+            card.innerHTML = '<div class="name">' + person + '</div><div class="stmt">"' + STATEMENT_TEXT[person] + '"</div>';
+            card.addEventListener('click', function () {
+                pickedPerson = person;
+                renderLiarGrid();
+            });
+            liarGrid.appendChild(card);
+        });
+    }
+
+    function verify() {
+        if (!pickedPerson) {
+            setBanner('bad', '먼저 거짓말쟁이라고 생각하는 사람을 클릭해 선택하세요.');
+            return;
+        }
+        var liar = pickedPerson;
+        var rows = PEOPLE.map(function (person) {
+            var val = STATEMENT_FN[person](liar);
+            var isLiarSelf = (person === liar);
+            var ok = isLiarSelf ? (val === false) : (val === true);
+            return { person: person, isLiarSelf: isLiarSelf, val: val, ok: ok };
+        });
+        var consistent = rows.every(function (r) { return r.ok; });
+
+        var html = '<div class="table-scroll"><table class="verify-table"><thead><tr>' +
+            '<th>이름</th><th>진술</th><th>가정</th><th>진술의 값</th><th>결과</th>' +
+            '</tr></thead><tbody>';
+        rows.forEach(function (r) {
+            html += '<tr>' +
+                '<td>' + r.person + '</td>' +
+                '<td class="stmt-cell">"' + STATEMENT_TEXT[r.person] + '"</td>' +
+                '<td>' + (r.isLiarSelf ? '거짓말쟁이' : '정직한 사람') + '</td>' +
+                '<td>' + (r.val ? '참' : '거짓') + '</td>' +
+                '<td>' + (r.ok ? '<span class="badge-ok">일치</span>' : '<span class="badge-bad">모순</span>') + '</td>' +
+                '</tr>';
+        });
+        html += '</tbody></table></div>';
+        verifyWrap.innerHTML = html;
+
+        if (consistent) {
+            setBanner('ok', '🎉 "' + liar + '"이(가) 거짓말쟁이라는 가정은 네 진술과 모두 일치합니다 — 정답입니다!');
+            fireConfetti();
+        } else {
+            setBanner('bad', '"' + liar + '"이(가) 거짓말쟁이라고 가정하면 표에서 "모순"이 생겨요. 다른 사람을 선택해 다시 검증해 보세요.');
+        }
+    }
+
+    document.getElementById('btn-verify').addEventListener('click', verify);
+
+    function resetLiar() {
+        pickedPerson = null;
+        verifyWrap.innerHTML = '';
+        renderLiarGrid();
+        setBanner('', '');
+    }
+
+    // ================= 모드 전환 =================
+    function applyMode() {
+        panelInfer.classList.toggle('on', mode === 'infer');
+        panelLiar.classList.toggle('on', mode === 'liar');
+        Array.prototype.forEach.call(modeSwitch.querySelectorAll('button'), function (b) {
+            b.classList.toggle('on', b.dataset.mode === mode);
+        });
+        if (mode === 'infer') {
+            titleText.textContent = '긍정 논법 & 삼단 논법 연습';
+            subText.textContent = '규칙과 사실을 보고, 올바르게 추론한 결론을 고르세요.';
+            scoreChip.style.display = 'inline-flex';
+            btnNew.textContent = '문제 새로 내기';
+            btnNew.style.display = 'inline-block';
+            missionHint.textContent = '규칙(전제)과 사실을 보고 올바른 결론을 클릭하세요.';
+        } else {
+            titleText.textContent = '거짓말쟁이 찾기';
+            subText.textContent = '네 사람의 진술이 서로 모순 없이 맞아떨어지는 단 한 명의 거짓말쟁이를 찾아보세요.';
+            scoreChip.style.display = 'none';
+            btnNew.style.display = 'none';
+            missionHint.textContent = '거짓말쟁이라고 생각하는 사람을 클릭하고 검증하기를 눌러보세요.';
+        }
+        setBanner('', '');
+    }
+
+    modeSwitch.addEventListener('click', function (e) {
+        var btn = e.target.closest('button');
+        if (!btn || btn.dataset.mode === mode) return;
+        mode = btn.dataset.mode;
+        applyMode();
+    });
+
+    btnNew.addEventListener('click', function () {
+        if (mode === 'infer') renderProblem();
+    });
+
+    renderProblem();
+    resetLiar();
+    applyMode();
+})();
+</script>
+</body>
+</html>

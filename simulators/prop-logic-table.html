@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>명제 논리 진리표 트레이너</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF;
+        --blue: #1C60EF;
+        --blue-light: #DBE8FE;
+        --text: #16223f;
+        --text-muted: #55647f;
+        --red: #ef4444;
+        --red-light: #fee2e2;
+        --green: #16a34a;
+        --green-light: #dcfce7;
+        --gold: #d4a017;
+        --gold-light: #fef3c7;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+        margin: 0;
+        height: 100%;
+        font-family: var(--font-body);
+        color: var(--text);
+        background: var(--white);
+        user-select: none;
+    }
+    .app { display: flex; flex-direction: column; min-height: 100%; }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--blue-light);
+        background: #fbfcff;
+        flex-shrink: 0;
+    }
+    .topbar h1 {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 15px;
+        margin: 0;
+        color: var(--text);
+    }
+    .topbar .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    button.action {
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 12.5px;
+        border-radius: 8px;
+        padding: 8px 14px;
+        border: 1px solid var(--blue-light);
+        background: var(--white);
+        color: var(--blue);
+        cursor: pointer;
+    }
+    button.action:hover { background: var(--blue-light); }
+    button.action.primary { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    button.action.primary:hover { background: #164fce; }
+
+    .mission {
+        flex-shrink: 0;
+        padding: 10px 18px;
+        border-bottom: 1px solid var(--blue-light);
+        background: linear-gradient(90deg, var(--blue-light), #eef4ff);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+    .prop-line { font-size: 12.5px; font-weight: 700; color: var(--text); }
+    .prop-line .sym { color: var(--blue); font-family: var(--font-title); margin-right: 4px; }
+    .mission-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 700;
+        background: var(--white);
+        border: 1px solid rgba(28,96,239,0.22);
+        border-radius: 999px;
+        padding: 6px 14px;
+        white-space: nowrap;
+    }
+    .mission-chip b { color: var(--blue); font-family: var(--font-title); }
+
+    .status-banner {
+        display: none;
+        padding: 9px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .status-banner.show { display: block; }
+    .status-banner.ok { background: var(--gold-light); color: #92700c; }
+    .status-banner.bad { background: var(--red-light); color: #b91c1c; }
+    .status-banner.info { background: var(--blue-light); color: #16419e; }
+
+    .stage { flex: 1; padding: 18px; overflow: auto; }
+    .table-scroll { overflow-x: auto; }
+    table.truth-table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 620px;
+        font-size: 13px;
+    }
+    table.truth-table th, table.truth-table td {
+        border: 1px solid var(--blue-light);
+        padding: 8px 6px;
+        text-align: center;
+    }
+    table.truth-table th {
+        background: #f2f6ff;
+        font-family: var(--font-title);
+        font-weight: 700;
+        color: var(--blue);
+    }
+    table.truth-table td.given {
+        font-family: var(--font-title);
+        font-weight: 700;
+        background: #fbfcff;
+        color: var(--text);
+    }
+    .cell-btns { display: flex; gap: 4px; justify-content: center; }
+    .tf-btn {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 12px;
+        width: 28px;
+        height: 26px;
+        border-radius: 6px;
+        border: 1.5px solid var(--blue-light);
+        background: var(--white);
+        color: var(--blue);
+        cursor: pointer;
+    }
+    .tf-btn:hover { background: var(--blue-light); }
+    .tf-btn.wrong { animation: shakeN 0.3s ease; border-color: var(--red); background: var(--red-light); color: var(--red); }
+    .cell-result {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 13px;
+        border-radius: 6px;
+        padding: 3px 0;
+    }
+    .cell-result.ok { background: var(--green-light); color: var(--green); }
+    @keyframes shakeN {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+    }
+
+    .legend {
+        margin-top: 18px;
+        border: 1px solid var(--blue-light);
+        border-radius: 12px;
+        padding: 12px 14px;
+        background: #fbfcff;
+    }
+    .legend h3 {
+        font-family: var(--font-title);
+        font-size: 12.5px;
+        margin: 0 0 8px;
+        color: var(--text-muted);
+    }
+    .legend-row {
+        display: flex;
+        gap: 10px;
+        font-size: 12px;
+        padding: 4px 0;
+        border-top: 1px dashed #e2e9f7;
+        flex-wrap: wrap;
+    }
+    .legend-row:first-of-type { border-top: none; }
+    .legend-row .sym { font-family: var(--font-title); font-weight: 700; color: var(--blue); width: 24px; flex-shrink: 0; }
+    .legend-row .rd { color: var(--text-muted); width: 100px; flex-shrink: 0; }
+    .legend-row .ex { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1>명제 논리 진리표 트레이너</h1>
+            <div class="sub">p, q의 참(T)·거짓(F)에 따라 각 복합 명제의 값을 채워 보세요.</div>
+        </div>
+        <div class="controls">
+            <button class="action primary" id="btn-new">새 문장 불러오기</button>
+            <button class="action" id="btn-retry">다시 하기</button>
+        </div>
+    </div>
+
+    <div class="mission">
+        <span class="prop-line"><span class="sym">p</span>= "<span id="p-text">신호등이 초록색이다.</span>"</span>
+        <span class="prop-line"><span class="sym">q</span>= "<span id="q-text">자동차가 전진한다.</span>"</span>
+        <span class="mission-chip">채운 칸 <b id="progress">0</b> / 24</span>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="stage">
+        <div class="table-scroll">
+            <table class="truth-table" id="truth-table"></table>
+        </div>
+
+        <div class="legend">
+            <h3>기호 읽는 방법</h3>
+            <div class="legend-row"><span class="sym">~</span><span class="rd">not</span><span class="ex">~p — p가 아니다</span></div>
+            <div class="legend-row"><span class="sym">∧</span><span class="rd">and</span><span class="ex">p∧q — p 그리고 q (둘 다 참이어야 참)</span></div>
+            <div class="legend-row"><span class="sym">∨</span><span class="rd">or</span><span class="ex">p∨q — p 또는 q (하나라도 참이면 참)</span></div>
+            <div class="legend-row"><span class="sym">→</span><span class="rd">implies</span><span class="ex">p→q — 만약 p이면 q이다 (p는 가정, q는 결론)</span></div>
+            <div class="legend-row"><span class="sym">↔</span><span class="rd">iff</span><span class="ex">p↔q — p이면 q이고, q이면 p이다 (둘 다 같아야 참)</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var PROP_PAIRS = [
+        { p: '신호등이 초록색이다.', q: '자동차가 전진한다.' },
+        { p: '비가 온다.', q: '땅이 젖는다.' },
+        { p: '숙제를 미리 한다.', q: '시험 점수가 오른다.' },
+        { p: '해가 진다.', q: '하늘이 어두워진다.' },
+        { p: '물을 100도로 끓인다.', q: '물이 수증기가 된다.' },
+        { p: '알람이 울린다.', q: '학생이 잠에서 깬다.' }
+    ];
+
+    var ROWS = [[true, true], [true, false], [false, true], [false, false]];
+    var COLS = [
+        { key: 'np', label: '~p', fn: function (p, q) { return !p; } },
+        { key: 'nq', label: '~q', fn: function (p, q) { return !q; } },
+        { key: 'and', label: 'p∧q', fn: function (p, q) { return p && q; } },
+        { key: 'or', label: 'p∨q', fn: function (p, q) { return p || q; } },
+        { key: 'imp', label: 'p→q', fn: function (p, q) { return (!p) || q; } },
+        { key: 'iff', label: 'p↔q', fn: function (p, q) { return p === q; } }
+    ];
+
+    var tableEl = document.getElementById('truth-table');
+    var progressEl = document.getElementById('progress');
+    var statusBanner = document.getElementById('status-banner');
+    var pText = document.getElementById('p-text');
+    var qText = document.getElementById('q-text');
+
+    var answered; // answered[row][col] = true/false (correct filled)
+    var filledCount;
+
+    function tf(v) { return v ? 'T' : 'F'; }
+
+    function setBanner(kind, text) {
+        statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
+        statusBanner.textContent = text || '';
+    }
+
+    function buildTable() {
+        var thead = '<thead><tr><th>p</th><th>q</th>' + COLS.map(function (c) { return '<th>' + c.label + '</th>'; }).join('') + '</tr></thead>';
+        var tbody = '<tbody>';
+        ROWS.forEach(function (row, ri) {
+            tbody += '<tr>';
+            tbody += '<td class="given">' + tf(row[0]) + '</td><td class="given">' + tf(row[1]) + '</td>';
+            COLS.forEach(function (col, ci) {
+                tbody += '<td id="cell-' + ri + '-' + ci + '"></td>';
+            });
+            tbody += '</tr>';
+        });
+        tbody += '</tbody>';
+        tableEl.innerHTML = thead + tbody;
+        renderAllCells();
+    }
+
+    function renderCell(ri, ci) {
+        var cell = document.getElementById('cell-' + ri + '-' + ci);
+        cell.innerHTML = '';
+        if (answered[ri][ci]) {
+            var row = ROWS[ri], col = COLS[ci];
+            var val = col.fn(row[0], row[1]);
+            var res = document.createElement('div');
+            res.className = 'cell-result ok';
+            res.textContent = tf(val);
+            cell.appendChild(res);
+            return;
+        }
+        var wrap = document.createElement('div');
+        wrap.className = 'cell-btns';
+        ['T', 'F'].forEach(function (label) {
+            var btn = document.createElement('button');
+            btn.className = 'tf-btn';
+            btn.textContent = label;
+            btn.addEventListener('click', function () { onPick(ri, ci, label === 'T', btn); });
+            wrap.appendChild(btn);
+        });
+        cell.appendChild(wrap);
+    }
+
+    function renderAllCells() {
+        ROWS.forEach(function (row, ri) {
+            COLS.forEach(function (col, ci) { renderCell(ri, ci); });
+        });
+    }
+
+    function onPick(ri, ci, pickedVal, btn) {
+        var row = ROWS[ri], col = COLS[ci];
+        var correctVal = col.fn(row[0], row[1]);
+        if (pickedVal === correctVal) {
+            answered[ri][ci] = true;
+            filledCount++;
+            progressEl.textContent = filledCount;
+            renderCell(ri, ci);
+            if (filledCount === ROWS.length * COLS.length) {
+                setBanner('ok', '🎉 진리표를 모두 완성했습니다! p, q의 참·거짓에 따라 각 복합 명제의 값이 어떻게 정해지는지 확인했어요.');
+                fireConfetti();
+            } else {
+                setBanner('', '');
+            }
+        } else {
+            btn.classList.remove('wrong');
+            void btn.offsetWidth;
+            btn.classList.add('wrong');
+            setBanner('bad', '틀렸어요. p=' + tf(row[0]) + ', q=' + tf(row[1]) + '일 때 ' + col.label + '의 값을 다시 생각해 보세요.');
+        }
+    }
+
+    function fireConfetti() {
+        if (typeof confetti !== 'function') return;
+        confetti({ particleCount: 90, spread: 70, origin: { x: 0.5, y: 0.4 } });
+    }
+
+    function reset() {
+        answered = ROWS.map(function () { return COLS.map(function () { return false; }); });
+        filledCount = 0;
+        progressEl.textContent = 0;
+        setBanner('', '');
+        buildTable();
+    }
+
+    function loadRandomProp() {
+        var pair = PROP_PAIRS[Math.floor(Math.random() * PROP_PAIRS.length)];
+        pText.textContent = pair.p;
+        qText.textContent = pair.q;
+        reset();
+        setBanner('info', '새로운 문장이 출제되었습니다. 표는 초기화됩니다.');
+    }
+
+    document.getElementById('btn-new').addEventListener('click', loadRandomProp);
+    document.getElementById('btn-retry').addEventListener('click', reset);
+
+    reset();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>의미망 매칭 — 세종대왕 예제</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF;
+        --blue: #1C60EF;
+        --blue-light: #DBE8FE;
+        --text: #16223f;
+        --text-muted: #55647f;
+        --red: #ef4444;
+        --red-light: #fee2e2;
+        --green: #16a34a;
+        --green-light: #dcfce7;
+        --gold: #d4a017;
+        --gold-light: #fef3c7;
+        --purple: #7c3aed;
+        --purple-light: #ede9fe;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+        margin: 0;
+        height: 100%;
+        font-family: var(--font-body);
+        color: var(--text);
+        background: var(--white);
+        overflow: hidden;
+        user-select: none;
+    }
+    .app { display: flex; flex-direction: column; height: 100%; }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--blue-light);
+        background: #fbfcff;
+        flex-shrink: 0;
+    }
+    .topbar h1 {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 15px;
+        margin: 0;
+        color: var(--text);
+    }
+    .topbar .sub {
+        font-size: 11.5px;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    button.action {
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 12.5px;
+        border-radius: 8px;
+        padding: 8px 14px;
+        border: 1px solid var(--blue-light);
+        background: var(--white);
+        color: var(--blue);
+        cursor: pointer;
+    }
+    button.action:hover { background: var(--blue-light); }
+    button.action.primary { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    button.action.primary:hover { background: #164fce; }
+
+    .mission {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 18px;
+        border-bottom: 1px solid var(--blue-light);
+        background: linear-gradient(90deg, var(--blue-light), #eef4ff);
+    }
+    .mission-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--text);
+        background: var(--white);
+        border: 1px solid rgba(28,96,239,0.22);
+        border-radius: 999px;
+        padding: 6px 14px;
+        white-space: nowrap;
+    }
+    .mission-chip b { color: var(--blue); font-family: var(--font-title); }
+    .mission-hint { font-size: 11.5px; color: var(--text-muted); margin-left: auto; }
+
+    .status-banner {
+        display: none;
+        padding: 9px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .status-banner.show { display: block; }
+    .status-banner.ok { background: var(--gold-light); color: #92700c; }
+    .status-banner.bad { background: var(--red-light); color: #b91c1c; }
+    .status-banner.info { background: var(--blue-light); color: #16419e; }
+
+    .stage {
+        flex: 1;
+        display: flex;
+        gap: 16px;
+        padding: 16px 18px;
+        overflow: auto;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .net-wrap {
+        flex: 1 1 460px;
+        min-width: 320px;
+        max-width: 560px;
+        border: 1.5px solid var(--blue-light);
+        border-radius: 14px;
+        background:
+            radial-gradient(circle at 1px 1px, rgba(28,96,239,0.09) 1px, transparent 0) 0 0 / 20px 20px,
+            var(--white);
+    }
+    .net-wrap svg { width: 100%; height: auto; display: block; }
+    .net-node circle {
+        fill: var(--white);
+        stroke: #9fb3dd;
+        stroke-width: 2;
+    }
+    .net-node.person circle { fill: var(--blue-light); stroke: var(--blue); }
+    .net-node text {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 13px;
+        fill: var(--text);
+        text-anchor: middle;
+        dominant-baseline: middle;
+        pointer-events: none;
+    }
+    .net-edge {
+        stroke: #c7d6f9;
+        stroke-width: 5;
+        cursor: pointer;
+        transition: stroke 0.15s ease;
+    }
+    .net-edge:hover { stroke: #9fb8f2; }
+    .net-edge.selected { stroke: var(--gold); }
+    .net-edge.matched { stroke: var(--green); cursor: default; }
+    .net-edge.wrong { stroke: var(--red); }
+    .net-edge-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        fill: var(--green);
+        text-anchor: middle;
+        opacity: 0;
+        pointer-events: none;
+    }
+    .net-edge-label.show { opacity: 1; }
+
+    .chips-panel {
+        flex: 1 1 260px;
+        min-width: 220px;
+        max-width: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .chips-panel .panel-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 2px;
+    }
+    .code-chip {
+        font-family: 'Consolas', 'SFMono-Regular', monospace;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+        background: var(--white);
+        border: 2px solid var(--blue-light);
+        border-radius: 10px;
+        padding: 9px 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .code-chip:hover:not(.matched) { border-color: var(--blue); transform: translateX(2px); }
+    .code-chip.selected { border-color: var(--gold); background: var(--gold-light); }
+    .code-chip.matched { border-color: var(--green); background: var(--green-light); color: var(--green); cursor: default; }
+    .code-chip.wrong { animation: shakeN 0.35s ease; border-color: var(--red); }
+    @keyframes shakeN {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .footer {
+        flex-shrink: 0;
+        border-top: 1px solid var(--blue-light);
+        background: #fbfcff;
+        padding: 10px 18px;
+        font-size: 12px;
+        color: var(--text-muted);
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1>의미망 매칭 — 세종대왕 예제</h1>
+            <div class="sub">그래프의 관계(선)를 클릭한 뒤, 알맞은 술어 논리 코드를 클릭해 짝지어 보세요.</div>
+        </div>
+        <div class="controls">
+            <button class="action primary" id="btn-retry">다시 섞기</button>
+        </div>
+    </div>
+
+    <div class="mission">
+        <span class="mission-chip">맞춘 개수 <b id="match-count">0</b> / 6</span>
+        <span class="mission-hint" id="mission-hint">관계(선)를 먼저 클릭하고, 오른쪽에서 짝이 되는 코드를 클릭하세요.</span>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="stage">
+        <div class="net-wrap">
+            <svg id="net-svg" viewBox="0 0 520 360"></svg>
+        </div>
+        <div class="chips-panel" id="chips-panel">
+            <div class="panel-label">술어 논리 코드</div>
+        </div>
+    </div>
+
+    <div class="footer">자연어 지식 → 의미망(노드·링크) → 술어 논리 코드, 세 가지는 같은 지식을 서로 다른 방식으로 표현한 것입니다.</div>
+</div>
+
+<script>
+(function () {
+    var NODES = {
+        junju:   { label: '군주',    x: 350, y: 55,  type: 'concept' },
+        jiphyeon:{ label: '집현전',  x: 150, y: 55,  type: 'concept' },
+        sejong:  { label: '세종대왕', x: 240, y: 165, type: 'person' },
+        sinha:   { label: '신하',    x: 420, y: 165, type: 'concept' },
+        hunmin:  { label: '훈민정음', x: 240, y: 300, type: 'concept' },
+        hwanghui:{ label: '황희',    x: 350, y: 300, type: 'person' },
+        gimjongseo: { label: '김종서', x: 470, y: 300, type: 'person' }
+    };
+
+    var EDGES = [
+        { id: 'e1', from: 'sejong', to: 'jiphyeon',   pred: 'cowork', code: 'cowork(세종대왕, 집현전)' },
+        { id: 'e2', from: 'sejong', to: 'junju',       pred: 'is_a',   code: 'is_a(세종대왕, 군주)' },
+        { id: 'e3', from: 'sejong', to: 'sinha',       pred: 'has',    code: 'has(세종대왕, 신하)' },
+        { id: 'e4', from: 'hwanghui', to: 'sinha',     pred: 'is_a',   code: 'is_a(황희, 신하)' },
+        { id: 'e5', from: 'gimjongseo', to: 'sinha',   pred: 'is_a',   code: 'is_a(김종서, 신하)' },
+        { id: 'e6', from: 'sejong', to: 'hunmin',      pred: 'make',   code: 'make(세종대왕, 훈민정음)' }
+    ];
+
+    var svg = document.getElementById('net-svg');
+    var chipsPanel = document.getElementById('chips-panel');
+    var matchCountEl = document.getElementById('match-count');
+    var statusBanner = document.getElementById('status-banner');
+    var missionHint = document.getElementById('mission-hint');
+
+    var selectedEdgeId = null;
+    var selectedChipId = null;
+    var matched = {};
+    var matchCount = 0;
+
+    function setBanner(kind, text) {
+        statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
+        statusBanner.textContent = text || '';
+    }
+
+    function shuffledOrder() {
+        var ids = EDGES.map(function (e) { return e.id; });
+        for (var i = ids.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = ids[i]; ids[i] = ids[j]; ids[j] = t;
+        }
+        return ids;
+    }
+
+    function renderNetwork() {
+        svg.innerHTML = '';
+        var ns = 'http://www.w3.org/2000/svg';
+
+        EDGES.forEach(function (e) {
+            var n1 = NODES[e.from], n2 = NODES[e.to];
+            var line = document.createElementNS(ns, 'line');
+            line.setAttribute('x1', n1.x); line.setAttribute('y1', n1.y);
+            line.setAttribute('x2', n2.x); line.setAttribute('y2', n2.y);
+            line.setAttribute('class', 'net-edge' + (matched[e.id] ? ' matched' : ''));
+            line.dataset.id = e.id;
+            if (!matched[e.id]) line.addEventListener('click', function () { onClickEdge(e.id); });
+            svg.appendChild(line);
+
+            var label = document.createElementNS(ns, 'text');
+            label.setAttribute('x', (n1.x + n2.x) / 2);
+            label.setAttribute('y', (n1.y + n2.y) / 2 - 8);
+            label.setAttribute('class', 'net-edge-label' + (matched[e.id] ? ' show' : ''));
+            label.textContent = e.pred;
+            svg.appendChild(label);
+        });
+
+        Object.keys(NODES).forEach(function (id) {
+            var n = NODES[id];
+            var g = document.createElementNS(ns, 'g');
+            g.setAttribute('class', 'net-node' + (n.type === 'person' ? ' person' : ''));
+            var r = Math.max(30, n.label.length * 9 + 8);
+            var circle = document.createElementNS(ns, 'circle');
+            circle.setAttribute('cx', n.x); circle.setAttribute('cy', n.y); circle.setAttribute('r', r);
+            g.appendChild(circle);
+            var text = document.createElementNS(ns, 'text');
+            text.setAttribute('x', n.x); text.setAttribute('y', n.y);
+            text.textContent = n.label;
+            g.appendChild(text);
+            svg.appendChild(g);
+        });
+    }
+
+    function renderChips(order) {
+        chipsPanel.querySelectorAll('.code-chip').forEach(function (el) { el.remove(); });
+        order.forEach(function (id) {
+            var e = EDGES.filter(function (x) { return x.id === id; })[0];
+            var chip = document.createElement('div');
+            chip.className = 'code-chip' + (matched[id] ? ' matched' : '');
+            chip.textContent = e.code;
+            chip.dataset.id = id;
+            if (!matched[id]) chip.addEventListener('click', function () { onClickChip(id); });
+            chipsPanel.appendChild(chip);
+        });
+    }
+
+    function clearSelection() {
+        selectedEdgeId = null;
+        selectedChipId = null;
+        svg.querySelectorAll('.net-edge').forEach(function (el) { el.classList.remove('selected'); });
+        chipsPanel.querySelectorAll('.code-chip').forEach(function (el) { el.classList.remove('selected'); });
+    }
+
+    function tryMatch() {
+        if (!selectedEdgeId || !selectedChipId) return;
+        if (selectedEdgeId === selectedChipId) {
+            matched[selectedEdgeId] = true;
+            matchCount++;
+            matchCountEl.textContent = matchCount;
+            clearSelection();
+            renderNetwork();
+            renderChipsKeepOrder();
+            if (matchCount === EDGES.length) {
+                setBanner('ok', '🎉 6개 관계를 모두 정확히 짝지었습니다! 자연어 지식이 의미망과 술어 논리로 어떻게 표현되는지 확인했어요.');
+                fireConfetti();
+                missionHint.textContent = '다시 섞기를 눌러 새로 도전해 보세요.';
+            } else {
+                setBanner('', '');
+            }
+        } else {
+            var edgeEl = svg.querySelector('.net-edge[data-id="' + selectedEdgeId + '"]');
+            var chipEl = chipsPanel.querySelector('.code-chip[data-id="' + selectedChipId + '"]');
+            if (edgeEl) { edgeEl.classList.add('wrong'); setTimeout(function () { edgeEl.classList.remove('wrong'); }, 350); }
+            if (chipEl) { chipEl.classList.add('wrong'); setTimeout(function () { chipEl.classList.remove('wrong'); }, 350); }
+            setBanner('bad', '짝이 맞지 않아요. 그래프의 두 노드와 코드의 두 단어(인자)를 다시 비교해 보세요.');
+            clearSelection();
+        }
+    }
+
+    var chipOrder = [];
+
+    function renderChipsKeepOrder() { renderChips(chipOrder); }
+
+    function onClickEdge(id) {
+        if (matched[id]) return;
+        selectedEdgeId = (selectedEdgeId === id) ? null : id;
+        svg.querySelectorAll('.net-edge').forEach(function (el) {
+            el.classList.toggle('selected', el.dataset.id === selectedEdgeId);
+        });
+        tryMatch();
+    }
+
+    function onClickChip(id) {
+        if (matched[id]) return;
+        selectedChipId = (selectedChipId === id) ? null : id;
+        chipsPanel.querySelectorAll('.code-chip').forEach(function (el) {
+            el.classList.toggle('selected', el.dataset.id === selectedChipId);
+        });
+        tryMatch();
+    }
+
+    function reset() {
+        matched = {};
+        matchCount = 0;
+        matchCountEl.textContent = 0;
+        selectedEdgeId = null;
+        selectedChipId = null;
+        chipOrder = shuffledOrder();
+        renderNetwork();
+        renderChipsKeepOrder();
+        setBanner('', '');
+        missionHint.textContent = '관계(선)를 먼저 클릭하고, 오른쪽에서 짝이 되는 코드를 클릭하세요.';
+    }
+
+    function fireConfetti() {
+        if (typeof confetti !== 'function') return;
+        confetti({ particleCount: 90, spread: 70, origin: { x: 0.5, y: 0.4 } });
+    }
+
+    document.getElementById('btn-retry').addEventListener('click', reset);
+
+    reset();
+})();
+</script>
+</body>
+</html>
