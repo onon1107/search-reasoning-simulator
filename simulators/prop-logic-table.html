@@ -221,7 +221,7 @@
     <div class="mission">
         <span class="prop-line"><span class="sym">p</span>= "<span id="p-text">신호등이 초록색이다.</span>"</span>
         <span class="prop-line"><span class="sym">q</span>= "<span id="q-text">자동차가 전진한다.</span>"</span>
-        <span class="mission-chip">채운 칸 <b id="progress">0</b> / 24</span>
+        <span class="mission-chip">채운 칸 <b id="progress">0</b> / 28</span>
     </div>
 
     <div class="status-banner" id="status-banner"></div>
@@ -237,6 +237,7 @@
             <div class="legend-row"><span class="sym">∧</span><span class="rd">and</span><span class="ex">p∧q — p 그리고 q (둘 다 참이어야 참)</span></div>
             <div class="legend-row"><span class="sym">∨</span><span class="rd">or</span><span class="ex">p∨q — p 또는 q (하나라도 참이면 참)</span></div>
             <div class="legend-row"><span class="sym">→</span><span class="rd">implies</span><span class="ex">p→q — 만약 p이면 q이다 (p는 가정, q는 결론)</span></div>
+            <div class="legend-row"><span class="sym">←</span><span class="rd">converse</span><span class="ex">p←q — 만약 q이면 p이다 (q는 가정, p는 결론)</span></div>
             <div class="legend-row"><span class="sym">↔</span><span class="rd">iff</span><span class="ex">p↔q — p이면 q이고, q이면 p이다 (둘 다 같아야 참)</span></div>
         </div>
     </div>
@@ -260,6 +261,7 @@
         { key: 'and', label: 'p∧q', fn: function (p, q) { return p && q; } },
         { key: 'or', label: 'p∨q', fn: function (p, q) { return p || q; } },
         { key: 'imp', label: 'p→q', fn: function (p, q) { return (!p) || q; } },
+        { key: 'conv', label: 'p←q', fn: function (p, q) { return p || (!q); } },
         { key: 'iff', label: 'p↔q', fn: function (p, q) { return p === q; } }
     ];
 

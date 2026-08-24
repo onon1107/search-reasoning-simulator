@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>의미망 고르기 — 새 예제</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF;
+        --blue: #1C60EF;
+        --blue-light: #DBE8FE;
+        --text: #16223f;
+        --text-muted: #55647f;
+        --red: #ef4444;
+        --red-light: #fee2e2;
+        --green: #16a34a;
+        --green-light: #dcfce7;
+        --gold: #d4a017;
+        --gold-light: #fef3c7;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+        margin: 0;
+        height: 100%;
+        font-family: var(--font-body);
+        color: var(--text);
+        background: var(--white);
+        user-select: none;
+    }
+    .app { display: flex; flex-direction: column; min-height: 100%; }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--blue-light);
+        background: #fbfcff;
+        flex-shrink: 0;
+    }
+    .topbar h1 {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 15px;
+        margin: 0;
+    }
+    .topbar .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    button.action {
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 12.5px;
+        border-radius: 8px;
+        padding: 8px 14px;
+        border: 1px solid var(--blue-light);
+        background: var(--white);
+        color: var(--blue);
+        cursor: pointer;
+    }
+    button.action:hover { background: var(--blue-light); }
+    button.action.primary { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    button.action.primary:hover { background: #164fce; }
+
+    .mission {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 18px;
+        border-bottom: 1px solid var(--blue-light);
+        background: linear-gradient(90deg, var(--blue-light), #eef4ff);
+    }
+    .mission-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 700;
+        background: var(--white);
+        border: 1px solid rgba(28,96,239,0.22);
+        border-radius: 999px;
+        padding: 6px 14px;
+        white-space: nowrap;
+    }
+    .mission-chip b { color: var(--blue); font-family: var(--font-title); }
+    .mission-hint { font-size: 11.5px; color: var(--text-muted); margin-left: auto; }
+
+    .status-banner {
+        display: none;
+        padding: 9px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .status-banner.show { display: block; }
+    .status-banner.ok { background: var(--gold-light); color: #92700c; }
+    .status-banner.bad { background: var(--red-light); color: #b91c1c; }
+    .status-banner.info { background: var(--blue-light); color: #16419e; }
+
+    .stage { flex: 1; padding: 16px 18px 24px; overflow: auto; }
+
+    .knowledge-box {
+        border: 1.5px solid var(--blue-light);
+        border-radius: 14px;
+        background: #fbfcff;
+        padding: 14px 18px;
+        margin-bottom: 16px;
+    }
+    .knowledge-box h3 {
+        font-family: var(--font-title);
+        font-size: 13px;
+        color: var(--blue);
+        margin: 0 0 8px;
+    }
+    .knowledge-box ol {
+        margin: 0;
+        padding-left: 22px;
+        font-size: 13.5px;
+        line-height: 1.9;
+        font-weight: 700;
+    }
+
+    .step-label {
+        display: inline-block;
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 12.5px;
+        color: var(--white);
+        background: var(--blue);
+        border-radius: 999px;
+        padding: 5px 14px;
+        margin: 4px 0 10px;
+    }
+    .step-desc { font-size: 12.5px; color: var(--text-muted); margin: 0 0 12px; }
+
+    .net-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+    }
+    .net-option {
+        border: 2px solid var(--blue-light);
+        border-radius: 14px;
+        background:
+            radial-gradient(circle at 1px 1px, rgba(28,96,239,0.08) 1px, transparent 0) 0 0 / 18px 18px,
+            var(--white);
+        cursor: pointer;
+        padding: 8px;
+        transition: all 0.15s ease;
+        text-align: center;
+    }
+    .net-option:hover:not(.locked) { border-color: var(--blue); transform: translateY(-2px); }
+    .net-option.correct { border-color: var(--green); background-color: var(--green-light); cursor: default; }
+    .net-option.wrong { animation: shakeN 0.35s ease; border-color: var(--red); }
+    .net-option.locked { cursor: default; opacity: 0.55; }
+    .net-option svg { width: 100%; height: auto; display: block; }
+    .net-option .opt-name {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 12.5px;
+        color: var(--text-muted);
+        padding: 2px 0 4px;
+    }
+    .net-option.correct .opt-name { color: var(--green); }
+
+    .qnode circle { fill: var(--white); stroke: #9fb3dd; stroke-width: 1.6; }
+    .qnode.person circle { fill: var(--blue-light); stroke: var(--blue); }
+    .qnode text {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 11px;
+        fill: var(--text);
+        text-anchor: middle;
+        dominant-baseline: middle;
+    }
+    .qedge { stroke: #7f97c9; stroke-width: 1.8; }
+    .qedge-label {
+        font-family: 'Consolas', monospace;
+        font-size: 9.5px;
+        font-weight: 700;
+        fill: #3557a7;
+        text-anchor: middle;
+        paint-order: stroke;
+        stroke: var(--white);
+        stroke-width: 3px;
+    }
+
+    .code-stage { margin-top: 20px; }
+    .code-row {
+        border: 1.5px solid var(--blue-light);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        background: var(--white);
+    }
+    .code-row .sentence {
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .code-row .sentence .num { color: var(--blue); font-family: var(--font-title); margin-right: 4px; }
+    .code-opts { display: flex; gap: 8px; flex-wrap: wrap; }
+    .code-opt {
+        font-family: 'Consolas', 'SFMono-Regular', monospace;
+        font-size: 12.5px;
+        font-weight: 700;
+        border: 2px solid var(--blue-light);
+        border-radius: 8px;
+        background: var(--white);
+        color: var(--text);
+        padding: 7px 12px;
+        cursor: pointer;
+        transition: all 0.12s ease;
+    }
+    .code-opt:hover { border-color: var(--blue); }
+    .code-opt.wrong { animation: shakeN 0.35s ease; border-color: var(--red); background: var(--red-light); }
+    .code-row.done { border-color: var(--green); background: #f7fdf9; }
+    .code-row.done .answer {
+        font-family: 'Consolas', monospace;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--green);
+        background: var(--green-light);
+        border-radius: 8px;
+        display: inline-block;
+        padding: 7px 12px;
+    }
+    @keyframes shakeN {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1>의미망 고르기 — 새 예제</h1>
+            <div class="sub">자연어 지식 → 알맞은 의미망 고르기 → 술어 논리 코드 고르기, 두 단계로 연습합니다.</div>
+        </div>
+        <div class="controls">
+            <button class="action primary" id="btn-new">새 문제 불러오기</button>
+        </div>
+    </div>
+
+    <div class="mission">
+        <span class="mission-chip">단계 <b id="step-now">1</b> / 2</span>
+        <span class="mission-chip">코드 <b id="code-count">0</b> / <span id="code-total">5</span></span>
+        <span class="mission-hint" id="mission-hint">자연어 지식을 읽고 알맞은 의미망 그림을 클릭하세요.</span>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="stage">
+        <div class="knowledge-box">
+            <h3>자연어 지식</h3>
+            <ol id="knowledge-list"></ol>
+        </div>
+
+        <div id="stage-net">
+            <span class="step-label">1단계 — 알맞은 의미망 고르기</span>
+            <p class="step-desc">아래 세 그림 중 위의 지식을 <b>올바르게</b> 표현한 의미망은 하나뿐입니다. 화살표의 방향과 술어(관계 이름)를 비교해 보세요.</p>
+            <div class="net-options" id="net-options"></div>
+        </div>
+
+        <div id="stage-code" class="code-stage hidden">
+            <span class="step-label">2단계 — 술어 논리 코드 고르기</span>
+            <p class="step-desc">문장마다 올바른 술어 논리 코드를 클릭하세요. 술어와 인자(괄호 안)의 순서가 모두 맞아야 합니다.</p>
+            <div id="code-rows"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // 각 문제: 노드 배치 + 문장(=정답 간선) + 술어 논리 코드 보기(정답 1, 오답 2)
+    // 오답 의미망: rev = 화살표 방향이 반대인 간선들, pred = 술어가 잘못 붙은 간선들
+    var PROBLEMS = [
+        {
+            name: '이순신',
+            nodes: {
+                yi:     { label: '이순신',  x: 150, y: 115, person: true },
+                gen:    { label: '장군',    x: 150, y: 30 },
+                gwon:   { label: '권율',    x: 265, y: 70, person: true },
+                ship:   { label: '거북선',  x: 60,  y: 190 },
+                navy:   { label: '수군',    x: 240, y: 190 }
+            },
+            edges: [
+                { from: 'yi',   to: 'gen',  pred: 'is_a' },
+                { from: 'gwon', to: 'gen',  pred: 'is_a' },
+                { from: 'yi',   to: 'ship', pred: 'make' },
+                { from: 'yi',   to: 'navy', pred: 'has' },
+                { from: 'yi',   to: 'gwon', pred: 'cowork' }
+            ],
+            sentences: [
+                { text: '이순신은 장군이다.',            code: 'is_a(이순신, 장군)',    wrong: ['is_a(장군, 이순신)', 'has(이순신, 장군)'] },
+                { text: '권율은 장군이다.',              code: 'is_a(권율, 장군)',      wrong: ['is_a(장군, 권율)', 'make(권율, 장군)'] },
+                { text: '이순신은 거북선을 만들었다.',   code: 'make(이순신, 거북선)',  wrong: ['make(거북선, 이순신)', 'has(이순신, 거북선)'] },
+                { text: '이순신은 수군을 거느리고 있다.', code: 'has(이순신, 수군)',     wrong: ['has(수군, 이순신)', 'is_a(이순신, 수군)'] },
+                { text: '이순신은 권율과 협력한다.',      code: 'cowork(이순신, 권율)',  wrong: ['cowork(권율, 이순신)', 'is_a(이순신, 권율)'] }
+            ],
+            revIdx: [0, 2],   // 오답 A: 이 간선들의 화살표를 반대로
+            predSwap: [ { idx: 3, pred: 'make' }, { idx: 4, pred: 'is_a' } ] // 오답 B: 술어 바꿔치기
+        },
+        {
+            name: '수민',
+            nodes: {
+                sumin:  { label: '수민',    x: 150, y: 115, person: true },
+                stu:    { label: '학생',    x: 150, y: 30 },
+                jiho:   { label: '지호',    x: 265, y: 70, person: true },
+                robot:  { label: '로봇',    x: 60,  y: 190 },
+                laptop: { label: '노트북',  x: 240, y: 190 }
+            },
+            edges: [
+                { from: 'sumin', to: 'stu',    pred: 'is_a' },
+                { from: 'jiho',  to: 'stu',    pred: 'is_a' },
+                { from: 'sumin', to: 'robot',  pred: 'make' },
+                { from: 'sumin', to: 'laptop', pred: 'has' },
+                { from: 'sumin', to: 'jiho',   pred: 'cowork' }
+            ],
+            sentences: [
+                { text: '수민이는 학생이다.',             code: 'is_a(수민, 학생)',    wrong: ['is_a(학생, 수민)', 'cowork(수민, 학생)'] },
+                { text: '지호는 학생이다.',               code: 'is_a(지호, 학생)',    wrong: ['is_a(학생, 지호)', 'has(지호, 학생)'] },
+                { text: '수민이는 로봇을 만들었다.',      code: 'make(수민, 로봇)',    wrong: ['make(로봇, 수민)', 'has(수민, 로봇)'] },
+                { text: '수민이는 노트북을 가지고 있다.', code: 'has(수민, 노트북)',   wrong: ['has(노트북, 수민)', 'make(수민, 노트북)'] },
+                { text: '수민이는 지호와 협력한다.',      code: 'cowork(수민, 지호)',  wrong: ['cowork(지호, 수민)', 'is_a(수민, 지호)'] }
+            ],
+            revIdx: [1, 3],
+            predSwap: [ { idx: 2, pred: 'has' }, { idx: 0, pred: 'cowork' } ]
+        },
+        {
+            name: '장영실',
+            nodes: {
+                jang:  { label: '장영실',  x: 150, y: 115, person: true },
+                sci:   { label: '과학자',  x: 150, y: 30 },
+                lee:   { label: '이천',    x: 265, y: 70, person: true },
+                clock: { label: '자격루',  x: 60,  y: 190 },
+                sphere:{ label: '혼천의',  x: 240, y: 190 }
+            },
+            edges: [
+                { from: 'jang', to: 'sci',    pred: 'is_a' },
+                { from: 'lee',  to: 'sci',    pred: 'is_a' },
+                { from: 'jang', to: 'clock',  pred: 'make' },
+                { from: 'jang', to: 'sphere', pred: 'make' },
+                { from: 'jang', to: 'lee',    pred: 'cowork' }
+            ],
+            sentences: [
+                { text: '장영실은 과학자이다.',        code: 'is_a(장영실, 과학자)',  wrong: ['is_a(과학자, 장영실)', 'has(장영실, 과학자)'] },
+                { text: '이천은 과학자이다.',          code: 'is_a(이천, 과학자)',    wrong: ['is_a(과학자, 이천)', 'cowork(이천, 과학자)'] },
+                { text: '장영실은 자격루를 만들었다.', code: 'make(장영실, 자격루)',  wrong: ['make(자격루, 장영실)', 'has(장영실, 자격루)'] },
+                { text: '장영실은 혼천의를 만들었다.', code: 'make(장영실, 혼천의)',  wrong: ['make(혼천의, 장영실)', 'is_a(장영실, 혼천의)'] },
+                { text: '장영실은 이천과 협력한다.',   code: 'cowork(장영실, 이천)',  wrong: ['cowork(이천, 장영실)', 'make(장영실, 이천)'] }
+            ],
+            revIdx: [0, 4],
+            predSwap: [ { idx: 2, pred: 'is_a' }, { idx: 3, pred: 'has' } ]
+        }
+    ];
+
+    var knowledgeList = document.getElementById('knowledge-list');
+    var netOptionsEl = document.getElementById('net-options');
+    var codeRowsEl = document.getElementById('code-rows');
+    var stageNet = document.getElementById('stage-net');
+    var stageCode = document.getElementById('stage-code');
+    var statusBanner = document.getElementById('status-banner');
+    var missionHint = document.getElementById('mission-hint');
+    var stepNowEl = document.getElementById('step-now');
+    var codeCountEl = document.getElementById('code-count');
+    var codeTotalEl = document.getElementById('code-total');
+
+    var problem = null;
+    var lastProblemIdx = -1;
+    var netSolved = false;
+    var codeSolved = 0;
+
+    function setBanner(kind, text) {
+        statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
+        statusBanner.textContent = text || '';
+    }
+
+    function shuffle(arr) {
+        var a = arr.slice();
+        for (var i = a.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+    }
+
+    // ---------- 의미망 SVG 그리기 ----------
+    function edgeVariant(p, kind) {
+        // kind: 'correct' | 'rev' | 'pred'
+        return p.edges.map(function (e, i) {
+            var out = { from: e.from, to: e.to, pred: e.pred };
+            if (kind === 'rev' && p.revIdx.indexOf(i) !== -1) {
+                out.from = e.to; out.to = e.from;
+            }
+            if (kind === 'pred') {
+                p.predSwap.forEach(function (s) { if (s.idx === i) out.pred = s.pred; });
+            }
+            return out;
+        });
+    }
+
+    function nodeRadius(label) { return Math.max(20, label.length * 6.5 + 6); }
+
+    function drawNetwork(p, edges) {
+        var ns = 'http://www.w3.org/2000/svg';
+        var svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('viewBox', '0 0 320 230');
+
+        var defs = document.createElementNS(ns, 'defs');
+        var markerId = 'arrow-' + Math.random().toString(36).slice(2, 8);
+        var marker = document.createElementNS(ns, 'marker');
+        marker.setAttribute('id', markerId);
+        marker.setAttribute('viewBox', '0 0 10 10');
+        marker.setAttribute('refX', '9');
+        marker.setAttribute('refY', '5');
+        marker.setAttribute('markerWidth', '7');
+        marker.setAttribute('markerHeight', '7');
+        marker.setAttribute('orient', 'auto-start-reverse');
+        var mpath = document.createElementNS(ns, 'path');
+        mpath.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+        mpath.setAttribute('fill', '#7f97c9');
+        marker.appendChild(mpath);
+        defs.appendChild(marker);
+        svg.appendChild(defs);
+
+        edges.forEach(function (e) {
+            var n1 = p.nodes[e.from], n2 = p.nodes[e.to];
+            var dx = n2.x - n1.x, dy = n2.y - n1.y;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var r1 = nodeRadius(n1.label), r2 = nodeRadius(n2.label);
+            var x1 = n1.x + dx / len * r1, y1 = n1.y + dy / len * r1;
+            var x2 = n2.x - dx / len * (r2 + 4), y2 = n2.y - dy / len * (r2 + 4);
+
+            var line = document.createElementNS(ns, 'line');
+            line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+            line.setAttribute('class', 'qedge');
+            line.setAttribute('marker-end', 'url(#' + markerId + ')');
+            svg.appendChild(line);
+
+            var label = document.createElementNS(ns, 'text');
+            label.setAttribute('x', (n1.x + n2.x) / 2);
+            label.setAttribute('y', (n1.y + n2.y) / 2 - 5);
+            label.setAttribute('class', 'qedge-label');
+            label.textContent = e.pred;
+            svg.appendChild(label);
+        });
+
+        Object.keys(p.nodes).forEach(function (id) {
+            var n = p.nodes[id];
+            var g = document.createElementNS(ns, 'g');
+            g.setAttribute('class', 'qnode' + (n.person ? ' person' : ''));
+            var circle = document.createElementNS(ns, 'circle');
+            circle.setAttribute('cx', n.x); circle.setAttribute('cy', n.y);
+            circle.setAttribute('r', nodeRadius(n.label));
+            g.appendChild(circle);
+            var text = document.createElementNS(ns, 'text');
+            text.setAttribute('x', n.x); text.setAttribute('y', n.y);
+            text.textContent = n.label;
+            g.appendChild(text);
+            svg.appendChild(g);
+        });
+
+        return svg;
+    }
+
+    // ---------- 1단계 ----------
+    function renderNetOptions() {
+        netOptionsEl.innerHTML = '';
+        var variants = shuffle([
+            { kind: 'correct' },
+            { kind: 'rev' },
+            { kind: 'pred' }
+        ]);
+        var names = ['가', '나', '다'];
+        variants.forEach(function (v, i) {
+            var opt = document.createElement('div');
+            opt.className = 'net-option';
+            opt.dataset.kind = v.kind;
+            opt.appendChild(drawNetwork(problem, edgeVariant(problem, v.kind)));
+            var nameEl = document.createElement('div');
+            nameEl.className = 'opt-name';
+            nameEl.textContent = names[i];
+            opt.appendChild(nameEl);
+            opt.addEventListener('click', function () { onPickNetwork(opt); });
+            netOptionsEl.appendChild(opt);
+        });
+    }
+
+    function onPickNetwork(opt) {
+        if (netSolved) return;
+        if (opt.dataset.kind === 'correct') {
+            netSolved = true;
+            opt.classList.add('correct');
+            netOptionsEl.querySelectorAll('.net-option').forEach(function (el) {
+                if (el !== opt) el.classList.add('locked');
+            });
+            stepNowEl.textContent = '2';
+            setBanner('info', '정답! 이 의미망이 지식을 올바르게 표현하고 있어요. 이제 각 문장을 술어 논리 코드로 옮겨 봅시다.');
+            missionHint.textContent = '문장마다 올바른 술어 논리 코드를 클릭하세요.';
+            stageCode.classList.remove('hidden');
+            stageCode.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            opt.classList.remove('wrong');
+            void opt.offsetWidth;
+            opt.classList.add('wrong');
+            setBanner('bad', '아쉬워요. 화살표의 방향(주어 → 대상)과 술어의 뜻을 문장과 하나씩 비교해 보고 다시 도전해 보세요.');
+        }
+    }
+
+    // ---------- 2단계 ----------
+    function renderCodeRows() {
+        codeRowsEl.innerHTML = '';
+        problem.sentences.forEach(function (s, i) {
+            var row = document.createElement('div');
+            row.className = 'code-row';
+            row.dataset.idx = i;
+
+            var sent = document.createElement('div');
+            sent.className = 'sentence';
+            sent.innerHTML = '<span class="num">' + (i + 1) + '.</span>' + s.text;
+            row.appendChild(sent);
+
+            var opts = document.createElement('div');
+            opts.className = 'code-opts';
+            shuffle([s.code].concat(s.wrong)).forEach(function (code) {
+                var btn = document.createElement('button');
+                btn.className = 'code-opt';
+                btn.textContent = code;
+                btn.addEventListener('click', function () { onPickCode(row, s, code, btn); });
+                opts.appendChild(btn);
+            });
+            row.appendChild(opts);
+            codeRowsEl.appendChild(row);
+        });
+    }
+
+    function onPickCode(row, s, code, btn) {
+        if (row.classList.contains('done')) return;
+        if (code === s.code) {
+            row.classList.add('done');
+            row.querySelector('.code-opts').innerHTML = '<span class="answer">' + s.code + '</span>';
+            codeSolved++;
+            codeCountEl.textContent = codeSolved;
+            if (codeSolved === problem.sentences.length) {
+                setBanner('ok', '🎉 완성! 자연어 지식을 의미망으로 표현하고, 술어 논리 코드로까지 옮겨 보았습니다.');
+                fireConfetti();
+                missionHint.textContent = '새 문제 불러오기를 눌러 다른 지식으로 연습해 보세요.';
+            } else {
+                setBanner('', '');
+            }
+        } else {
+            btn.classList.remove('wrong');
+            void btn.offsetWidth;
+            btn.classList.add('wrong');
+            setBanner('bad', '아쉬워요. 술어가 문장의 관계와 맞는지, 괄호 안 인자의 순서가 주어 → 대상 순인지 다시 확인해 보세요.');
+        }
+    }
+
+    function fireConfetti() {
+        if (typeof confetti !== 'function') return;
+        confetti({ particleCount: 90, spread: 70, origin: { x: 0.5, y: 0.4 } });
+    }
+
+    function loadProblem() {
+        var idx;
+        do { idx = Math.floor(Math.random() * PROBLEMS.length); } while (PROBLEMS.length > 1 && idx === lastProblemIdx);
+        lastProblemIdx = idx;
+        problem = PROBLEMS[idx];
+
+        netSolved = false;
+        codeSolved = 0;
+        stepNowEl.textContent = '1';
+        codeCountEl.textContent = '0';
+        codeTotalEl.textContent = problem.sentences.length;
+
+        knowledgeList.innerHTML = '';
+        problem.sentences.forEach(function (s) {
+            var li = document.createElement('li');
+            li.textContent = s.text;
+            knowledgeList.appendChild(li);
+        });
+
+        stageCode.classList.add('hidden');
+        renderNetOptions();
+        renderCodeRows();
+        setBanner('', '');
+        missionHint.textContent = '자연어 지식을 읽고 알맞은 의미망 그림을 클릭하세요.';
+    }
+
+    document.getElementById('btn-new').addEventListener('click', function () {
+        loadProblem();
+        setBanner('info', '새로운 문제가 출제되었습니다.');
+    });
+
+    loadProblem();
+})();
+</script>
+</body>
+</html>

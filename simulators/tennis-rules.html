@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>예측 지능 시스템 — 테니스 경기 예측 규칙 만들기</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF;
+        --blue: #1C60EF;
+        --blue-light: #DBE8FE;
+        --text: #16223f;
+        --text-muted: #55647f;
+        --red: #ef4444;
+        --red-light: #fee2e2;
+        --green: #16a34a;
+        --green-light: #dcfce7;
+        --gold: #d4a017;
+        --gold-light: #fef3c7;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+        margin: 0;
+        height: 100%;
+        font-family: var(--font-body);
+        color: var(--text);
+        background: var(--white);
+    }
+    .app { display: flex; flex-direction: column; min-height: 100%; }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--blue-light);
+        background: #fbfcff;
+        flex-shrink: 0;
+    }
+    .topbar h1 { font-family: var(--font-title); font-weight: 700; font-size: 15px; margin: 0; }
+    .topbar .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    button.action {
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 12.5px;
+        border-radius: 8px;
+        padding: 8px 14px;
+        border: 1px solid var(--blue-light);
+        background: var(--white);
+        color: var(--blue);
+        cursor: pointer;
+    }
+    button.action:hover { background: var(--blue-light); }
+    button.action.primary { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    button.action.primary:hover { background: #164fce; }
+
+    .mission {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 18px;
+        border-bottom: 1px solid var(--blue-light);
+        background: linear-gradient(90deg, var(--blue-light), #eef4ff);
+    }
+    .mission-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 700;
+        background: var(--white);
+        border: 1px solid rgba(28,96,239,0.22);
+        border-radius: 999px;
+        padding: 6px 14px;
+        white-space: nowrap;
+    }
+    .mission-chip b { color: var(--blue); font-family: var(--font-title); }
+    .mission-hint { font-size: 11.5px; color: var(--text-muted); margin-left: auto; }
+
+    .status-banner {
+        display: none;
+        padding: 9px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .status-banner.show { display: block; }
+    .status-banner.ok { background: var(--gold-light); color: #92700c; }
+    .status-banner.bad { background: var(--red-light); color: #b91c1c; }
+    .status-banner.info { background: var(--blue-light); color: #16419e; }
+
+    .stage {
+        flex: 1;
+        display: flex;
+        gap: 16px;
+        padding: 16px 18px 24px;
+        overflow: auto;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    /* ---------- 데이터 표 ---------- */
+    .data-panel { flex: 0 1 360px; min-width: 300px; }
+    .panel-title {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--blue);
+        margin: 0 0 8px;
+    }
+    table.tennis-table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 12px;
+    }
+    .tennis-table th, .tennis-table td {
+        border: 1px solid var(--blue-light);
+        padding: 4.5px 4px;
+        text-align: center;
+    }
+    .tennis-table th {
+        background: #f2f6ff;
+        font-family: var(--font-title);
+        font-weight: 700;
+        color: var(--blue);
+        font-size: 11.5px;
+    }
+    .tennis-table td.play-o { color: var(--green); font-weight: 700; }
+    .tennis-table td.play-x { color: var(--red); font-weight: 700; }
+    .tennis-table tr.dimmed td { opacity: 0.28; }
+    .tennis-table tr.focused td { background: var(--gold-light); }
+    .table-note { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.6; }
+
+    /* ---------- 규칙 현황 ---------- */
+    .work-panel { flex: 1 1 460px; min-width: 320px; display: flex; flex-direction: column; gap: 14px; }
+
+    .rule-box {
+        border: 1.5px solid var(--gold);
+        background: #fffdf3;
+        border-radius: 12px;
+        padding: 12px 16px;
+    }
+    .rule-box .rule-label {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 11.5px;
+        color: #92700c;
+        margin-bottom: 6px;
+    }
+    .rule-box .rule-text {
+        font-size: 13.5px;
+        font-weight: 700;
+        line-height: 1.8;
+        word-break: keep-all;
+    }
+
+    .step-card {
+        border: 1.5px solid var(--blue-light);
+        border-radius: 14px;
+        background: var(--white);
+        padding: 14px 16px;
+    }
+    .step-card.locked { display: none; }
+    .step-card.done { border-color: var(--green); background: #f7fdf9; }
+    .step-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+    .step-num {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 11.5px;
+        color: var(--white);
+        background: var(--blue);
+        border-radius: 999px;
+        padding: 4px 12px;
+        white-space: nowrap;
+    }
+    .step-card.done .step-num { background: var(--green); }
+    .step-title { font-family: var(--font-title); font-weight: 700; font-size: 13.5px; }
+    .step-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.7; margin: 4px 0 12px; }
+
+    .frac-groups { display: flex; flex-direction: column; gap: 10px; }
+    .frac-group-label {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+    }
+    .frac-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .frac-cell {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 1.5px solid var(--blue-light);
+        border-radius: 10px;
+        padding: 6px 10px;
+        font-size: 12.5px;
+        font-weight: 700;
+        background: var(--white);
+    }
+    .frac-cell.ok { border-color: var(--green); background: var(--green-light); }
+    .frac-cell.ok .frac-result { color: var(--green); font-family: var(--font-title); }
+    .frac-cell.pickable { cursor: pointer; transition: all 0.12s ease; }
+    .frac-cell.pickable:hover { border-color: var(--gold); background: var(--gold-light); }
+    .frac-cell.picked { border-color: var(--gold); background: var(--gold-light); }
+    .frac-cell.shake { animation: shakeN 0.35s ease; border-color: var(--red); }
+    .frac-cell input {
+        width: 34px;
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 12.5px;
+        text-align: center;
+        border: 1px solid var(--blue-light);
+        border-radius: 6px;
+        padding: 3px 2px;
+        color: var(--text);
+    }
+    .frac-cell input:focus { outline: 2px solid var(--blue); border-color: var(--blue); }
+    .frac-slash { color: var(--text-muted); font-weight: 700; }
+    .frac-check {
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 11px;
+        border: 1px solid var(--blue-light);
+        border-radius: 6px;
+        background: var(--white);
+        color: var(--blue);
+        padding: 3px 7px;
+        cursor: pointer;
+    }
+    .frac-check:hover { background: var(--blue-light); }
+
+    .choice-list { display: flex; flex-direction: column; gap: 8px; }
+    .choice-btn {
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 13px;
+        line-height: 1.7;
+        text-align: left;
+        border: 2px solid var(--blue-light);
+        border-radius: 10px;
+        background: var(--white);
+        color: var(--text);
+        padding: 10px 14px;
+        cursor: pointer;
+        transition: all 0.12s ease;
+        word-break: keep-all;
+    }
+    .choice-btn:hover { border-color: var(--blue); }
+    .choice-btn.wrong { animation: shakeN 0.35s ease; border-color: var(--red); background: var(--red-light); }
+    .choice-btn.right { border-color: var(--green); background: var(--green-light); cursor: default; }
+
+    .verify-list { display: flex; flex-direction: column; gap: 6px; }
+    .verify-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12.5px;
+        font-weight: 700;
+        border: 1px solid var(--green);
+        background: var(--green-light);
+        border-radius: 8px;
+        padding: 7px 12px;
+        flex-wrap: wrap;
+    }
+    .verify-row .day-chip {
+        font-family: var(--font-title);
+        color: var(--white);
+        background: var(--green);
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: 11px;
+    }
+    .verify-row .cond { color: #166534; }
+
+    @keyframes shakeN {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1>테니스 경기 예측 규칙 만들기</h1>
+            <div class="sub">14일치 데이터에서 정확도가 높은 조건을 골라 논리 규칙을 한 단계씩 완성합니다.</div>
+        </div>
+        <div class="controls">
+            <button class="action" id="btn-reset">처음부터 다시</button>
+        </div>
+    </div>
+
+    <div class="mission">
+        <span class="mission-chip">단계 <b id="step-now">1</b> / 5</span>
+        <span class="mission-hint" id="mission-hint">먼저 표를 보고 속성값별 비율을 채우세요.</span>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="stage">
+        <div class="data-panel">
+            <p class="panel-title">표 Ⅰ-6 테니스 경기 유무 데이터셋</p>
+            <table class="tennis-table" id="tennis-table">
+                <thead>
+                    <tr><th>Day</th><th>날씨</th><th>기온</th><th>습도</th><th>바람의 세기</th><th>경기 유무</th></tr>
+                </thead>
+                <tbody id="tennis-tbody"></tbody>
+            </table>
+            <p class="table-note" id="table-note">○ = 경기를 한 날 (9일) · × = 경기를 하지 않은 날 (5일)</p>
+        </div>
+
+        <div class="work-panel">
+            <div class="rule-box">
+                <div class="rule-label">지금까지 만든 규칙</div>
+                <div class="rule-text" id="rule-text">테니스 경기를 한다. ← (텅 빈 규칙)</div>
+            </div>
+
+            <!-- 1단계: 전체 비율 -->
+            <div class="step-card" id="card-1">
+                <div class="step-head"><span class="step-num">1단계</span><span class="step-title">속성값별 '경기를 한 날'의 비율 구하기</span></div>
+                <p class="step-desc">속성값마다 <b>경기를 한 날 수 / 그 속성값인 날 수</b>를 표에서 직접 세어 입력하고 확인을 누르세요. 예) 날씨가 '맑음'인 날 5일 중 2일 경기 → 2/5</p>
+                <div class="frac-groups" id="frac-groups-1"></div>
+            </div>
+
+            <!-- 2단계: 최고 정확도 고르기 + 규칙 표현 -->
+            <div class="step-card locked" id="card-2">
+                <div class="step-head"><span class="step-num">2단계</span><span class="step-title">정확도가 가장 높은 속성값 고르기 → 논리로 표현하기</span></div>
+                <p class="step-desc">위에서 채운 비율(정확도) 중 <b>1에 가장 가까운 속성값</b>을 클릭하세요. 그 다음, 그것을 표현한 올바른 논리 규칙을 고르세요.</p>
+                <div class="choice-list" id="rule-choice-1" style="display:none;"></div>
+            </div>
+
+            <!-- 3단계: 맑음 -->
+            <div class="step-card locked" id="card-3">
+                <div class="step-head"><span class="step-num">3단계</span><span class="step-title">날씨가 '맑음'인 날만 다시 살펴보기</span></div>
+                <p class="step-desc">이제 표에서 <b>날씨가 '맑음'인 5일</b>만 남았습니다(노란 줄). 이 5일에 대해 나머지 속성의 비율을 세어 입력하고, 정확도가 가장 높은 속성값을 고른 뒤, 규칙을 확장하세요.</p>
+                <div class="frac-groups" id="frac-groups-3"></div>
+                <div class="choice-list" id="rule-choice-2" style="display:none; margin-top:12px;"></div>
+            </div>
+
+            <!-- 4단계: 비 -->
+            <div class="step-card locked" id="card-4">
+                <div class="step-head"><span class="step-num">4단계</span><span class="step-title">날씨가 '비'인 날만 다시 살펴보기</span></div>
+                <p class="step-desc">마지막으로 <b>날씨가 '비'인 5일</b>입니다(노란 줄). 같은 방법으로 비율을 채우고, 정확도가 가장 높은 속성값을 골라 규칙을 완성하세요.</p>
+                <div class="frac-groups" id="frac-groups-4"></div>
+                <div class="choice-list" id="rule-choice-3" style="display:none; margin-top:12px;"></div>
+            </div>
+
+            <!-- 5단계: 검증 -->
+            <div class="step-card locked" id="card-5">
+                <div class="step-head"><span class="step-num">5단계</span><span class="step-title">완성한 규칙 검증하기</span></div>
+                <p class="step-desc">완성된 규칙이 경기를 한 9일을 모두 설명하는지 확인해 봅시다.</p>
+                <div class="verify-list" id="verify-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // 교과서 표 Ⅰ-6 테니스 경기 유무 데이터셋 (사진/테니스1.png 대조)
+    var DAYS = [
+        { d: 1,  w: '맑음', t: '더움',   h: '높음', s: '약함', play: false },
+        { d: 2,  w: '맑음', t: '더움',   h: '높음', s: '강함', play: false },
+        { d: 3,  w: '흐림', t: '더움',   h: '높음', s: '약함', play: true },
+        { d: 4,  w: '비',   t: '온화함', h: '높음', s: '약함', play: true },
+        { d: 5,  w: '비',   t: '추움',   h: '보통', s: '약함', play: true },
+        { d: 6,  w: '비',   t: '추움',   h: '보통', s: '강함', play: false },
+        { d: 7,  w: '흐림', t: '추움',   h: '보통', s: '강함', play: true },
+        { d: 8,  w: '맑음', t: '온화함', h: '높음', s: '약함', play: false },
+        { d: 9,  w: '맑음', t: '추움',   h: '보통', s: '약함', play: true },
+        { d: 10, w: '비',   t: '온화함', h: '보통', s: '약함', play: true },
+        { d: 11, w: '맑음', t: '온화함', h: '보통', s: '강함', play: true },
+        { d: 12, w: '흐림', t: '온화함', h: '높음', s: '강함', play: true },
+        { d: 13, w: '흐림', t: '더움',   h: '보통', s: '약함', play: true },
+        { d: 14, w: '비',   t: '온화함', h: '높음', s: '강함', play: false }
+    ];
+
+    var ATTRS = {
+        w: { name: '날씨',       values: ['맑음', '흐림', '비'] },
+        t: { name: '기온',       values: ['더움', '온화함', '추움'] },
+        h: { name: '습도',       values: ['높음', '보통'] },
+        s: { name: '바람의 세기', values: ['강함', '약함'] }
+    };
+
+    function subset(filter) {
+        return DAYS.filter(function (day) { return !filter || day.w === filter; });
+    }
+    function frac(attrKey, value, filter) {
+        var days = subset(filter).filter(function (day) { return day[attrKey] === value; });
+        var played = days.filter(function (day) { return day.play; });
+        return { num: played.length, den: days.length };
+    }
+
+    var statusBanner = document.getElementById('status-banner');
+    var missionHint = document.getElementById('mission-hint');
+    var stepNowEl = document.getElementById('step-now');
+    var ruleTextEl = document.getElementById('rule-text');
+
+    var RULES = {
+        empty: '테니스 경기를 한다. ← (텅 빈 규칙)',
+        r1: '테니스 경기를 한다. ← (날씨 = 흐림)',
+        r2: '테니스 경기를 한다. ← (날씨 = 흐림) ∨ {(날씨 = 맑음) ∧ (습도 = 보통)}',
+        r3: '테니스 경기를 한다. ← (날씨 = 흐림) ∨ {(날씨 = 맑음) ∧ (습도 = 보통)} ∨ {(날씨 = 비) ∧ (바람의 세기 = 약함)}'
+    };
+
+    function setBanner(kind, text) {
+        statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
+        statusBanner.textContent = text || '';
+    }
+    function setStep(n, hint) {
+        stepNowEl.textContent = n;
+        missionHint.textContent = hint;
+    }
+
+    // ---------- 표 ----------
+    function renderTable(focusWeather) {
+        var tbody = document.getElementById('tennis-tbody');
+        tbody.innerHTML = '';
+        DAYS.forEach(function (day) {
+            var tr = document.createElement('tr');
+            if (focusWeather) {
+                tr.className = (day.w === focusWeather) ? 'focused' : 'dimmed';
+            }
+            tr.innerHTML =
+                '<td>' + day.d + '</td><td>' + day.w + '</td><td>' + day.t + '</td><td>' + day.h + '</td><td>' + day.s + '</td>' +
+                '<td class="' + (day.play ? 'play-o' : 'play-x') + '">' + (day.play ? '○' : '×') + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ---------- 분수 채우기 위젯 ----------
+    // spec: { containerId, groups: [{attrKey, values}], filter, onAllDone(cells) }
+    function buildFracStage(spec) {
+        var container = document.getElementById(spec.containerId);
+        container.innerHTML = '';
+        var cells = [];
+        var remaining = 0;
+
+        spec.groups.forEach(function (g) {
+            var wrap = document.createElement('div');
+            var label = document.createElement('div');
+            label.className = 'frac-group-label';
+            label.textContent = ATTRS[g.attrKey].name;
+            wrap.appendChild(label);
+            var row = document.createElement('div');
+            row.className = 'frac-row';
+
+            g.values.forEach(function (v) {
+                var answer = frac(g.attrKey, v, spec.filter);
+                remaining++;
+                var cell = document.createElement('span');
+                cell.className = 'frac-cell';
+                var nameSpan = document.createElement('span');
+                nameSpan.textContent = v;
+                cell.appendChild(nameSpan);
+
+                var inNum = document.createElement('input');
+                inNum.type = 'number'; inNum.min = 0; inNum.max = 14;
+                var slash = document.createElement('span');
+                slash.className = 'frac-slash';
+                slash.textContent = '/';
+                var inDen = document.createElement('input');
+                inDen.type = 'number'; inDen.min = 1; inDen.max = 14;
+                var btn = document.createElement('button');
+                btn.className = 'frac-check';
+                btn.textContent = '확인';
+
+                cell.appendChild(inNum); cell.appendChild(slash); cell.appendChild(inDen); cell.appendChild(btn);
+
+                var cellObj = { el: cell, attrKey: g.attrKey, value: v, answer: answer, done: false };
+                cells.push(cellObj);
+
+                function check() {
+                    if (cellObj.done) return;
+                    var a = parseInt(inNum.value, 10);
+                    var b = parseInt(inDen.value, 10);
+                    if (isNaN(a) || isNaN(b)) {
+                        setBanner('info', '분자(경기를 한 날 수)와 분모(그 속성값인 날 수)를 모두 입력한 뒤 확인을 누르세요.');
+                        return;
+                    }
+                    if (a === answer.num && b === answer.den) {
+                        cellObj.done = true;
+                        cell.classList.add('ok');
+                        cell.innerHTML = '';
+                        var res = document.createElement('span');
+                        res.textContent = v + ' ';
+                        cell.appendChild(res);
+                        var fr = document.createElement('span');
+                        fr.className = 'frac-result';
+                        fr.textContent = answer.num + '/' + answer.den;
+                        cell.appendChild(fr);
+                        remaining--;
+                        setBanner('', '');
+                        if (remaining === 0) spec.onAllDone(cells);
+                    } else {
+                        cell.classList.remove('shake');
+                        void cell.offsetWidth;
+                        cell.classList.add('shake');
+                        setBanner('bad', '아쉬워요. \'' + v + '\'인 날을 표에서 하나씩 짚으며 전체 날 수와 경기를 한 날 수를 다시 세어 보세요.');
+                    }
+                }
+                btn.addEventListener('click', check);
+                [inNum, inDen].forEach(function (inp) {
+                    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') check(); });
+                });
+                row.appendChild(cell);
+            });
+            wrap.appendChild(row);
+            container.appendChild(wrap);
+        });
+    }
+
+    // ---------- 최고 정확도 고르기 ----------
+    // 완료된 분수 칩을 클릭 가능하게 바꾼다. best = {attrKey, value}, near = 정확도는 같지만 근거가 적은 값
+    function enablePicking(cells, best, nearMsgValues, onPicked) {
+        cells.forEach(function (c) {
+            c.el.classList.add('pickable');
+            c.el.addEventListener('click', function handler() {
+                if (c.attrKey === best.attrKey && c.value === best.value) {
+                    cells.forEach(function (x) { x.el.classList.remove('pickable'); });
+                    c.el.classList.add('picked');
+                    onPicked();
+                } else if (nearMsgValues && nearMsgValues.some(function (n) { return n.attrKey === c.attrKey && n.value === c.value; })) {
+                    setBanner('info', '정확도는 1이지만 근거가 되는 날이 더 적어요. 정확도가 같다면 더 많은 날이 뒷받침하는 속성값을 골라 보세요.');
+                } else {
+                    c.el.classList.remove('shake');
+                    void c.el.offsetWidth;
+                    c.el.classList.add('shake');
+                    setBanner('bad', '아쉬워요. 분수를 소수로 생각했을 때 1에 가장 가까운(=경기를 한 비율이 가장 높은) 속성값을 찾아 보세요.');
+                }
+            });
+        });
+    }
+
+    // ---------- 규칙 고르기 ----------
+    function buildRuleChoice(containerId, options, correctIdx, onCorrect) {
+        var container = document.getElementById(containerId);
+        container.innerHTML = '';
+        container.style.display = 'flex';
+        // 보기 순서 섞기
+        var order = options.map(function (_, i) { return i; });
+        for (var i = order.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = order[i]; order[i] = order[j]; order[j] = t;
+        }
+        order.forEach(function (idx) {
+            var btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = options[idx];
+            btn.addEventListener('click', function () {
+                if (container.dataset.done) return;
+                if (idx === correctIdx) {
+                    container.dataset.done = '1';
+                    btn.classList.add('right');
+                    Array.prototype.forEach.call(container.children, function (el) {
+                        if (el !== btn) el.style.opacity = 0.45;
+                    });
+                    onCorrect();
+                } else {
+                    btn.classList.remove('wrong');
+                    void btn.offsetWidth;
+                    btn.classList.add('wrong');
+                    setBanner('bad', '아쉬워요. ∨(또는)와 ∧(그리고)의 역할, 조건이 어느 날씨에 대한 것인지 다시 생각해 보세요.');
+                }
+            });
+            container.appendChild(btn);
+        });
+    }
+
+    function openCard(id) {
+        var card = document.getElementById(id);
+        card.classList.remove('locked');
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function markDone(id) { document.getElementById(id).classList.add('done'); }
+
+    function fireConfetti() {
+        if (typeof confetti !== 'function') return;
+        confetti({ particleCount: 110, spread: 75, origin: { x: 0.5, y: 0.4 } });
+    }
+
+    // ---------- 진행 흐름 ----------
+    function start() {
+        ruleTextEl.textContent = RULES.empty;
+        renderTable(null);
+        setStep(1, '먼저 표를 보고 속성값별 비율을 채우세요.');
+        setBanner('', '');
+        document.getElementById('rule-choice-1').style.display = 'none';
+        document.getElementById('rule-choice-2').style.display = 'none';
+        document.getElementById('rule-choice-3').style.display = 'none';
+        ['card-2', 'card-3', 'card-4', 'card-5'].forEach(function (id) {
+            var el = document.getElementById(id);
+            el.classList.add('locked');
+            el.classList.remove('done');
+        });
+        document.getElementById('card-1').classList.remove('done');
+        delete document.getElementById('rule-choice-1').dataset.done;
+        delete document.getElementById('rule-choice-2').dataset.done;
+        delete document.getElementById('rule-choice-3').dataset.done;
+        document.getElementById('verify-list').innerHTML = '';
+
+        // 1단계
+        buildFracStage({
+            containerId: 'frac-groups-1',
+            filter: null,
+            groups: [
+                { attrKey: 'w', values: ATTRS.w.values },
+                { attrKey: 't', values: ATTRS.t.values },
+                { attrKey: 'h', values: ATTRS.h.values },
+                { attrKey: 's', values: ATTRS.s.values }
+            ],
+            onAllDone: function (cells) {
+                markDone('card-1');
+                openCard('card-2');
+                setStep(2, '정확도가 1에 가장 가까운 속성값을 클릭하세요.');
+                setBanner('info', '비율을 모두 채웠습니다! 이제 정확도가 가장 높은 속성값을 위 1단계 칩에서 클릭하세요.');
+                enablePicking(cells, { attrKey: 'w', value: '흐림' }, null, function () {
+                    setBanner('info', '날씨 = 흐림(4/4)! 흐린 날은 무조건 경기를 했어요. 이제 이것을 논리 규칙으로 표현해 봅시다.');
+                    buildRuleChoice('rule-choice-1', [
+                        RULES.r1,
+                        '테니스 경기를 한다. ← (날씨 = 맑음)',
+                        '(날씨 = 흐림) ← 테니스 경기를 한다.'
+                    ], 0, function () {
+                        ruleTextEl.textContent = RULES.r1;
+                        markDone('card-2');
+                        stage3();
+                    });
+                });
+            }
+        });
+    }
+
+    function stage3() {
+        openCard('card-3');
+        renderTable('맑음');
+        setStep(3, "날씨가 '맑음'인 날만 세어 비율을 채우세요.");
+        setBanner('info', '흐린 날은 규칙으로 설명되었습니다. 이제 표에 노랗게 남은 \'맑음\'인 5일만 살펴봅니다.');
+        buildFracStage({
+            containerId: 'frac-groups-3',
+            filter: '맑음',
+            groups: [
+                { attrKey: 't', values: ATTRS.t.values },
+                { attrKey: 'h', values: ATTRS.h.values },
+                { attrKey: 's', values: ATTRS.s.values }
+            ],
+            onAllDone: function (cells) {
+                setBanner('info', '이제 정확도가 가장 높은 속성값을 3단계 칩에서 클릭하세요.');
+                enablePicking(
+                    cells,
+                    { attrKey: 'h', value: '보통' },
+                    [ { attrKey: 't', value: '추움' } ],
+                    function () {
+                        setBanner('info', '습도 = 보통(2/2)! 맑아도 습도가 보통인 날은 무조건 경기를 했어요. 규칙을 확장해 봅시다.');
+                        buildRuleChoice('rule-choice-2', [
+                            RULES.r2,
+                            '테니스 경기를 한다. ← (날씨 = 흐림) ∧ {(날씨 = 맑음) ∨ (습도 = 보통)}',
+                            '테니스 경기를 한다. ← (날씨 = 흐림) ∨ (습도 = 보통)'
+                        ], 0, function () {
+                            ruleTextEl.textContent = RULES.r2;
+                            markDone('card-3');
+                            stage4();
+                        });
+                    }
+                );
+            }
+        });
+    }
+
+    function stage4() {
+        openCard('card-4');
+        renderTable('비');
+        setStep(4, "날씨가 '비'인 날만 세어 비율을 채우세요.");
+        setBanner('info', '마지막으로 \'비\'가 온 5일입니다. 같은 방법으로 비율을 채워 보세요.');
+        buildFracStage({
+            containerId: 'frac-groups-4',
+            filter: '비',
+            groups: [
+                { attrKey: 't', values: ['온화함', '추움'] },
+                { attrKey: 'h', values: ATTRS.h.values },
+                { attrKey: 's', values: ATTRS.s.values }
+            ],
+            onAllDone: function (cells) {
+                setBanner('info', '이제 정확도가 가장 높은 속성값을 4단계 칩에서 클릭하세요.');
+                enablePicking(cells, { attrKey: 's', value: '약함' }, null, function () {
+                    setBanner('info', '바람의 세기 = 약함(3/3)! 비가 와도 바람이 약한 날은 무조건 경기를 했어요. 규칙을 완성해 봅시다.');
+                    buildRuleChoice('rule-choice-3', [
+                        RULES.r3,
+                        RULES.r2 + ' ∨ {(날씨 = 비) ∨ (바람의 세기 = 약함)}',
+                        RULES.r2 + ' ∨ {(날씨 = 비) ∧ (바람의 세기 = 강함)}'
+                    ], 0, function () {
+                        ruleTextEl.textContent = RULES.r3;
+                        markDone('card-4');
+                        stage5();
+                    });
+                });
+            }
+        });
+    }
+
+    function stage5() {
+        openCard('card-5');
+        renderTable(null);
+        setStep(5, '완성한 규칙이 경기한 9일을 모두 설명하는지 확인하세요.');
+        var list = document.getElementById('verify-list');
+        list.innerHTML = '';
+        DAYS.filter(function (day) { return day.play; }).forEach(function (day) {
+            var cond;
+            if (day.w === '흐림') cond = '날씨 = 흐림';
+            else if (day.w === '맑음' && day.h === '보통') cond = '(날씨 = 맑음) ∧ (습도 = 보통)';
+            else if (day.w === '비' && day.s === '약함') cond = '(날씨 = 비) ∧ (바람의 세기 = 약함)';
+            var row = document.createElement('div');
+            row.className = 'verify-row';
+            row.innerHTML = '<span class="day-chip">Day ' + day.d + '</span><span>' + day.w + ' · ' + day.t + ' · ' + day.h + ' · ' + day.s + '</span><span class="cond">→ ' + cond + ' ✓</span>';
+            list.appendChild(row);
+        });
+        markDone('card-5');
+        setBanner('ok', '🎉 완성! 규칙 세 조건이 경기를 한 9일을 빠짐없이 설명합니다. 데이터에서 논리 규칙을 이끌어 내는 예측 지능 시스템을 직접 만들어 보았어요.');
+        fireConfetti();
+    }
+
+    document.getElementById('btn-reset').addEventListener('click', start);
+    start();
+})();
+</script>
+</body>
+</html>

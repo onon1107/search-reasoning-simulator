@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>탐색과 추론 시뮬레이터</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+    <p class="site-title"><span class="logo-dot"></span>탐색과 추론 시뮬레이터</p>
+    <a class="home-link" href="index.html">← 인공지능 기초 시뮬레이터</a>
+</header>
+
+<nav class="tab-nav">
+    <button class="tab-btn" data-tab="home">홈</button>
+    <button class="tab-btn" data-tab="search-tree">탐색 트리</button>
+    <button class="tab-btn" data-tab="dfs-bfs">깊이 우선 탐색 &amp; 너비 우선 탐색</button>
+    <button class="tab-btn" data-tab="hill">언덕 등반 탐색</button>
+    <button class="tab-btn" data-tab="best">최상 우선 탐색</button>
+    <button class="tab-btn" data-tab="astar">A* 알고리즘</button>
+    <button class="tab-btn" data-tab="compare">탐색 비교하기</button>
+    <button class="tab-btn" data-tab="reasoning">지식의 표현과 추론</button>
+    <button class="tab-btn" data-tab="predict">예측 지능 시스템</button>
+</nav>
+
+<main>
+
+    <!-- 홈 -->
+    <section id="tab-home" class="tab-panel">
+        <div class="hero">
+            <span class="eng">Search &amp; Reasoning Simulator</span>
+            <h2>탐색과 추론 시뮬레이터</h2>
+            <p>이 사이트는 부산동성고등학교 「인공지능 기초」 수업에서 배우는 탐색 알고리즘과 추론 과정을 직접 실행해보며 눈으로 확인할 수 있도록 만든 인터랙티브 학습 도구입니다.</p>
+            <p>깊이 우선 탐색(DFS), 너비 우선 탐색(BFS), 언덕 등반 탐색(Hill Climbing), 최상 우선 탐색(Best-First Search), A* 알고리즘이 실제로 탐색하는 과정을 단계별로 시각화하고, 의미망·명제 논리·추론 규칙을 활용해 지식을 표현하고 새로운 사실을 추론하는 문제를 직접 풀어보는 시뮬레이터를 제공합니다.</p>
+        </div>
+
+        <div class="section-block" style="margin-bottom:36px;">
+            <h3>탐색 알고리즘의 분류</h3>
+            <p class="block-lead">
+                탐색 알고리즘은 <strong>목표에 대한 정보를 쓰는지</strong>에 따라 크게 두 갈래로 나뉩니다.
+                아무 정보 없이 정해진 규칙대로 훑는 <strong>맹목적 탐색</strong>과, 목표에 얼마나 가까운지를 어림해 유리한 쪽부터 살피는 <strong>정보 이용 탐색</strong>입니다.
+            </p>
+
+            <div class="search-taxonomy">
+                <div class="tax-group">
+                    <div class="tax-cat">
+                        <span class="kr">맹목적 탐색</span>
+                        <span class="en">blind search</span>
+                    </div>
+                    <div class="tax-items">
+                        <a class="tax-item" href="#dfs-bfs" data-goto="dfs-bfs">
+                            <span class="tax-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.4" y1="15.4" x2="20.5" y2="20.5"></line></svg></span>
+                            <span class="tax-name">깊이 우선 탐색</span>
+                            <span class="tax-en">DFS · Depth First Search</span>
+                        </a>
+                        <a class="tax-item" href="#dfs-bfs" data-goto="dfs-bfs">
+                            <span class="tax-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.4" y1="15.4" x2="20.5" y2="20.5"></line></svg></span>
+                            <span class="tax-name">너비 우선 탐색</span>
+                            <span class="tax-en">BFS · Breadth First Search</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="tax-group">
+                    <div class="tax-cat informed">
+                        <span class="kr">정보 이용 탐색</span>
+                        <span class="en">informed search</span>
+                    </div>
+                    <div class="tax-items">
+                        <a class="tax-item" href="#hill" data-goto="hill">
+                            <span class="tax-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.4" y1="15.4" x2="20.5" y2="20.5"></line></svg></span>
+                            <span class="tax-name">언덕 등반 탐색</span>
+                            <span class="tax-en">HCS · Hill Climbing Search</span>
+                        </a>
+                        <a class="tax-item" href="#best" data-goto="best">
+                            <span class="tax-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.4" y1="15.4" x2="20.5" y2="20.5"></line></svg></span>
+                            <span class="tax-name">최상 우선 탐색</span>
+                            <span class="tax-en">Best First Search</span>
+                        </a>
+                        <a class="tax-item" href="#astar" data-goto="astar">
+                            <span class="tax-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.4" y1="15.4" x2="20.5" y2="20.5"></line></svg></span>
+                            <span class="tax-name">A* 알고리즘</span>
+                            <span class="tax-en">A* Search Algorithm</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-block">
+            <h3>인공지능의 계층 구조</h3>
+            <div class="ai-hierarchy">
+                <div class="ai-rings">
+                    <div class="ring ring-ai">
+                        <div class="ring-label">
+                            <span class="kr">인공지능</span>
+                            <span class="en">Artificial Intelligence</span>
+                        </div>
+                    </div>
+                    <div class="ring ring-ml">
+                        <div class="ring-label">
+                            <span class="kr">머신러닝</span>
+                            <span class="en">Machine Learning</span>
+                        </div>
+                    </div>
+                    <div class="ring ring-dl">
+                        <div class="ring-label">
+                            <span class="kr">딥러닝</span>
+                            <span class="en">Deep Learning</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hierarchy-legend">
+                <div class="legend-item">
+                    <div class="name"><span class="dot"></span>인공지능 (AI)</div>
+                    <div class="desc">사람처럼 인식·추론·학습·판단하도록 만든 기술 전체를 가리키는 가장 큰 범주입니다. 이 사이트가 다루는 탐색·추론 알고리즘도 인공지능의 한 갈래입니다.</div>
+                </div>
+                <div class="legend-item">
+                    <div class="name"><span class="dot"></span>머신러닝 (ML)</div>
+                    <div class="desc">규칙을 직접 입력하지 않고, 데이터로부터 스스로 패턴을 학습해 문제를 해결하는 인공지능의 하위 분야입니다.</div>
+                </div>
+                <div class="legend-item">
+                    <div class="name"><span class="dot"></span>딥러닝 (DL)</div>
+                    <div class="desc">인공신경망을 여러 층으로 쌓아 복잡한 데이터의 특징을 스스로 추출·학습하는 머신러닝의 하위 분야입니다.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 탐색 트리 -->
+    <section id="tab-search-tree" class="tab-panel">
+        <div class="algo-head">
+            <h2>탐색 트리</h2>
+            <span class="algo-en">Search Tree</span>
+        </div>
+        <p class="algo-desc">
+            문제를 하나씩 풀어나가는 과정을 나무(트리) 모양으로 펼쳐본 것이 탐색 트리입니다.
+            각 노드는 하나의 상태(state)를, 가지는 그 상태에서 할 수 있는 선택을 나타냅니다.
+            아래에서 문제를 하나씩 열어 규칙을 확인하고 탐색 트리를 만들어 보세요.
+        </p>
+
+        <div class="accordion">
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">4-Queens</span>
+                        <span class="en">4-Queens Problem</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>4×4 체스판에 <strong>퀸(Queen) 4개</strong>를 서로 공격하지 못하도록 배치하는 문제입니다.</li>
+                                <li>퀸은 <strong>가로 · 세로 · 대각선</strong> 방향으로 몇 칸이든 이동(공격)할 수 있습니다.</li>
+                                <li>따라서 두 퀸이 <strong>같은 행, 같은 열, 같은 대각선</strong> 위에 있으면 안 됩니다.</li>
+                                <li>빈 보드가 <strong>초기 상태</strong>이고, 이 조건을 모두 만족하며 퀸 4개를 다 놓은 상태가 <strong>목표 상태</strong>입니다.</li>
+                            </ul>
+                        </div>
+
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/queens-tree.html?n=4&amp;v=20260819e" title="4-Queens 상태공간 트리 만들기" style="height:760px; min-height:0;"></iframe>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">5-Queens</span>
+                        <span class="en">5-Queens Problem</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>5×5 체스판에 <strong>퀸(Queen) 5개</strong>를 서로 공격하지 못하도록 배치하는 문제입니다.</li>
+                                <li>퀸은 <strong>가로 · 세로 · 대각선</strong> 방향으로 몇 칸이든 이동(공격)할 수 있습니다.</li>
+                                <li>따라서 두 퀸이 <strong>같은 행, 같은 열, 같은 대각선</strong> 위에 있으면 안 됩니다.</li>
+                                <li>빈 보드가 <strong>초기 상태</strong>이고, 이 조건을 모두 만족하며 퀸 5개를 다 놓은 상태가 <strong>목표 상태</strong>입니다. (서로 다른 목표 상태가 4-Queens보다 훨씬 많습니다.)</li>
+                            </ul>
+                        </div>
+
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/queens-tree.html?n=5&amp;v=20260819e" title="5-Queens 상태공간 트리 만들기" style="height:760px; min-height:0;"></iframe>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 깊이 우선 탐색 & 너비 우선 탐색 -->
+    <section id="tab-dfs-bfs" class="tab-panel">
+        <div class="algo-head">
+            <h2>깊이 우선 탐색 &amp; 너비 우선 탐색</h2>
+            <span class="algo-en">Depth-First &amp; Breadth-First Search</span>
+        </div>
+        <p class="algo-desc">
+            둘 다 목표에 대한 정보를 쓰지 않고 정해진 규칙대로만 훑는 <strong>맹목적 탐색</strong>입니다.
+            <strong>깊이 우선 탐색(DFS)</strong>은 한 방향으로 갈 수 있는 만큼 깊이 들어간 뒤 막히면 이전 갈림길로 되돌아오고,
+            <strong>너비 우선 탐색(BFS)</strong>은 같은 깊이의 노드를 모두 방문한 뒤에야 다음 깊이로 넘어갑니다.
+            같은 트리라도 두 방식의 탐색 순서는 전혀 달라집니다.
+        </p>
+
+        <div class="compare-block">
+            <h3>두 탐색 방법 비교</h3>
+            <div class="table-scroll">
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th class="row-head">구분</th>
+                            <th>깊이 우선 탐색 (DFS)</th>
+                            <th>너비 우선 탐색 (BFS)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th class="row-head">탐색 방향</th>
+                            <td>한 방향으로 깊게<br><span class="sub">(한 경로를 끝까지)</span></td>
+                            <td>같은 층을 넓게</td>
+                        </tr>
+                        <tr>
+                            <th class="row-head">자료 구조</th>
+                            <td>스택(되돌아가기)</td>
+                            <td>큐(순서대로)</td>
+                        </tr>
+                        <tr>
+                            <th class="row-head">장점</th>
+                            <td>메모리 사용이 적음</td>
+                            <td>최단 경로 탐색에 유리</td>
+                        </tr>
+                        <tr>
+                            <th class="row-head">단점</th>
+                            <td>해답 없는 깊은 길에 빠질 수 있음</td>
+                            <td>넓어질수록 메모리 증가</td>
+                        </tr>
+                        <tr>
+                            <th class="row-head">활용</th>
+                            <td>미로 탐색, 경로 존재 확인</td>
+                            <td>웹 크롤러, 최단 경로</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">DFS &amp; BFS 예제</span>
+                        <span class="en">Click the Search Order</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>상단에서 <strong>탐색 방식(DFS / BFS)</strong>을 고르고, 그 순서대로 노드를 <strong>클릭</strong>해 보세요. 클릭한 순서가 아래에 "A → B → …" 형태로 표시됩니다.</li>
+                                <li><strong>DFS</strong>는 분기점에서 왼쪽(알파벳이 앞선 노드)부터 끝까지 내려간 뒤, 막히면 바로 위 분기점으로 되돌아갑니다.</li>
+                                <li><strong>BFS</strong>는 같은 깊이의 노드를 왼쪽부터 모두 방문한 뒤에 다음 깊이로 넘어갑니다.</li>
+                                <li>노란 점선으로 표시된 노드가 <strong>목표 상태</strong>입니다. 목표 상태까지 도달하는 순서를 모두 클릭하면 자동으로 채점됩니다.</li>
+                                <li><strong>연습 문제 불러오기</strong>를 누르면 새로운 트리와 목표 상태는 물론, <strong>이번에 사용할 탐색 방식까지 무작위로 지정</strong>됩니다.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/search-trainer.html?v=20260819e" title="DFS &amp; BFS 탐색 순서 클릭 연습" style="height:680px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">4L 만들기</span>
+                        <span class="en">DFS &amp; BFS — Water Jug</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>용량이 각각 <strong>5L, 3L</strong>인 물통 A, B가 있습니다. 두 물통 모두 눈금이 없어 <strong>가득 채우거나 완전히 비우는 것</strong>만 정확히 할 수 있습니다.</li>
+                                <li>할 수 있는 행동은 <strong>A 채우기 · B 채우기 · A 비우기 · B 비우기 · A→B 붓기 · B→A 붓기</strong>, 총 6가지입니다.</li>
+                                <li>붓기는 <strong>옮기는 물통이 가득 차거나, 따르는 물통이 빌 때까지</strong> 계속됩니다.</li>
+                                <li>5L 물통(A)에 정확히 <strong>4L</strong>가 담기면 <strong>목표 상태</strong>입니다.</li>
+                            </ul>
+                        </div>
+
+                        <div class="jug-states">
+                            <div class="jug-card">
+                                <div class="river-card-label init">초기 상태</div>
+                                <div class="jug-card-jugs">
+                                    <div class="jug-card-jug"><div class="fill" style="height:0%;"></div></div>
+                                    <div class="jug-card-jug"><div class="fill" style="height:0%;"></div></div>
+                                </div>
+                                <div class="jug-card-caption">A: 0L · B: 0L</div>
+                            </div>
+                            <div class="jug-card">
+                                <div class="river-card-label goal">목표 상태 예시</div>
+                                <div class="jug-card-jugs">
+                                    <div class="jug-card-jug"><div class="fill" style="height:80%;"></div></div>
+                                    <div class="jug-card-jug"><div class="fill" style="height:100%;"></div></div>
+                                </div>
+                                <div class="jug-card-caption">A: 4L · B: 3L</div>
+                            </div>
+                        </div>
+
+                        <div class="sim-frame-wrap" style="margin-top:18px;">
+                            <iframe src="simulators/water-jug.html?v=20260819e" title="4L 만들기 상태공간 트리 만들기" style="height:800px; min-height:0;"></iframe>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">강 건너기</span>
+                        <span class="en">DFS — Farmer, Wolf, Sheep &amp; Cabbage</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>농부가 <strong>양, 늑대, 양배추</strong>를 배로 강 건너편까지 옮기는 문제입니다. 배에는 농부와 함께 <strong>한 가지</strong>만 태울 수 있습니다.</li>
+                                <li>농부가 없을 때 <strong>양과 늑대만 남으면 늑대가 양을 잡아먹고</strong>, <strong>양과 양배추만 남으면 양이 양배추를 먹습니다.</strong> 이런 상태는 <strong>금지 상태</strong>이므로 탐색 트리에 나타나지 않습니다.</li>
+                                <li>농부, 양, 늑대, 양배추가 모두 강 건너편으로 무사히 옮겨지면 <strong>목표 상태</strong>입니다.</li>
+                                <li>교과서와 같은 순서(농부만 건너기 → 양배추 옮기기 → 양 옮기기 → 늑대 옮기기)로 분기점을 <strong>깊이 우선 탐색</strong>하며, 목표 상태까지 노드를 순서대로 클릭해 보세요.</li>
+                                <li>트리가 크므로 하단의 <strong>확대 · 축소 · 전체 보기</strong> 버튼으로 화면을 조정할 수 있습니다.</li>
+                            </ul>
+                        </div>
+
+                        <div class="river-states">
+                            <div class="river-card">
+                                <span class="river-card-label init">초기 상태</span>
+                                <div class="river-scene">
+                                    <div class="bank">🧑‍🌾🐺🐑🥬</div>
+                                    <div class="river"><span class="boat left">🚣</span></div>
+                                    <div class="bank"></div>
+                                </div>
+                                <p class="river-card-note">모두 강 이쪽에 있어요</p>
+                            </div>
+                            <div class="river-card">
+                                <span class="river-card-label forbid">금지 상태</span>
+                                <div class="river-scene">
+                                    <div class="bank unsafe">🐺🐑</div>
+                                    <div class="river"></div>
+                                    <div class="bank">🧑‍🌾🥬</div>
+                                </div>
+                                <p class="river-card-note">농부 없이 늑대와 양만 남으면 안 돼요</p>
+                            </div>
+                            <div class="river-card">
+                                <span class="river-card-label forbid">금지 상태</span>
+                                <div class="river-scene">
+                                    <div class="bank unsafe">🐑🥬</div>
+                                    <div class="river"></div>
+                                    <div class="bank">🧑‍🌾🐺</div>
+                                </div>
+                                <p class="river-card-note">농부 없이 양과 양배추만 남으면 안 돼요</p>
+                            </div>
+                            <div class="river-card">
+                                <span class="river-card-label goal">목표 상태</span>
+                                <div class="river-scene">
+                                    <div class="bank"></div>
+                                    <div class="river"><span class="boat right">🚣</span></div>
+                                    <div class="bank">🧑‍🌾🐺🐑🥬</div>
+                                </div>
+                                <p class="river-card-note">모두 강 건너편으로 이동했어요</p>
+                            </div>
+                        </div>
+
+                        <div class="sim-frame-wrap" style="margin-top:18px;">
+                            <iframe src="simulators/river-crossing.html" title="강 건너기 — 깊이 우선 탐색" style="height:800px; min-height:0;"></iframe>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 언덕 등반 탐색 -->
+    <section id="tab-hill" class="tab-panel">
+        <div class="algo-head">
+            <h2>언덕 등반 탐색</h2>
+            <span class="algo-en">Hill Climbing Search</span>
+        </div>
+        <p class="algo-desc">
+            언덕 등반 탐색은 목표에 대한 정보(평가 함숫값)를 이용해 유리한 쪽부터 살피는 <strong>정보 이용 탐색</strong>입니다.
+            현재 상태에서 만들 수 있는 이웃 상태들의 평가 함숫값을 모두 구한 뒤, 그중 <strong>가장 높은 값을 가진 상태로만</strong> 이동합니다.
+            현재 상태보다 더 높은 이웃 상태가 하나도 없으면, 목표에 도달하지 못했더라도 그 자리에서 탐색이 멈춥니다. 이를 <strong>지역 최댓값(정체 상태)</strong> 문제라고 합니다.
+        </p>
+
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">8-Puzzle</span>
+                        <span class="en">Hill Climbing — 8-Puzzle</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>3×3 판에 숫자 조각 1~8과 빈칸 1개가 놓여 있습니다. 빈칸과 <strong>상하좌우로 맞닿은 숫자 조각</strong>을 빈칸 쪽으로 밀어 옮길 수 있습니다.</li>
+                                <li><strong>평가 함숫값 f(n)</strong>은 목표 상태와 <strong>같은 위치에 놓인 숫자 조각의 개수</strong>입니다. (최댓값 8)</li>
+                                <li>매 단계마다 먼저 <strong>현재 상태의 f(n)을 직접 구해 입력</strong>해야 합니다. 정확히 맞히면 이동할 수 있는 <strong>이웃 상태들이 나타납니다</strong>.</li>
+                                <li>선택지는 <strong>지금 판 그대로</strong> 보여 주고, <strong>보라색 조각과 화살표</strong>로 어떤 조각을 어느 쪽으로 밀지만 표시합니다. 옮긴 뒤의 f(n)을 직접 계산해 비교하고 <strong>가장 높은 값이 되는 이동</strong>을 클릭하세요.</li>
+                                <li>현재 상태보다 f(n)이 높은 이웃 상태가 <strong>하나도 없으면</strong> 그 자리에서 탐색이 멈춥니다 — <strong>지역 최댓값(정체 상태)</strong>입니다.</li>
+                                <li>f(n) = 8, 즉 숫자 조각 8개가 모두 목표 상태와 같은 위치에 놓이면 <strong>목표 상태</strong>에 도달한 것입니다.</li>
+                            </ul>
+                            <p class="rule-note">📘 보충 자료 — <a href="https://tristanpenman.com/demos/n-puzzle/" target="_blank" rel="noopener">N-퍼즐 탐색 체험하기</a></p>
+                        </div>
+
+                        <div class="hill-preview">
+                            <div class="hill-card">
+                                <div class="river-card-label init">초기 상태</div>
+                                <div class="mini-puzzle">
+                                    <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div>
+                                    <div class="cell">7</div><div class="cell">4</div><div class="cell">5</div>
+                                    <div class="cell blank"></div><div class="cell">8</div><div class="cell">6</div>
+                                </div>
+                                <div class="hill-card-caption">f(n) = ?</div>
+                            </div>
+                            <div class="hill-card">
+                                <div class="river-card-label goal">목표 상태</div>
+                                <div class="mini-puzzle">
+                                    <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div>
+                                    <div class="cell">4</div><div class="cell">5</div><div class="cell">6</div>
+                                    <div class="cell">7</div><div class="cell">8</div><div class="cell blank"></div>
+                                </div>
+                                <div class="hill-card-caption">f(n) = 8</div>
+                            </div>
+                        </div>
+
+                        <div class="sim-frame-wrap" style="margin-top:18px;">
+                            <iframe src="simulators/hill-climbing.html?v=20260819e" title="언덕 등반 탐색 — 8-Puzzle" style="height:760px; min-height:0;"></iframe>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 최상 우선 탐색 -->
+    <section id="tab-best" class="tab-panel">
+        <div class="algo-head">
+            <h2>최상 우선 탐색</h2>
+            <span class="algo-en">Best-First Search</span>
+        </div>
+        <p class="algo-desc">
+            최상 우선 탐색(Best-First Search)은 언덕 등반 탐색을 개선한 <strong>정보 이용 탐색</strong>입니다.
+            평가 함수와 <strong>OPEN 리스트(아직 탐색하지 않은 후보) · CLOSE 리스트(탐색이 끝난 상태)</strong>를 사용해,
+            매 단계마다 OPEN 리스트에 있는 모든 후보 중 평가 함숫값이 가장 좋은 노드를 선택합니다.
+            언덕 등반 탐색은 한 번 지나친 형제 노드를 다시 고려하지 않지만, 최상 우선 탐색은 선택되지 못한 노드도 OPEN 리스트에 남겨 두고
+            <strong>계속 비교하며 다시 선택할 수 있다</strong>는 점이 가장 큰 차이입니다.
+        </p>
+
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">부산 → 서울 길찾기</span>
+                        <span class="en">Best-First Search — OPEN &amp; CLOSE List</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>교과서의 <strong>부산 → 서울 지도 전체</strong>(도시 12개, 길 16개)를 그대로 씁니다. 길 위의 숫자는 두 도시 사이를 이동하는 데 걸리는 <strong>시간(분)</strong>입니다.</li>
+                                <li>평가 함숫값 <strong>f(n)</strong>은 그 도시에서 서울까지 걸리는 <strong>예상 시간 h(n)</strong>이며, <strong>값이 작을수록 더 좋은</strong> 도시입니다.</li>
+                                <li>먼저 왼쪽 창에서 <strong>모든 도시의 f(n)을 직접 채워 넣어야</strong> 오른쪽 탐색 창이 열립니다.</li>
+                                <li>탐색을 시작하면 부산은 곧바로 <strong>CLOSE 리스트</strong>에 들어가고, 부산과 길로 이어진 <strong>이웃 도시들이 OPEN 리스트</strong>에 추가됩니다.</li>
+                                <li>매 단계, OPEN 리스트에 있는 도시 중 <strong>f(n)이 가장 작은 도시</strong>를 클릭하세요. 그 도시는 CLOSE 리스트로 옮겨지고, 그 이웃 도시들이 새로 OPEN 리스트에 추가됩니다.</li>
+                                <li>한 번 지나친 도시도 <strong>OPEN 리스트에 남아 있는 한 다시 선택될 수 있습니다.</strong> — 언덕 등반 탐색과 다른 점입니다.</li>
+                                <li>노란 점선 도시가 <strong>목표 상태(서울)</strong>입니다. 서울이 OPEN 리스트에서 선택되면 탐색이 종료됩니다.</li>
+                            </ul>
+                        </div>
+
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/best-first.html?v=20260819e" title="최상 우선 탐색 — OPEN·CLOSE 리스트" style="height:720px; min-height:0;"></iframe>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">예제 연습</span>
+                        <span class="en">Practice Problems</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>교과서 지도와 <strong>같은 방식</strong>이지만 지점 이름이 A~H인 <strong>연습 지도 8개</strong>가 들어 있습니다. <strong>새 문제 불러오기</strong>를 누를 때마다 지점 수와 연결 모양이 다른 지도가 나옵니다.</li>
+                                <li>먼저 왼쪽에서 각 지점의 <strong>f(n) = h(n)</strong>을 채우고, 오른쪽에서 OPEN 리스트 중 <strong>f(n)이 가장 작은 지점</strong>을 순서대로 클릭하세요.</li>
+                                <li>연습 지도는 모두 <strong>최상 우선 탐색이 가장 짧은 길을 놓치도록</strong> 만들어져 있습니다. 같은 지도를 A* 탭의 연습에서도 풀어 보고 <strong>어느 쪽이 더 짧은 길을 찾는지</strong> 비교해 보세요.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/best-first.html?mode=practice&amp;v=20260819e" title="예제 연습" style="height:720px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- A* 알고리즘 -->
+    <section id="tab-astar" class="tab-panel">
+        <div class="algo-head">
+            <h2>A* 알고리즘</h2>
+            <span class="algo-en">A* Search Algorithm</span>
+        </div>
+        <p class="algo-desc">
+            A* 알고리즘은 최상 우선 탐색과 기본 구조(OPEN·CLOSE 리스트)는 같지만, 평가 함수가 다릅니다.
+            최상 우선 탐색은 <strong>목표까지 남은 거리 h(n)</strong>만 보지만, A*는 <strong>시작 지점부터 지금까지 실제로 이동한 비용 g(n)</strong>까지 더한
+            <strong>f(n) = g(n) + h(n)</strong>을 사용합니다. 그래서 같은 문제라도 최상 우선 탐색과 A*는 서로 다른 경로를 찾을 수 있습니다.
+        </p>
+
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">부산 → 서울 길찾기</span>
+                        <span class="en">A* Search — g(n) + h(n)</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>평가 함수는 <strong>f(n) = g(n) + h(n)</strong>입니다. <strong>g(n)</strong>은 부산에서 그 도시까지 <strong>실제로 이동한 시간</strong>, <strong>h(n)</strong>은 그 도시에서 서울까지 남은 <strong>예상 시간</strong>입니다.</li>
+                                <li>최상 우선 탐색과 <strong>똑같은 교과서 지도</strong>(도시 12개, 길 16개)를 씁니다. 길 위의 숫자가 이동 시간입니다.</li>
+                                <li>왼쪽 창은 두 단계입니다. <strong>① 각 도시의 g(n)</strong>, 즉 부산에서 그 도시까지 <strong>가장 빠르게 가는 시간</strong>을 먼저 구해 넣습니다. 길이 여러 갈래인 도시는 <strong>더 짧은 쪽</strong>을 골라야 합니다.</li>
+                                <li><strong>② g(n)이 모두 맞으면</strong> 각 도시에 g가 채워지고, 이제 <strong>f(n) = g(n) + h(n)</strong>을 적습니다. 여기까지 맞혀야 오른쪽 탐색 창이 열립니다. h(n)은 최상 우선 탐색에서 쓰던 값과 같습니다.</li>
+                                <li>탐색을 시작하면 부산은 곧바로 <strong>CLOSE 리스트</strong>에 들어가고, 이웃 도시들이 <strong>OPEN 리스트</strong>에 추가됩니다.</li>
+                                <li>매 단계, OPEN 리스트에 있는 도시 중 <strong>f(n)이 가장 작은 도시</strong>를 클릭하세요. 더 빠른 길이 발견되면 그 도시의 g(n)이 <strong>더 작은 값으로 갱신</strong>됩니다.</li>
+                                <li>노란 점선 도시가 <strong>목표 상태(서울)</strong>입니다. 서울이 선택되면 탐색이 끝나고 찾아낸 경로와 총 시간이 표시됩니다.</li>
+                                <li>같은 지도인데도 최상 우선 탐색은 <strong>부산→상주→음성→서울</strong>, A*는 <strong>부산→대구→대전→천안→서울(300분)</strong>로 <strong>서로 다른 경로</strong>를 찾습니다. 두 결과를 꼭 비교해 보세요.</li>
+                            </ul>
+                        </div>
+
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/astar.html?v=20260819e" title="A* 알고리즘 — g(n)+h(n)" style="height:760px; min-height:0;"></iframe>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">예제 연습</span>
+                        <span class="en">Practice Problems</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>지점 이름이 A~H인 <strong>연습 지도 8개</strong>가 들어 있습니다. <strong>새 문제 불러오기</strong>로 다른 모양의 지도를 받을 수 있습니다.</li>
+                                <li>교과서 지도와 똑같이 <strong>① g(n)을 먼저 구하고 → ② f(n) = g(n) + h(n)</strong>까지 맞혀야 오른쪽 탐색 창이 열립니다.</li>
+                                <li>같은 지도를 <strong>최상 우선 탐색 탭의 연습</strong>에서도 풀어 보세요. 최상 우선은 h(n)만 보기 때문에 <strong>A*보다 먼 길</strong>을 고르게 됩니다.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/astar.html?mode=practice&amp;v=20260819e" title="예제 연습" style="height:760px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 탐색 비교하기 -->
+    <section id="tab-compare" class="tab-panel">
+        <div class="algo-head">
+            <h2>탐색 비교하기</h2>
+            <span class="algo-en">Comparing Search Algorithms</span>
+        </div>
+        <p class="algo-desc">
+            지금까지 배운 네 가지 탐색을 <strong>똑같은 문제에 나란히 적용</strong>해 보는 곳입니다.
+            같은 미로, 같은 지도인데도 어떤 알고리즘은 빙 둘러 가고 어떤 알고리즘은 곧장 목표로 향합니다.
+            <strong>얼마나 많은 칸을 살펴봤는지(탐색량)</strong>와 <strong>찾아낸 길이 얼마나 짧은지(경로의 품질)</strong>를 함께 비교해 보세요.
+        </p>
+
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">격자 길찾기</span>
+                        <span class="en">Pathfinding Visualizer — 10×10 Grid</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>10×10 격자의 <strong>왼쪽 위(초록)에서 출발</strong>해 <strong>오른쪽 아래(빨강)까지</strong> 가는 길을 찾습니다. 빈 칸을 클릭하면 <strong>벽</strong>이 됩니다.</li>
+                                <li>인접한 칸은 <strong>상(↑) → 우(→) → 하(↓) → 좌(←)</strong> 순서로 확인합니다. 같은 미로라도 이 순서 때문에 알고리즘마다 다른 길을 먼저 봅니다.</li>
+                                <li>칸 안의 <strong>숫자는 방문 순서</strong>, <strong>화살표는 그 칸으로 들어온 방향</strong>입니다. 숫자가 건너뛰면 다른 갈래로 방향을 바꾼 것입니다.</li>
+                                <li><strong>전체 알고리즘 일괄 비교</strong>를 누르면 네 알고리즘의 <strong>방문한 칸 수</strong>와 <strong>경로 길이</strong>를 한 표에서 볼 수 있습니다.</li>
+                                <li>확인해 볼 점 — <strong>BFS와 A*는 항상 가장 짧은 길</strong>을 찾지만, A*는 <strong>훨씬 적은 칸만 살펴봅니다</strong>. <strong>최상 우선</strong>은 가장 적게 살펴보는 대신 <strong>길이 돌아갈 수 있고</strong>, <strong>DFS</strong>는 운에 따라 크게 달라집니다.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/pathfinding-grid.html?v=20260819e" title="길찾기 시각화 — 10×10 격자" style="height:880px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">전국 도시 길찾기</span>
+                        <span class="en">Real-Time Pathfinding on a City Map</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li><strong>실제 지도</strong> 위에 도시 27곳과 도로 38개를 놓았습니다. 도시는 <strong>실제 위치</strong>에 있고, 도로의 길이는 두 도시 사이의 <strong>실제 거리(km)</strong>입니다. 격자와 달리 <strong>길마다 비용이 다릅니다</strong>. 지도는 확대·축소하며 볼 수 있습니다.</li>
+                                <li><strong>출발지와 도착지</strong>를 고르고 재생을 누르면, 탐색이 한 도시씩 진행되는 과정을 볼 수 있습니다. 지도의 도시를 클릭해 도착지를 바꿀 수도 있습니다.</li>
+                                <li>오른쪽 아래 <strong>탐색 데이터 구조</strong>에서 지금 검사 중인 도시와 대기열을 확인하세요. BFS는 <strong>큐</strong>, DFS는 <strong>스택</strong>, A*는 <strong>우선순위 큐</strong>를 씁니다.</li>
+                                <li>A*를 고르면 검사 중인 도시 옆에 <strong>f(n) = g(n) + h(n)</strong>이 함께 표시됩니다.</li>
+                                <li>확인해 볼 점 ① — <strong>서울 → 부산</strong>은 A*와 BFS가 똑같이 371km를 찾지만, <strong>A*는 도시 13곳만 확인</strong>하고 <strong>BFS는 27곳을 전부</strong> 확인합니다. 결과가 같아도 <strong>일하는 양이 다릅니다</strong>.</li>
+                                <li>확인해 볼 점 ② — <strong>서울 → 창원</strong>으로 바꿔 보세요. <strong>A* 355km</strong>, <strong>BFS 375km</strong>, <strong>DFS 419km</strong>로 셋 다 달라집니다. BFS는 <strong>거쳐 가는 도시 수</strong>를 줄일 뿐 <strong>거리가 가장 짧은 길을 보장하지는 않는다</strong>는 점이 핵심입니다.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/pathfinding-map.html?v=20260819e" title="실시간 길찾기 — 전국 도시 지도" style="height:760px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 지식의 표현과 추론 -->
+    <section id="tab-reasoning" class="tab-panel">
+        <div class="algo-head">
+            <h2>지식의 표현과 추론</h2>
+            <span class="algo-en">Knowledge Representation &amp; Reasoning</span>
+        </div>
+        <p class="algo-desc">
+            컴퓨터가 지식을 다루려면 애매한 자연어 대신 <strong>명확하고 규칙적인 형태</strong>로 표현해야 합니다.
+            <strong>의미망(semantic network)</strong>은 지식을 노드와 링크로 연결해 표현하고, <strong>명제 논리</strong>는 문장을 기호(~, ∧, ∨, →, ↔)로 표현해 참·거짓을 판별합니다.
+            여기에 <strong>긍정 논법·삼단 논법</strong> 같은 추론 규칙을 더하면 이미 알고 있는 지식에서 새로운 지식을 이끌어 낼 수 있고,
+            한정자(∀, ∃)를 쓰는 <strong>술어 논리</strong>는 "모든"이나 "어떤"처럼 명제 논리로는 표현할 수 없던 문장까지 다룰 수 있습니다.
+        </p>
+
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">의미망 매칭 — 세종대왕 예제</span>
+                        <span class="en">Semantic Network</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>의미망은 지식을 <strong>노드(객체)</strong>와 <strong>링크(관계)</strong>로 표현합니다. 세종대왕, 집현전, 신하 같은 개념이 노드가 되고, cowork·is_a·has·make 같은 <strong>술어</strong>가 링크(관계)가 됩니다.</li>
+                                <li>오른쪽에 6개의 <strong>술어 논리 코드</strong>가 뒤섞여 있습니다. 왼쪽 그래프에서 <strong>관계(선)를 먼저 클릭</strong>하고, 그 관계에 해당하는 코드를 클릭해 짝지어 보세요.</li>
+                                <li>예를 들어 세종대왕과 집현전을 잇는 선은 "함께 협업한다"는 뜻이므로 <strong>cowork(세종대왕, 집현전)</strong>과 짝입니다. 코드 안의 순서(누가 먼저 오는지)도 그래프의 방향과 같아야 합니다.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/semantic-network.html" title="의미망 매칭 — 세종대왕 예제" style="height:620px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">의미망 고르기 — 새 예제</span>
+                        <span class="en">Semantic Network — Choose &amp; Code</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>교과서에 없는 <strong>새로운 자연어 지식</strong>이 주어집니다. 문장을 읽고, 아래 <strong>의미망 그림 3개 중에서 지식을 올바르게 표현한 것</strong>을 골라 보세요.</li>
+                                <li>나머지 두 그림은 <strong>화살표 방향이 반대</strong>이거나 <strong>술어(관계 이름)가 잘못</strong> 붙어 있습니다. 화살표의 시작(주어)과 끝(대상), 술어의 뜻을 꼼꼼히 비교하세요.</li>
+                                <li>알맞은 의미망을 고르면 2단계로 넘어갑니다. 이번에는 각 문장을 <strong>술어 논리 코드</strong>로 옮깁니다. 문장마다 3개의 코드 중 <strong>올바른 것</strong>을 클릭하세요. 술어와 <strong>인자의 순서</strong>가 모두 맞아야 합니다.</li>
+                                <li><strong>새 문제 불러오기</strong>를 누르면 다른 지식으로 다시 연습할 수 있습니다.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/semantic-network-quiz.html" title="의미망 고르기 — 새 예제" style="height:820px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">명제 논리 진리표</span>
+                        <span class="en">Propositional Logic — Truth Table</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li><strong>명제</strong>는 참·거짓을 판별할 수 있는 문장입니다. p, q 두 명제를 <strong>~(not), ∧(and), ∨(or), →(implies), ←, ↔(iff)</strong>로 조합한 복합 명제의 참·거짓을 구해 보세요.</li>
+                                <li>p, q가 각각 참(T)·거짓(F)인 4가지 경우에 대해, ~p·~q·p∧q·p∨q·p→q·p←q·p↔q의 값을 <strong>T 또는 F 버튼을 눌러</strong> 채우세요.</li>
+                                <li>특히 <strong>p→q(가정→결론)</strong>는 p가 거짓이면 q와 상관없이 항상 참이 된다는 점에 주의하세요. <strong>p←q(q이면 p)</strong>는 화살표 방향이 반대이므로, 이번에는 <strong>q가 거짓이면</strong> 항상 참이 됩니다.</li>
+                                <li>표를 모두 채우면 완료! <strong>새 문장 불러오기</strong>로 다른 문장으로 다시 연습할 수 있습니다.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/prop-logic-table.html" title="명제 논리 진리표 트레이너" style="height:760px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">추론 연습 &amp; 거짓말쟁이 찾기</span>
+                        <span class="en">Inference Rules — Modus Ponens &amp; Syllogism</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li><strong>긍정 논법(modus ponens)</strong>: 규칙 p→q와 사실 p가 있으면, 결론 q를 얻습니다.</li>
+                                <li><strong>삼단 논법(syllogism)</strong>: 규칙 p→q와 사실 q→r이 있으면, 결론 p→r을 얻습니다.</li>
+                                <li>"긍정·삼단 논법 연습" 모드에서는 무작위로 출제되는 규칙과 사실을 보고 <strong>올바른 결론을 3개의 선택지 중에서</strong> 골라 보세요.</li>
+                                <li>"거짓말쟁이 찾기" 모드는 교과서의 스스로 해결하기 문제입니다. 진영·유미·승우·서연 중 <strong>정확히 한 명만 거짓말쟁이</strong>일 때, 네 사람의 진술이 서로 모순되지 않는 단 한 사람을 찾아 <strong>검증하기</strong>로 확인해 보세요. 검증표에서 각 진술이 가정과 <strong>일치하는지 모순되는지</strong> 바로 확인할 수 있습니다.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/prop-logic-inference.html" title="명제 논리 추론 &amp; 거짓말쟁이 찾기" style="height:760px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">아인슈타인 논리 수수께끼</span>
+                        <span class="en">Einstein's Riddle</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="sim-frame-wrap">
+                            <iframe src="simulators/reasoning.html?v=20260819e#einstein" title="아인슈타인 논리 수수께끼 시뮬레이터" style="height:900px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 예측 지능 시스템 -->
+    <section id="tab-predict" class="tab-panel">
+        <div class="algo-head">
+            <h2>예측 지능 시스템</h2>
+            <span class="algo-en">Rule-Based Prediction System</span>
+        </div>
+        <p class="algo-desc">
+            규칙과 사실을 활용하면 데이터로부터 <strong>새로운 지식을 이끌어 내는 지능 시스템</strong>을 만들 수 있습니다.
+            교과서의 <strong>테니스 경기 유무 데이터셋</strong>(14일치 날씨·기온·습도·바람 기록)을 이용해,
+            각 속성별로 <strong>경기를 한 날의 비율(정확도)</strong>을 직접 계산하고, 정확도가 가장 높은 조건부터 골라
+            <strong>"테니스 경기를 한다 ← …"</strong> 형태의 논리 규칙을 한 단계씩 완성해 봅니다.
+            텅 빈 규칙에서 출발해, 데이터가 말해 주는 조건을 ∨(또는)와 ∧(그리고)로 이어 붙이는 과정을 그대로 체험해 보세요.
+        </p>
+
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">테니스 경기 예측 규칙 만들기</span>
+                        <span class="en">Play Tennis — Building Rules from Data</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>문제 &amp; 규칙</h4>
+                            <ul>
+                                <li>표는 <strong>14일 동안</strong> 날씨·기온·습도·바람의 세기와 그날 <strong>테니스 경기를 했는지(○/×)</strong>를 기록한 데이터셋입니다.</li>
+                                <li><strong>1단계</strong> — 속성값마다 <strong>경기를 한 날 수 / 그 속성값인 날 수</strong>를 표에서 직접 세어 분수로 입력합니다. 예를 들어 날씨가 '맑음'인 날이 5일이고 그중 2일 경기를 했다면 <strong>2/5</strong>입니다.</li>
+                                <li><strong>2단계</strong> — 정확도가 가장 높은(1에 가장 가까운) 속성값을 고르고, 그것을 <strong>논리 규칙으로 표현</strong>합니다.</li>
+                                <li><strong>3·4단계</strong> — 아직 설명되지 않은 날씨('맑음', '비')만 남겨 놓고 같은 과정을 반복합니다. 이때는 <strong>해당 날씨인 날만</strong> 표에서 세어야 합니다.</li>
+                                <li>완성된 규칙이 <strong>경기를 한 9일을 모두 설명</strong>하는지 마지막에 확인합니다.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/tennis-rules.html" title="예측 지능 시스템 — 테니스 경기 예측 규칙 만들기" style="height:980px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer class="site-footer">
+    부산동성고 인공지능 기초 · 탐색과 추론 시뮬레이터
+</footer>
+
+<script src="js/app.js"></script>
+</body>
+</html>
