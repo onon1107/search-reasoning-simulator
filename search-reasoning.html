@@ -640,32 +640,7 @@
             <div class="accordion-item open" data-accordion-item>
                 <button class="accordion-trigger" data-accordion-trigger>
                     <span class="accordion-trigger-title">
-                        <span class="kr">의미망 매칭 — 세종대왕 예제</span>
-                        <span class="en">Semantic Network</span>
-                    </span>
-                    <span class="accordion-chevron"></span>
-                </button>
-                <div class="accordion-panel">
-                    <div class="accordion-body">
-                        <div class="rule-block">
-                            <h4>문제 &amp; 규칙</h4>
-                            <ul>
-                                <li>의미망은 지식을 <strong>노드(객체)</strong>와 <strong>링크(관계)</strong>로 표현합니다. 세종대왕, 집현전, 신하 같은 개념이 노드가 되고, cowork·is_a·has·make 같은 <strong>술어</strong>가 링크(관계)가 됩니다.</li>
-                                <li>오른쪽에 6개의 <strong>술어 논리 코드</strong>가 뒤섞여 있습니다. 왼쪽 그래프에서 <strong>관계(선)를 먼저 클릭</strong>하고, 그 관계에 해당하는 코드를 클릭해 짝지어 보세요.</li>
-                                <li>예를 들어 세종대왕과 집현전을 잇는 선은 "함께 협업한다"는 뜻이므로 <strong>cowork(세종대왕, 집현전)</strong>과 짝입니다. 코드 안의 순서(누가 먼저 오는지)도 그래프의 방향과 같아야 합니다.</li>
-                            </ul>
-                        </div>
-                        <div class="sim-frame-wrap" style="margin-top:16px;">
-                            <iframe src="simulators/semantic-network.html" title="의미망 매칭 — 세종대왕 예제" style="height:620px; min-height:0;"></iframe>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="accordion-item" data-accordion-item>
-                <button class="accordion-trigger" data-accordion-trigger>
-                    <span class="accordion-trigger-title">
-                        <span class="kr">의미망 고르기 — 새 예제</span>
+                        <span class="kr">의미망 — 알맞은 그림 고르고 코드로 옮기기</span>
                         <span class="en">Semantic Network — Choose &amp; Code</span>
                     </span>
                     <span class="accordion-chevron"></span>
@@ -675,14 +650,14 @@
                         <div class="rule-block">
                             <h4>문제 &amp; 규칙</h4>
                             <ul>
-                                <li>교과서에 없는 <strong>새로운 자연어 지식</strong>이 주어집니다. 문장을 읽고, 아래 <strong>의미망 그림 3개 중에서 지식을 올바르게 표현한 것</strong>을 골라 보세요.</li>
-                                <li>나머지 두 그림은 <strong>화살표 방향이 반대</strong>이거나 <strong>술어(관계 이름)가 잘못</strong> 붙어 있습니다. 화살표의 시작(주어)과 끝(대상), 술어의 뜻을 꼼꼼히 비교하세요.</li>
-                                <li>알맞은 의미망을 고르면 2단계로 넘어갑니다. 이번에는 각 문장을 <strong>술어 논리 코드</strong>로 옮깁니다. 문장마다 3개의 코드 중 <strong>올바른 것</strong>을 클릭하세요. 술어와 <strong>인자의 순서</strong>가 모두 맞아야 합니다.</li>
-                                <li><strong>새 문제 불러오기</strong>를 누르면 다른 지식으로 다시 연습할 수 있습니다.</li>
+                                <li>의미망은 지식을 <strong>노드(객체)</strong>와 <strong>링크(관계)</strong>로 표현합니다. 세종대왕, 집현전 같은 개념이 노드가 되고, is_a·has·make·cowork·study·write 같은 <strong>술어</strong>가 링크(관계)가 됩니다.</li>
+                                <li><strong>자연어 지식</strong>을 읽고, <strong>의미망 그림 3개 중에서 지식을 올바르게 표현한 것</strong>을 골라 보세요. 나머지 두 그림은 <strong>화살표 방향이 반대</strong>이거나 <strong>술어가 잘못</strong> 붙어 있습니다.</li>
+                                <li>알맞은 의미망을 고르면 2단계로 넘어갑니다. 각 문장을 <strong>술어 논리 코드</strong>로 옮기는 단계로, 문장마다 3개의 코드 중 올바른 것을 클릭하세요. 술어와 <strong>인자의 순서(주어 → 대상)</strong>가 모두 맞아야 합니다.</li>
+                                <li>처음에는 교과서의 <strong>세종대왕 예제</strong>가 나오고, <strong>새 문제 불러오기</strong>를 누르면 모양과 관계가 다른 새로운 지식이 출제됩니다.</li>
                             </ul>
                         </div>
                         <div class="sim-frame-wrap" style="margin-top:16px;">
-                            <iframe src="simulators/semantic-network-quiz.html" title="의미망 고르기 — 새 예제" style="height:820px; min-height:0;"></iframe>
+                            <iframe src="simulators/semantic-network-quiz.html" title="의미망 — 알맞은 그림 고르고 코드로 옮기기" style="height:860px; min-height:0;"></iframe>
                         </div>
                     </div>
                 </div>

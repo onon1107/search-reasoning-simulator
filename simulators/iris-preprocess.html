@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>붓꽃 데이터 전처리</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF;
+        --blue: #1C60EF;
+        --blue-light: #DBE8FE;
+        --text: #16223f;
+        --text-muted: #55647f;
+        --red: #ef4444;
+        --red-light: #fee2e2;
+        --green: #16a34a;
+        --green-light: #dcfce7;
+        --gold: #d4a017;
+        --gold-light: #fef3c7;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; height: 100%; font-family: var(--font-body); color: var(--text); background: var(--white); }
+    .app { display: flex; flex-direction: column; min-height: 100%; }
+    .topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        padding: 12px 18px; border-bottom: 1px solid var(--blue-light); background: #fbfcff; flex-shrink: 0;
+    }
+    .topbar h1 { font-family: var(--font-title); font-weight: 700; font-size: 15px; margin: 0; }
+    .topbar .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    button.action {
+        font-family: var(--font-body); font-weight: 700; font-size: 12.5px; border-radius: 8px; padding: 8px 14px;
+        border: 1px solid var(--blue-light); background: var(--white); color: var(--blue); cursor: pointer;
+    }
+    button.action:hover { background: var(--blue-light); }
+    .mission-chip {
+        display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700;
+        background: var(--white); border: 1px solid rgba(28,96,239,0.22); border-radius: 999px; padding: 6px 14px; white-space: nowrap;
+    }
+    .mission-chip b { color: var(--blue); font-family: var(--font-title); }
+    .status-banner { display: none; padding: 9px 18px; font-size: 13px; font-weight: 700; text-align: center; flex-shrink: 0; }
+    .status-banner.show { display: block; }
+    .status-banner.ok { background: var(--gold-light); color: #92700c; }
+    .status-banner.bad { background: var(--red-light); color: #b91c1c; }
+    .status-banner.info { background: var(--blue-light); color: #16419e; }
+
+    .stage { flex: 1; padding: 16px 18px 24px; overflow: auto; }
+    .step-card { border: 1.5px solid var(--blue-light); border-radius: 14px; background: var(--white); padding: 14px 16px; margin-bottom: 14px; }
+    .step-card.locked { display: none; }
+    .step-card.done { border-color: var(--green); background: #f7fdf9; }
+    .step-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+    .step-num {
+        font-family: var(--font-title); font-weight: 700; font-size: 11.5px; color: var(--white);
+        background: var(--blue); border-radius: 999px; padding: 4px 12px; white-space: nowrap;
+    }
+    .step-card.done .step-num { background: var(--green); }
+    .step-title { font-family: var(--font-title); font-weight: 700; font-size: 13.5px; }
+    .step-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.8; margin: 4px 0 12px; }
+
+    .table-scroll { max-height: 420px; overflow: auto; border: 1px solid var(--blue-light); border-radius: 10px; }
+    table.iris-table { border-collapse: collapse; width: 100%; font-size: 12px; }
+    .iris-table th, .iris-table td { border: 1px solid var(--blue-light); padding: 4.5px 5px; text-align: center; }
+    .iris-table th { background: #f2f6ff; font-family: var(--font-title); font-weight: 700; color: var(--blue); font-size: 11px; position: sticky; top: 0; }
+    .iris-table td.na { color: #b6bfd2; }
+    .iris-table tbody tr { cursor: pointer; }
+    .iris-table tbody tr:hover td { background: #f2f6ff; }
+    .iris-table tbody tr.selected td { background: var(--gold-light); }
+    .iris-table tbody tr.removed { pointer-events: none; }
+    .iris-table tbody tr.removed td { background: var(--red-light); color: #b91c1c; text-decoration: line-through; opacity: 0.6; }
+    .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+    .btn-check {
+        font-family: var(--font-body); font-weight: 700; font-size: 12.5px; border-radius: 8px; padding: 8px 16px;
+        border: 1px solid var(--blue); background: var(--blue); color: var(--white); cursor: pointer;
+    }
+    .btn-check:hover { background: #164fce; }
+    .sel-info { font-size: 12px; color: var(--text-muted); font-weight: 700; }
+
+    table.stats-table { border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
+    .stats-table th, .stats-table td { border: 1px solid var(--blue-light); padding: 4.5px 10px; text-align: center; }
+    .stats-table th { background: #f2f6ff; font-family: var(--font-title); font-weight: 700; color: var(--blue); font-size: 11px; }
+    .stats-table td.warn { color: var(--red); font-weight: 700; }
+
+    .heat-wrap { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
+    table.heat-table { border-collapse: collapse; font-size: 11.5px; }
+    .heat-table th, .heat-table td { border: 1px solid rgba(28,96,239,0.15); padding: 6px 8px; text-align: center; min-width: 58px; }
+    .heat-table th { background: #f2f6ff; font-family: var(--font-title); font-weight: 700; color: var(--blue); font-size: 10.5px; }
+    .heat-table td { font-weight: 700; }
+    .choice-list { display: flex; flex-direction: column; gap: 8px; max-width: 420px; }
+    .choice-btn {
+        font-family: var(--font-body); font-weight: 700; font-size: 12.5px; line-height: 1.6; text-align: left;
+        border: 2px solid var(--blue-light); border-radius: 10px; background: var(--white); color: var(--text);
+        padding: 9px 13px; cursor: pointer; transition: all 0.12s ease;
+    }
+    .choice-btn:hover { border-color: var(--blue); }
+    .choice-btn.wrong { animation: shakeN 0.35s ease; border-color: var(--red); background: var(--red-light); }
+    .choice-btn.right { border-color: var(--green); background: var(--green-light); cursor: default; }
+    @keyframes shakeN { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1>붓꽃 데이터 전처리</h1>
+            <div class="sub">결측치 제거 → 이상치 제거 → 핵심 속성 찾기, 세 단계로 데이터를 다듬습니다.</div>
+        </div>
+        <div class="controls">
+            <span class="mission-chip">단계 <b id="step-now">1</b> / 3</span>
+            <span class="mission-chip">남은 데이터 <b id="row-count">180</b>개</span>
+            <button class="action" id="btn-reset">처음부터 다시</button>
+        </div>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="stage">
+        <!-- 1단계: 결측치 -->
+        <div class="step-card" id="card-1">
+            <div class="step-head"><span class="step-num">1단계</span><span class="step-title">결측치가 있는 행 찾아 제거하기</span></div>
+            <p class="step-desc">
+                <b>결측치(missing value)</b>는 수집한 데이터에서 누락되어 비어 있는 값('–' 표시)입니다. 기계학습 성능에 나쁜 영향을 주므로 반드시 처리해야 해요.
+                교과서처럼 <b>결측치가 있는 행을 제거하는 방법</b>을 쓰겠습니다. 아래는 새로 수집한 151~180번 데이터입니다(1~150번에는 결측치가 없어요).
+                <b>결측치가 있는 행을 모두 클릭해 선택</b>한 뒤(다시 클릭하면 해제), <b>선택한 행 제거하기</b>를 누르세요.
+            </p>
+            <div class="table-scroll" style="max-height:380px;">
+                <table class="iris-table">
+                    <thead><tr><th>일련번호</th><th>꽃받침 길이</th><th>꽃받침 너비</th><th>꽃잎 길이</th><th>꽃잎 너비</th><th>종류</th></tr></thead>
+                    <tbody id="tbody-1"></tbody>
+                </table>
+            </div>
+            <div class="btn-row">
+                <button class="btn-check" id="btn-check-1">선택한 행 제거하기</button>
+                <span class="sel-info">선택한 행: <span id="sel-count-1">0</span>개</span>
+            </div>
+        </div>
+
+        <!-- 2단계: 이상치 -->
+        <div class="step-card locked" id="card-2">
+            <div class="step-head"><span class="step-num">2단계</span><span class="step-title">이상치가 있는 행 찾아 제거하기</span></div>
+            <p class="step-desc">
+                <b>이상치(outlier)</b>는 관측된 데이터의 범위에서 많이 벗어난 아주 작거나 큰 값입니다.
+                결측치를 제거한 172개 데이터의 <b>기초 통계량</b>을 보면, 어떤 속성의 <b>최댓값(max)</b>이 이상하게 큰 것을 발견할 수 있어요.
+                (붓꽃의 꽃받침·꽃잎 길이는 보통 수 cm입니다.)
+                통계량을 참고해 아래 표에서 <b>이상치가 들어 있는 행을 모두 클릭해 선택</b>한 뒤 제거하세요.
+            </p>
+            <table class="stats-table" id="stats-table"></table>
+            <div class="table-scroll" style="max-height:340px;">
+                <table class="iris-table">
+                    <thead><tr><th>일련번호</th><th>꽃받침 길이</th><th>꽃받침 너비</th><th>꽃잎 길이</th><th>꽃잎 너비</th><th>종류</th></tr></thead>
+                    <tbody id="tbody-2"></tbody>
+                </table>
+            </div>
+            <div class="btn-row">
+                <button class="btn-check" id="btn-check-2">선택한 행 제거하기</button>
+                <span class="sel-info">선택한 행: <span id="sel-count-2">0</span>개</span>
+            </div>
+            <p class="step-desc" style="margin-top:10px; margin-bottom:0;">
+                💡 교과서에서는 여기서 더 나아가, 종류별 <b>사분위수 범위(IQR)</b>를 계산해 울타리(Q1−1.5×IQR ~ Q3+1.5×IQR)를 벗어나는 값까지 정밀하게 찾아 제거합니다.
+            </p>
+        </div>
+
+        <!-- 3단계: 핵심 속성 -->
+        <div class="step-card locked" id="card-3">
+            <div class="step-head"><span class="step-num">3단계</span><span class="step-title">핵심 속성 찾기 — 상관계수 히트맵</span></div>
+            <p class="step-desc">
+                문제 해결에 가장 큰 영향을 주는 <b>핵심 속성</b>을 찾기 위해 속성 간의 관계를 살펴봅니다.
+                아래는 정제된 데이터로 계산한 <b>상관계수 히트맵</b>입니다. 상관계수는 −1~+1 사이의 값으로, 1에 가까울수록 두 속성이 함께 커지는 강한 관계라는 뜻이고 색이 진해집니다.
+                <b>상관계수가 가장 높은 속성 쌍</b>(자기 자신 제외)을 골라 보세요 — 이 두 속성이 붓꽃 분류의 핵심 속성이 됩니다.
+            </p>
+            <div class="heat-wrap">
+                <table class="heat-table" id="heat-table"></table>
+                <div class="choice-list" id="pair-choice"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/iris-data.js"></script>
+<script>
+(function () {
+    var ATTRS = [
+        { key: 'sl', name: '꽃받침 길이' },
+        { key: 'sw', name: '꽃받침 너비' },
+        { key: 'pl', name: '꽃잎 길이' },
+        { key: 'pw', name: '꽃잎 너비' }
+    ];
+    function hasMissing(r) { return r.sl === null || r.sw === null || r.pl === null || r.pw === null; }
+    var MISSING_IDS = IRIS2.filter(hasMissing).map(function (r) { return r.id; });
+    // 이상치: 붓꽃 크기(수 cm) 범위를 크게 벗어난 극단값이 있는 행
+    var OUTLIER_IDS = [161, 164, 165, 171, 173];
+
+    var statusBanner = document.getElementById('status-banner');
+    var stepNowEl = document.getElementById('step-now');
+    var rowCountEl = document.getElementById('row-count');
+
+    function setBanner(kind, text) {
+        statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
+        statusBanner.textContent = text || '';
+    }
+    function fmt(v) { return v === null ? '–' : v; }
+
+    function buildSelectableTable(tbodyId, rows, selCountId) {
+        var tbody = document.getElementById(tbodyId);
+        tbody.innerHTML = '';
+        var selected = {};
+        rows.forEach(function (r) {
+            var tr = document.createElement('tr');
+            tr.dataset.id = r.id;
+            tr.innerHTML = '<td>' + r.id + '</td>' +
+                '<td' + (r.sl === null ? ' class="na"' : '') + '>' + fmt(r.sl) + '</td>' +
+                '<td' + (r.sw === null ? ' class="na"' : '') + '>' + fmt(r.sw) + '</td>' +
+                '<td' + (r.pl === null ? ' class="na"' : '') + '>' + fmt(r.pl) + '</td>' +
+                '<td' + (r.pw === null ? ' class="na"' : '') + '>' + fmt(r.pw) + '</td>' +
+                '<td>' + r.sp + '</td>';
+            tr.addEventListener('click', function () {
+                if (tr.classList.contains('removed')) return;
+                if (selected[r.id]) { delete selected[r.id]; tr.classList.remove('selected'); }
+                else { selected[r.id] = true; tr.classList.add('selected'); }
+                document.getElementById(selCountId).textContent = Object.keys(selected).length;
+            });
+            tbody.appendChild(tr);
+        });
+        return {
+            selectedIds: function () { return Object.keys(selected).map(Number).sort(function (a, b) { return a - b; }); },
+            markRemoved: function (ids) {
+                ids.forEach(function (id) {
+                    var tr = tbody.querySelector('tr[data-id="' + id + '"]');
+                    if (tr) { tr.classList.remove('selected'); tr.classList.add('removed'); }
+                });
+            }
+        };
+    }
+
+    function sameSet(a, b) {
+        if (a.length !== b.length) return false;
+        var sb = b.slice().sort(function (x, y) { return x - y; });
+        return a.every(function (v, i) { return v === sb[i]; });
+    }
+
+    function openCard(id) {
+        var el = document.getElementById(id);
+        el.classList.remove('locked');
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function markDone(id) { document.getElementById(id).classList.add('done'); }
+    function fire() { if (typeof confetti === 'function') confetti({ particleCount: 100, spread: 72, origin: { x: 0.5, y: 0.4 } }); }
+
+    // ---------- 통계 ----------
+    function computeStats(rows) {
+        var html = '<tr><th></th>' + ATTRS.map(function (a) { return '<th>' + a.name + '</th>'; }).join('') + '</tr>';
+        ['count', 'mean', 'min', 'max'].forEach(function (stat) {
+            html += '<tr><th>' + stat + '</th>';
+            ATTRS.forEach(function (a) {
+                var vals = rows.map(function (r) { return r[a.key]; }).filter(function (v) { return v !== null; });
+                var v;
+                if (stat === 'count') v = vals.length;
+                else if (stat === 'mean') v = (vals.reduce(function (s, x) { return s + x; }, 0) / vals.length).toFixed(2);
+                else if (stat === 'min') v = Math.min.apply(null, vals).toFixed(1);
+                else v = Math.max.apply(null, vals).toFixed(1);
+                var warn = (stat === 'max' && parseFloat(v) > 10);
+                html += '<td' + (warn ? ' class="warn"' : '') + '>' + v + '</td>';
+            });
+            html += '</tr>';
+        });
+        document.getElementById('stats-table').innerHTML = html;
+    }
+
+    // ---------- 상관계수 ----------
+    function pearson(rows, k1, k2) {
+        var xs = [], ys = [];
+        rows.forEach(function (r) { if (r[k1] !== null && r[k2] !== null) { xs.push(r[k1]); ys.push(r[k2]); } });
+        var n = xs.length;
+        var mx = xs.reduce(function (s, v) { return s + v; }, 0) / n;
+        var my = ys.reduce(function (s, v) { return s + v; }, 0) / n;
+        var num = 0, dx = 0, dy = 0;
+        for (var i = 0; i < n; i++) {
+            num += (xs[i] - mx) * (ys[i] - my);
+            dx += (xs[i] - mx) * (xs[i] - mx);
+            dy += (ys[i] - my) * (ys[i] - my);
+        }
+        return num / Math.sqrt(dx * dy);
+    }
+
+    function heatColor(v) {
+        // 0~1 → 연한 파랑~진한 파랑
+        var t = Math.max(0, Math.min(1, Math.abs(v)));
+        var light = 96 - t * 48; // 96% → 48%
+        return 'hsl(221, 88%, ' + light + '%)';
+    }
+
+    function buildHeatmap(rows) {
+        var html = '<tr><th></th>' + ATTRS.map(function (a) { return '<th>' + a.name + '</th>'; }).join('') + '</tr>';
+        ATTRS.forEach(function (a1) {
+            html += '<tr><th>' + a1.name + '</th>';
+            ATTRS.forEach(function (a2) {
+                var v = pearson(rows, a1.key, a2.key);
+                var textColor = Math.abs(v) > 0.75 ? '#fff' : 'var(--text)';
+                html += '<td style="background:' + heatColor(v) + '; color:' + textColor + ';">' + v.toFixed(2) + '</td>';
+            });
+            html += '</tr>';
+        });
+        document.getElementById('heat-table').innerHTML = html;
+    }
+
+    function buildPairChoice(rows, onCorrect) {
+        // 자기 자신 제외 6쌍 중 상관계수 최고 쌍 찾기
+        var pairs = [];
+        for (var i = 0; i < ATTRS.length; i++) {
+            for (var j = i + 1; j < ATTRS.length; j++) {
+                pairs.push({ a: ATTRS[i], b: ATTRS[j], v: pearson(rows, ATTRS[i].key, ATTRS[j].key) });
+            }
+        }
+        var best = pairs.reduce(function (m, p) { return p.v > m.v ? p : m; }, pairs[0]);
+        var container = document.getElementById('pair-choice');
+        container.innerHTML = '';
+        pairs.forEach(function (p) {
+            var btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = p.a.name + ' & ' + p.b.name;
+            btn.addEventListener('click', function () {
+                if (container.dataset.done) return;
+                if (p === best) {
+                    container.dataset.done = '1';
+                    btn.classList.add('right');
+                    Array.prototype.forEach.call(container.children, function (el) { if (el !== btn) el.style.opacity = 0.45; });
+                    onCorrect(best);
+                } else {
+                    btn.classList.remove('wrong');
+                    void btn.offsetWidth;
+                    btn.classList.add('wrong');
+                    setBanner('bad', '아쉬워요. 히트맵에서 색이 가장 진한 칸(자기 자신인 대각선 제외)을 찾아보세요.');
+                }
+            });
+            container.appendChild(btn);
+        });
+    }
+
+    // ---------- 진행 흐름 ----------
+    var cleaned;
+
+    function start() {
+        setBanner('', '');
+        stepNowEl.textContent = '1';
+        rowCountEl.textContent = '180';
+        ['card-2', 'card-3'].forEach(function (id) {
+            var el = document.getElementById(id);
+            el.classList.add('locked');
+            el.classList.remove('done');
+        });
+        document.getElementById('card-1').classList.remove('done');
+        delete document.getElementById('pair-choice').dataset.done;
+        document.getElementById('sel-count-1').textContent = '0';
+        document.getElementById('sel-count-2').textContent = '0';
+
+        var t1 = buildSelectableTable('tbody-1', IRIS2, 'sel-count-1');
+        var btn1 = document.getElementById('btn-check-1');
+        var newBtn1 = btn1.cloneNode(true);
+        btn1.parentNode.replaceChild(newBtn1, btn1);
+        newBtn1.addEventListener('click', function () {
+            var sel = t1.selectedIds();
+            if (sel.length === 0) { setBanner('info', '먼저 결측치(–)가 있는 행을 클릭해 선택하세요.'); return; }
+            if (sameSet(sel, MISSING_IDS)) {
+                t1.markRemoved(sel);
+                markDone('card-1');
+                cleaned = IRIS1.concat(IRIS2).filter(function (r) { return MISSING_IDS.indexOf(r.id) === -1; });
+                rowCountEl.textContent = cleaned.length;
+                stepNowEl.textContent = '2';
+                setBanner('info', '결측치가 있는 8개 행을 제거했습니다! 180 − 8 = 172개가 남았어요. 이제 이상치를 찾아봅시다.');
+                computeStats(cleaned);
+                stage2();
+            } else {
+                setBanner('bad', '아쉬워요. 빠뜨린 행이 있거나 결측치가 없는 행을 선택했어요. 네 속성 칸을 하나씩 살펴보며 – 표시를 찾아보세요.');
+            }
+        });
+    }
+
+    function stage2() {
+        openCard('card-2');
+        var remaining = IRIS2.filter(function (r) { return MISSING_IDS.indexOf(r.id) === -1; });
+        var t2 = buildSelectableTable('tbody-2', remaining, 'sel-count-2');
+        var btn2 = document.getElementById('btn-check-2');
+        var newBtn2 = btn2.cloneNode(true);
+        btn2.parentNode.replaceChild(newBtn2, btn2);
+        newBtn2.addEventListener('click', function () {
+            var sel = t2.selectedIds();
+            if (sel.length === 0) { setBanner('info', '기초 통계량의 max 값을 참고해, 범위를 크게 벗어난 값이 있는 행을 선택하세요.'); return; }
+            if (sameSet(sel, OUTLIER_IDS)) {
+                t2.markRemoved(sel);
+                markDone('card-2');
+                cleaned = cleaned.filter(function (r) { return OUTLIER_IDS.indexOf(r.id) === -1; });
+                rowCountEl.textContent = cleaned.length;
+                stepNowEl.textContent = '3';
+                setBanner('info', '이상치가 있는 5개 행을 제거했습니다! 이제 핵심 속성을 찾아봅시다.');
+                stage3();
+            } else {
+                setBanner('bad', '아쉬워요. 붓꽃의 길이·너비가 몇 cm 정도인지 생각하며, 극단적으로 큰 값이 있는 행만 골라 보세요.');
+            }
+        });
+    }
+
+    function stage3() {
+        openCard('card-3');
+        buildHeatmap(cleaned);
+        buildPairChoice(cleaned, function (best) {
+            markDone('card-3');
+            setBanner('ok', '🎉 전처리 완성! 핵심 속성은 상관계수 ' + best.v.toFixed(2) + '인 「' + best.a.name + '」과 「' + best.b.name + '」입니다. 이 두 속성으로 k-NN 분류 탭에서 붓꽃을 분류해 봅시다.');
+            fire();
+        });
+    }
+
+    document.getElementById('btn-reset').addEventListener('click', start);
+    start();
+})();
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>의미망 고르기 — 새 예제</title>
+<title>의미망 — 알맞은 그림 고르고 코드로 옮기기</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
     @font-face {
@@ -129,7 +129,7 @@
         border-radius: 14px;
         background: #fbfcff;
         padding: 14px 18px;
-        margin-bottom: 16px;
+        margin-bottom: 8px;
     }
     .knowledge-box h3 {
         font-family: var(--font-title);
@@ -143,6 +143,17 @@
         font-size: 13.5px;
         line-height: 1.9;
         font-weight: 700;
+    }
+    .pred-legend {
+        font-size: 11px;
+        color: var(--text-muted);
+        line-height: 1.8;
+        margin: 0 0 16px;
+    }
+    .pred-legend code {
+        font-family: 'Consolas', monospace;
+        font-weight: 700;
+        color: #3557a7;
     }
 
     .step-label {
@@ -262,8 +273,8 @@
 <div class="app">
     <div class="topbar">
         <div>
-            <h1>의미망 고르기 — 새 예제</h1>
-            <div class="sub">자연어 지식 → 알맞은 의미망 고르기 → 술어 논리 코드 고르기, 두 단계로 연습합니다.</div>
+            <h1>의미망 — 알맞은 그림 고르고 코드로 옮기기</h1>
+            <div class="sub">자연어 지식 → 알맞은 의미망 고르기 → 술어 논리 코드 고르기, 두 단계로 연습합니다. 첫 문제는 교과서의 세종대왕 예제예요.</div>
         </div>
         <div class="controls">
             <button class="action primary" id="btn-new">새 문제 불러오기</button>
@@ -271,8 +282,9 @@
     </div>
 
     <div class="mission">
+        <span class="mission-chip">문제 <b id="prob-name">세종대왕</b></span>
         <span class="mission-chip">단계 <b id="step-now">1</b> / 2</span>
-        <span class="mission-chip">코드 <b id="code-count">0</b> / <span id="code-total">5</span></span>
+        <span class="mission-chip">코드 <b id="code-count">0</b> / <span id="code-total">6</span></span>
         <span class="mission-hint" id="mission-hint">자연어 지식을 읽고 알맞은 의미망 그림을 클릭하세요.</span>
     </div>
 
@@ -283,10 +295,13 @@
             <h3>자연어 지식</h3>
             <ol id="knowledge-list"></ol>
         </div>
+        <p class="pred-legend">
+            술어 읽는 방법 — <code>is_a</code>(~이다) · <code>has</code>(~을 가지고/거느리고 있다) · <code>make</code>(~을 만들었다) · <code>cowork</code>(~와 협력한다) · <code>study</code>(~을 공부한다) · <code>write</code>(~을 썼다) · <code>draw</code>(~을 그렸다) · <code>teach</code>(~을 가르쳤다)
+        </p>
 
         <div id="stage-net">
             <span class="step-label">1단계 — 알맞은 의미망 고르기</span>
-            <p class="step-desc">아래 세 그림 중 위의 지식을 <b>올바르게</b> 표현한 의미망은 하나뿐입니다. 화살표의 방향과 술어(관계 이름)를 비교해 보세요.</p>
+            <p class="step-desc">아래 세 그림 중 위의 지식을 <b>올바르게</b> 표현한 의미망은 하나뿐입니다. 화살표의 방향(주어 → 대상)과 술어(관계 이름)를 비교해 보세요.</p>
             <div class="net-options" id="net-options"></div>
         </div>
 
@@ -300,102 +315,167 @@
 
 <script>
 (function () {
-    // 각 문제: 노드 배치 + 문장(=정답 간선) + 술어 논리 코드 보기(정답 1, 오답 2)
-    // 오답 의미망: rev = 화살표 방향이 반대인 간선들, pred = 술어가 잘못 붙은 간선들
+    // 각 문제: 노드 배치(vb=viewBox 크기) + 문장(=정답 간선) + 술어 논리 코드 보기(정답 1, 오답 2)
+    // 오답 의미망: revIdx = 화살표 방향을 반대로 뒤집을 간선, predSwap = 술어를 잘못 붙일 간선
     var PROBLEMS = [
         {
-            name: '이순신',
+            name: '세종대왕',
+            vb: [390, 260],
             nodes: {
-                yi:     { label: '이순신',  x: 150, y: 115, person: true },
-                gen:    { label: '장군',    x: 150, y: 30 },
-                gwon:   { label: '권율',    x: 265, y: 70, person: true },
-                ship:   { label: '거북선',  x: 60,  y: 190 },
-                navy:   { label: '수군',    x: 240, y: 190 }
+                junju:    { label: '군주',     x: 252, y: 42 },
+                jiphyeon: { label: '집현전',   x: 100, y: 42 },
+                sejong:   { label: '세종대왕', x: 173, y: 122, person: true },
+                sinha:    { label: '신하',     x: 305, y: 122 },
+                hunmin:   { label: '훈민정음', x: 130, y: 218 },
+                hwanghui: { label: '황희',     x: 252, y: 218, person: true },
+                gimjongseo: { label: '김종서', x: 345, y: 218, person: true }
             },
             edges: [
-                { from: 'yi',   to: 'gen',  pred: 'is_a' },
-                { from: 'gwon', to: 'gen',  pred: 'is_a' },
-                { from: 'yi',   to: 'ship', pred: 'make' },
-                { from: 'yi',   to: 'navy', pred: 'has' },
-                { from: 'yi',   to: 'gwon', pred: 'cowork' }
+                { from: 'sejong', to: 'jiphyeon', pred: 'cowork' },
+                { from: 'sejong', to: 'junju', pred: 'is_a' },
+                { from: 'sejong', to: 'sinha', pred: 'has' },
+                { from: 'hwanghui', to: 'sinha', pred: 'is_a' },
+                { from: 'gimjongseo', to: 'sinha', pred: 'is_a' },
+                { from: 'sejong', to: 'hunmin', pred: 'make' }
             ],
             sentences: [
-                { text: '이순신은 장군이다.',            code: 'is_a(이순신, 장군)',    wrong: ['is_a(장군, 이순신)', 'has(이순신, 장군)'] },
-                { text: '권율은 장군이다.',              code: 'is_a(권율, 장군)',      wrong: ['is_a(장군, 권율)', 'make(권율, 장군)'] },
-                { text: '이순신은 거북선을 만들었다.',   code: 'make(이순신, 거북선)',  wrong: ['make(거북선, 이순신)', 'has(이순신, 거북선)'] },
-                { text: '이순신은 수군을 거느리고 있다.', code: 'has(이순신, 수군)',     wrong: ['has(수군, 이순신)', 'is_a(이순신, 수군)'] },
-                { text: '이순신은 권율과 협력한다.',      code: 'cowork(이순신, 권율)',  wrong: ['cowork(권율, 이순신)', 'is_a(이순신, 권율)'] }
+                { text: '세종대왕은 집현전과 협력한다.',      code: 'cowork(세종대왕, 집현전)', wrong: ['cowork(집현전, 세종대왕)', 'has(세종대왕, 집현전)'] },
+                { text: '세종대왕은 군주이다.',               code: 'is_a(세종대왕, 군주)',     wrong: ['is_a(군주, 세종대왕)', 'has(세종대왕, 군주)'] },
+                { text: '세종대왕은 신하를 거느리고 있다.',   code: 'has(세종대왕, 신하)',      wrong: ['has(신하, 세종대왕)', 'is_a(세종대왕, 신하)'] },
+                { text: '황희는 신하이다.',                   code: 'is_a(황희, 신하)',         wrong: ['is_a(신하, 황희)', 'cowork(황희, 신하)'] },
+                { text: '김종서는 신하이다.',                 code: 'is_a(김종서, 신하)',       wrong: ['is_a(신하, 김종서)', 'make(김종서, 신하)'] },
+                { text: '세종대왕은 훈민정음을 만들었다.',    code: 'make(세종대왕, 훈민정음)', wrong: ['make(훈민정음, 세종대왕)', 'has(세종대왕, 훈민정음)'] }
             ],
-            revIdx: [0, 2],   // 오답 A: 이 간선들의 화살표를 반대로
-            predSwap: [ { idx: 3, pred: 'make' }, { idx: 4, pred: 'is_a' } ] // 오답 B: 술어 바꿔치기
+            revIdx: [1, 5],
+            predSwap: [ { idx: 0, pred: 'has' }, { idx: 2, pred: 'cowork' } ]
         },
         {
-            name: '수민',
+            name: '이순신',
+            vb: [360, 255],
             nodes: {
-                sumin:  { label: '수민',    x: 150, y: 115, person: true },
-                stu:    { label: '학생',    x: 150, y: 30 },
-                jiho:   { label: '지호',    x: 265, y: 70, person: true },
-                robot:  { label: '로봇',    x: 60,  y: 190 },
-                laptop: { label: '노트북',  x: 240, y: 190 }
+                yi:    { label: '이순신',   x: 150, y: 125, person: true },
+                gen:   { label: '장군',     x: 62,  y: 45 },
+                gwon:  { label: '권율',     x: 268, y: 45, person: true },
+                ship:  { label: '거북선',   x: 55,  y: 210 },
+                diary: { label: '난중일기', x: 182, y: 218 },
+                navy:  { label: '수군',     x: 305, y: 175 }
             },
             edges: [
-                { from: 'sumin', to: 'stu',    pred: 'is_a' },
-                { from: 'jiho',  to: 'stu',    pred: 'is_a' },
-                { from: 'sumin', to: 'robot',  pred: 'make' },
-                { from: 'sumin', to: 'laptop', pred: 'has' },
-                { from: 'sumin', to: 'jiho',   pred: 'cowork' }
+                { from: 'yi', to: 'gen', pred: 'is_a' },
+                { from: 'gwon', to: 'gen', pred: 'is_a' },
+                { from: 'yi', to: 'ship', pred: 'make' },
+                { from: 'yi', to: 'diary', pred: 'write' },
+                { from: 'yi', to: 'navy', pred: 'has' },
+                { from: 'yi', to: 'gwon', pred: 'cowork' }
             ],
             sentences: [
-                { text: '수민이는 학생이다.',             code: 'is_a(수민, 학생)',    wrong: ['is_a(학생, 수민)', 'cowork(수민, 학생)'] },
-                { text: '지호는 학생이다.',               code: 'is_a(지호, 학생)',    wrong: ['is_a(학생, 지호)', 'has(지호, 학생)'] },
-                { text: '수민이는 로봇을 만들었다.',      code: 'make(수민, 로봇)',    wrong: ['make(로봇, 수민)', 'has(수민, 로봇)'] },
-                { text: '수민이는 노트북을 가지고 있다.', code: 'has(수민, 노트북)',   wrong: ['has(노트북, 수민)', 'make(수민, 노트북)'] },
-                { text: '수민이는 지호와 협력한다.',      code: 'cowork(수민, 지호)',  wrong: ['cowork(지호, 수민)', 'is_a(수민, 지호)'] }
+                { text: '이순신은 장군이다.',              code: 'is_a(이순신, 장군)',    wrong: ['is_a(장군, 이순신)', 'has(이순신, 장군)'] },
+                { text: '권율은 장군이다.',                code: 'is_a(권율, 장군)',      wrong: ['is_a(장군, 권율)', 'cowork(권율, 장군)'] },
+                { text: '이순신은 거북선을 만들었다.',     code: 'make(이순신, 거북선)',  wrong: ['make(거북선, 이순신)', 'has(이순신, 거북선)'] },
+                { text: '이순신은 난중일기를 썼다.',       code: 'write(이순신, 난중일기)', wrong: ['write(난중일기, 이순신)', 'make(난중일기, 이순신)'] },
+                { text: '이순신은 수군을 거느리고 있다.',  code: 'has(이순신, 수군)',     wrong: ['has(수군, 이순신)', 'is_a(이순신, 수군)'] },
+                { text: '이순신은 권율과 협력한다.',       code: 'cowork(이순신, 권율)',  wrong: ['cowork(권율, 이순신)', 'is_a(이순신, 권율)'] }
+            ],
+            revIdx: [0, 3],
+            predSwap: [ { idx: 2, pred: 'has' }, { idx: 5, pred: 'is_a' } ]
+        },
+        {
+            name: '수민 (동아리)',
+            vb: [340, 245],
+            nodes: {
+                sumin: { label: '수민',     x: 108, y: 122, person: true },
+                stu:   { label: '학생',     x: 108, y: 36 },
+                jiho:  { label: '지호',     x: 258, y: 62, person: true },
+                ai:    { label: '인공지능', x: 52,  y: 210 },
+                robot: { label: '로봇',     x: 200, y: 210 }
+            },
+            edges: [
+                { from: 'sumin', to: 'stu', pred: 'is_a' },
+                { from: 'jiho', to: 'stu', pred: 'is_a' },
+                { from: 'sumin', to: 'ai', pred: 'study' },
+                { from: 'sumin', to: 'robot', pred: 'make' },
+                { from: 'sumin', to: 'jiho', pred: 'cowork' }
+            ],
+            sentences: [
+                { text: '수민이는 학생이다.',            code: 'is_a(수민, 학생)',     wrong: ['is_a(학생, 수민)', 'cowork(수민, 학생)'] },
+                { text: '지호는 학생이다.',              code: 'is_a(지호, 학생)',     wrong: ['is_a(학생, 지호)', 'has(지호, 학생)'] },
+                { text: '수민이는 인공지능을 공부한다.', code: 'study(수민, 인공지능)', wrong: ['study(인공지능, 수민)', 'make(수민, 인공지능)'] },
+                { text: '수민이는 로봇을 만들었다.',     code: 'make(수민, 로봇)',     wrong: ['make(로봇, 수민)', 'study(수민, 로봇)'] },
+                { text: '수민이는 지호와 협력한다.',     code: 'cowork(수민, 지호)',   wrong: ['cowork(지호, 수민)', 'is_a(수민, 지호)'] }
             ],
             revIdx: [1, 3],
-            predSwap: [ { idx: 2, pred: 'has' }, { idx: 0, pred: 'cowork' } ]
+            predSwap: [ { idx: 2, pred: 'make' }, { idx: 0, pred: 'cowork' } ]
         },
         {
             name: '장영실',
+            vb: [340, 245],
             nodes: {
-                jang:  { label: '장영실',  x: 150, y: 115, person: true },
-                sci:   { label: '과학자',  x: 150, y: 30 },
-                lee:   { label: '이천',    x: 265, y: 70, person: true },
-                clock: { label: '자격루',  x: 60,  y: 190 },
-                sphere:{ label: '혼천의',  x: 240, y: 190 }
+                jang:  { label: '장영실', x: 170, y: 45, person: true },
+                sci:   { label: '과학자', x: 52,  y: 118 },
+                lee:   { label: '이천',   x: 288, y: 118, person: true },
+                astro: { label: '천문학', x: 108, y: 208 },
+                clock: { label: '자격루', x: 238, y: 208 }
             },
             edges: [
-                { from: 'jang', to: 'sci',    pred: 'is_a' },
-                { from: 'lee',  to: 'sci',    pred: 'is_a' },
-                { from: 'jang', to: 'clock',  pred: 'make' },
-                { from: 'jang', to: 'sphere', pred: 'make' },
-                { from: 'jang', to: 'lee',    pred: 'cowork' }
+                { from: 'jang', to: 'sci', pred: 'is_a' },
+                { from: 'lee', to: 'sci', pred: 'is_a' },
+                { from: 'jang', to: 'astro', pred: 'study' },
+                { from: 'jang', to: 'clock', pred: 'make' },
+                { from: 'jang', to: 'lee', pred: 'cowork' }
             ],
             sentences: [
                 { text: '장영실은 과학자이다.',        code: 'is_a(장영실, 과학자)',  wrong: ['is_a(과학자, 장영실)', 'has(장영실, 과학자)'] },
                 { text: '이천은 과학자이다.',          code: 'is_a(이천, 과학자)',    wrong: ['is_a(과학자, 이천)', 'cowork(이천, 과학자)'] },
+                { text: '장영실은 천문학을 공부한다.', code: 'study(장영실, 천문학)', wrong: ['study(천문학, 장영실)', 'write(장영실, 천문학)'] },
                 { text: '장영실은 자격루를 만들었다.', code: 'make(장영실, 자격루)',  wrong: ['make(자격루, 장영실)', 'has(장영실, 자격루)'] },
-                { text: '장영실은 혼천의를 만들었다.', code: 'make(장영실, 혼천의)',  wrong: ['make(혼천의, 장영실)', 'is_a(장영실, 혼천의)'] },
                 { text: '장영실은 이천과 협력한다.',   code: 'cowork(장영실, 이천)',  wrong: ['cowork(이천, 장영실)', 'make(장영실, 이천)'] }
             ],
             revIdx: [0, 4],
-            predSwap: [ { idx: 2, pred: 'is_a' }, { idx: 3, pred: 'has' } ]
+            predSwap: [ { idx: 3, pred: 'study' }, { idx: 1, pred: 'cowork' } ]
+        },
+        {
+            name: '신사임당',
+            vb: [360, 255],
+            nodes: {
+                hwaga: { label: '화가',     x: 58,  y: 45 },
+                shin:  { label: '신사임당', x: 96,  y: 140, person: true },
+                grass: { label: '초충도',   x: 58,  y: 225 },
+                yi:    { label: '이이',     x: 236, y: 140, person: true },
+                hakja: { label: '학자',     x: 272, y: 45 },
+                book:  { label: '격몽요결', x: 305, y: 225 }
+            },
+            edges: [
+                { from: 'shin', to: 'hwaga', pred: 'is_a' },
+                { from: 'shin', to: 'grass', pred: 'draw' },
+                { from: 'shin', to: 'yi', pred: 'teach' },
+                { from: 'yi', to: 'hakja', pred: 'is_a' },
+                { from: 'yi', to: 'book', pred: 'write' }
+            ],
+            sentences: [
+                { text: '신사임당은 화가이다.',          code: 'is_a(신사임당, 화가)',   wrong: ['is_a(화가, 신사임당)', 'draw(신사임당, 화가)'] },
+                { text: '신사임당은 초충도를 그렸다.',   code: 'draw(신사임당, 초충도)', wrong: ['draw(초충도, 신사임당)', 'make(초충도, 신사임당)'] },
+                { text: '신사임당은 이이를 가르쳤다.',   code: 'teach(신사임당, 이이)',  wrong: ['teach(이이, 신사임당)', 'study(신사임당, 이이)'] },
+                { text: '이이는 학자이다.',              code: 'is_a(이이, 학자)',       wrong: ['is_a(학자, 이이)', 'teach(이이, 학자)'] },
+                { text: '이이는 격몽요결을 썼다.',       code: 'write(이이, 격몽요결)',  wrong: ['write(격몽요결, 이이)', 'draw(이이, 격몽요결)'] }
+            ],
+            revIdx: [2, 4],
+            predSwap: [ { idx: 1, pred: 'write' }, { idx: 0, pred: 'teach' } ]
         }
     ];
 
     var knowledgeList = document.getElementById('knowledge-list');
     var netOptionsEl = document.getElementById('net-options');
     var codeRowsEl = document.getElementById('code-rows');
-    var stageNet = document.getElementById('stage-net');
     var stageCode = document.getElementById('stage-code');
     var statusBanner = document.getElementById('status-banner');
     var missionHint = document.getElementById('mission-hint');
     var stepNowEl = document.getElementById('step-now');
     var codeCountEl = document.getElementById('code-count');
     var codeTotalEl = document.getElementById('code-total');
+    var probNameEl = document.getElementById('prob-name');
 
     var problem = null;
-    var lastProblemIdx = -1;
+    var problemIdx = -1;
     var netSolved = false;
     var codeSolved = 0;
 
@@ -433,7 +513,7 @@
     function drawNetwork(p, edges) {
         var ns = 'http://www.w3.org/2000/svg';
         var svg = document.createElementNS(ns, 'svg');
-        svg.setAttribute('viewBox', '0 0 320 230');
+        svg.setAttribute('viewBox', '0 0 ' + p.vb[0] + ' ' + p.vb[1]);
 
         var defs = document.createElementNS(ns, 'defs');
         var markerId = 'arrow-' + Math.random().toString(36).slice(2, 8);
@@ -572,7 +652,7 @@
             codeSolved++;
             codeCountEl.textContent = codeSolved;
             if (codeSolved === problem.sentences.length) {
-                setBanner('ok', '🎉 완성! 자연어 지식을 의미망으로 표현하고, 술어 논리 코드로까지 옮겨 보았습니다.');
+                setBanner('ok', '🎉 완성! 자연어 지식을 의미망으로 표현하고, 술어 논리 코드로까지 옮겨 보았습니다. 새 문제 불러오기로 다른 지식에도 도전해 보세요.');
                 fireConfetti();
                 missionHint.textContent = '새 문제 불러오기를 눌러 다른 지식으로 연습해 보세요.';
             } else {
@@ -591,10 +671,8 @@
         confetti({ particleCount: 90, spread: 70, origin: { x: 0.5, y: 0.4 } });
     }
 
-    function loadProblem() {
-        var idx;
-        do { idx = Math.floor(Math.random() * PROBLEMS.length); } while (PROBLEMS.length > 1 && idx === lastProblemIdx);
-        lastProblemIdx = idx;
+    function loadProblem(idx) {
+        problemIdx = idx;
         problem = PROBLEMS[idx];
 
         netSolved = false;
@@ -602,6 +680,7 @@
         stepNowEl.textContent = '1';
         codeCountEl.textContent = '0';
         codeTotalEl.textContent = problem.sentences.length;
+        probNameEl.textContent = problem.name;
 
         knowledgeList.innerHTML = '';
         problem.sentences.forEach(function (s) {
@@ -618,11 +697,14 @@
     }
 
     document.getElementById('btn-new').addEventListener('click', function () {
-        loadProblem();
-        setBanner('info', '새로운 문제가 출제되었습니다.');
+        var idx;
+        do { idx = Math.floor(Math.random() * PROBLEMS.length); } while (idx === problemIdx);
+        loadProblem(idx);
+        setBanner('info', '새로운 문제 「' + PROBLEMS[idx].name + '」이(가) 출제되었습니다.');
     });
 
-    loadProblem();
+    // 첫 문제는 교과서의 세종대왕 예제
+    loadProblem(0);
 })();
 </script>
 </body>

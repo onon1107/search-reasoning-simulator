@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>붓꽃 데이터 살펴보기</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF;
+        --blue: #1C60EF;
+        --blue-light: #DBE8FE;
+        --text: #16223f;
+        --text-muted: #55647f;
+        --red: #ef4444;
+        --red-light: #fee2e2;
+        --green: #16a34a;
+        --green-light: #dcfce7;
+        --gold: #d4a017;
+        --gold-light: #fef3c7;
+        --setosa: #2563eb;
+        --versicolor: #d97706;
+        --virginica: #059669;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; height: 100%; font-family: var(--font-body); color: var(--text); background: var(--white); }
+    .app { display: flex; flex-direction: column; min-height: 100%; }
+    .topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        padding: 12px 18px; border-bottom: 1px solid var(--blue-light); background: #fbfcff; flex-shrink: 0;
+    }
+    .topbar h1 { font-family: var(--font-title); font-weight: 700; font-size: 15px; margin: 0; }
+    .topbar .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .status-banner { display: none; padding: 9px 18px; font-size: 13px; font-weight: 700; text-align: center; flex-shrink: 0; }
+    .status-banner.show { display: block; }
+    .status-banner.ok { background: var(--gold-light); color: #92700c; }
+    .status-banner.bad { background: var(--red-light); color: #b91c1c; }
+    .status-banner.info { background: var(--blue-light); color: #16419e; }
+
+    .stage { flex: 1; display: flex; gap: 16px; padding: 16px 18px 24px; overflow: auto; align-items: flex-start; flex-wrap: wrap; }
+
+    .data-panel { flex: 1 1 430px; min-width: 340px; }
+    .panel-title { font-family: var(--font-title); font-weight: 700; font-size: 13px; color: var(--blue); margin: 0 0 8px; }
+    .filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .filter-btn {
+        font-family: var(--font-body); font-weight: 700; font-size: 11.5px;
+        border: 1px solid var(--blue-light); border-radius: 999px; background: var(--white);
+        color: var(--text-muted); padding: 5px 12px; cursor: pointer;
+    }
+    .filter-btn.active { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    .table-scroll { max-height: 480px; overflow: auto; border: 1px solid var(--blue-light); border-radius: 10px; }
+    table.iris-table { border-collapse: collapse; width: 100%; font-size: 12px; }
+    .iris-table th, .iris-table td { border: 1px solid var(--blue-light); padding: 4px 5px; text-align: center; }
+    .iris-table th { background: #f2f6ff; font-family: var(--font-title); font-weight: 700; color: var(--blue); font-size: 11px; position: sticky; top: 0; }
+    .iris-table td.na { color: #b6bfd2; }
+    .sp-chip { display: inline-block; font-weight: 700; font-size: 11px; border-radius: 999px; padding: 1px 8px; color: var(--white); }
+    .sp-세토사 { background: var(--setosa); }
+    .sp-버시컬러 { background: var(--versicolor); }
+    .sp-버지니카 { background: var(--virginica); }
+    .new-badge { display: inline-block; font-size: 10px; font-weight: 700; color: #92700c; background: var(--gold-light); border-radius: 999px; padding: 1px 6px; margin-left: 4px; }
+    .table-note { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.6; }
+
+    .quiz-panel { flex: 1 1 340px; min-width: 300px; display: flex; flex-direction: column; gap: 12px; }
+    .info-card { border: 1.5px solid var(--blue-light); border-radius: 14px; background: #fbfcff; padding: 12px 16px; font-size: 12.5px; line-height: 1.8; }
+    .info-card h3 { font-family: var(--font-title); font-size: 12.5px; color: var(--blue); margin: 0 0 6px; }
+    .quiz-card { border: 1.5px solid var(--blue-light); border-radius: 14px; background: var(--white); padding: 12px 16px; }
+    .quiz-card.done { border-color: var(--green); background: #f7fdf9; }
+    .quiz-q { font-size: 13px; font-weight: 700; margin: 0 0 10px; line-height: 1.7; }
+    .quiz-q .num { color: var(--blue); font-family: var(--font-title); margin-right: 4px; }
+    .quiz-opts { display: flex; gap: 8px; flex-wrap: wrap; }
+    .quiz-opt {
+        font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
+        border: 2px solid var(--blue-light); border-radius: 10px; background: var(--white);
+        color: var(--text); padding: 8px 14px; cursor: pointer; transition: all 0.12s ease;
+    }
+    .quiz-opt:hover { border-color: var(--blue); }
+    .quiz-opt.wrong { animation: shakeN 0.35s ease; border-color: var(--red); background: var(--red-light); }
+    .quiz-opt.right { border-color: var(--green); background: var(--green-light); cursor: default; }
+    .mission-chip {
+        display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700;
+        background: var(--white); border: 1px solid rgba(28,96,239,0.22); border-radius: 999px; padding: 6px 14px; white-space: nowrap;
+    }
+    .mission-chip b { color: var(--blue); font-family: var(--font-title); }
+    @keyframes shakeN { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1>붓꽃 데이터 살펴보기</h1>
+            <div class="sub">Iris1.csv(150개)와 새로 수집한 Iris2.csv(30개)를 통합한 180개의 데이터입니다.</div>
+        </div>
+        <span class="mission-chip">퀴즈 <b id="quiz-count">0</b> / 3</span>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="stage">
+        <div class="data-panel">
+            <p class="panel-title">붓꽃 데이터셋 (Iris1 + Iris2 통합, 180개)</p>
+            <div class="filter-row" id="filter-row">
+                <button class="filter-btn active" data-f="all">전체 (180)</button>
+                <button class="filter-btn" data-f="세토사">세토사</button>
+                <button class="filter-btn" data-f="버시컬러">버시컬러</button>
+                <button class="filter-btn" data-f="버지니카">버지니카</button>
+                <button class="filter-btn" data-f="new">새로 수집 (151~180)</button>
+            </div>
+            <div class="table-scroll">
+                <table class="iris-table">
+                    <thead><tr><th>일련번호</th><th>꽃받침 길이</th><th>꽃받침 너비</th><th>꽃잎 길이</th><th>꽃잎 너비</th><th>종류</th></tr></thead>
+                    <tbody id="iris-tbody"></tbody>
+                </table>
+            </div>
+            <p class="table-note">단위: cm · 통계학자 피셔가 수집한 붓꽃 데이터에, 최근 수집한 30개(151~180번, <span class="new-badge">NEW</span>)를 통합했습니다. '–'로 표시된 칸은 값이 비어 있는 칸이에요. 어떻게 처리할지는 <b>데이터 전처리</b> 탭에서 다룹니다.</p>
+        </div>
+
+        <div class="quiz-panel">
+            <div class="info-card">
+                <h3>데이터 속성 한눈에 보기</h3>
+                속성은 <b>속성명</b>(꽃받침 길이, 종류 등)과 <b>속성값</b>(5.1, 세토사 등)으로 구분합니다.<br>
+                · <b>수치형 데이터</b>: 숫자로 표현되며 비교·연산이 가능 (예: 키, 학급 인원수)<br>
+                · <b>범주형 데이터</b>: 몇 개의 범주나 항목으로 나누어짐 (예: 취미, 혈액형)<br>
+                · <b>독립 변수</b>: 결과에 영향을 주는 속성 · <b>종속 변수</b>: 다른 속성의 영향을 받는 속성(레이블, 정답)
+            </div>
+
+            <div class="quiz-card" data-q="0">
+                <p class="quiz-q"><span class="num">Q1.</span>'꽃잎 길이' 속성은 어떤 유형의 데이터일까요?</p>
+                <div class="quiz-opts">
+                    <button class="quiz-opt" data-v="수치형">수치형</button>
+                    <button class="quiz-opt" data-v="범주형">범주형</button>
+                </div>
+            </div>
+            <div class="quiz-card" data-q="1">
+                <p class="quiz-q"><span class="num">Q2.</span>'종류' 속성은 어떤 유형의 데이터일까요?</p>
+                <div class="quiz-opts">
+                    <button class="quiz-opt" data-v="수치형">수치형</button>
+                    <button class="quiz-opt" data-v="범주형">범주형</button>
+                </div>
+            </div>
+            <div class="quiz-card" data-q="2">
+                <p class="quiz-q"><span class="num">Q3.</span>"붓꽃의 종류를 분류하자"라는 문제에서 <b>종속 변수(레이블)</b>는 무엇일까요?</p>
+                <div class="quiz-opts">
+                    <button class="quiz-opt" data-v="꽃받침 길이">꽃받침 길이</button>
+                    <button class="quiz-opt" data-v="꽃잎 길이">꽃잎 길이</button>
+                    <button class="quiz-opt" data-v="꽃잎 너비">꽃잎 너비</button>
+                    <button class="quiz-opt" data-v="종류">종류</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/iris-data.js"></script>
+<script>
+(function () {
+    var ALL = IRIS1.concat(IRIS2);
+    var tbody = document.getElementById('iris-tbody');
+    var statusBanner = document.getElementById('status-banner');
+    var quizCountEl = document.getElementById('quiz-count');
+    var ANSWERS = ['수치형', '범주형', '종류'];
+    var solved = [false, false, false];
+
+    function setBanner(kind, text) {
+        statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
+        statusBanner.textContent = text || '';
+    }
+
+    function fmt(v) { return v === null ? '<span class="na">–</span>' : v; }
+
+    function renderTable(filter) {
+        var rows = ALL.filter(function (r) {
+            if (filter === 'all') return true;
+            if (filter === 'new') return r.id > 150;
+            return r.sp === filter;
+        });
+        var html = '';
+        rows.forEach(function (r) {
+            html += '<tr><td>' + r.id + (r.id > 150 ? '<span class="new-badge">NEW</span>' : '') + '</td>' +
+                '<td' + (r.sl === null ? ' class="na"' : '') + '>' + fmt(r.sl) + '</td>' +
+                '<td' + (r.sw === null ? ' class="na"' : '') + '>' + fmt(r.sw) + '</td>' +
+                '<td' + (r.pl === null ? ' class="na"' : '') + '>' + fmt(r.pl) + '</td>' +
+                '<td' + (r.pw === null ? ' class="na"' : '') + '>' + fmt(r.pw) + '</td>' +
+                '<td><span class="sp-chip sp-' + r.sp + '">' + r.sp + '</span></td></tr>';
+        });
+        tbody.innerHTML = html;
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            renderTable(btn.dataset.f);
+        });
+    });
+
+    document.querySelectorAll('.quiz-card').forEach(function (card) {
+        var qi = parseInt(card.dataset.q, 10);
+        card.querySelectorAll('.quiz-opt').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (solved[qi]) return;
+                if (btn.dataset.v === ANSWERS[qi]) {
+                    solved[qi] = true;
+                    card.classList.add('done');
+                    btn.classList.add('right');
+                    card.querySelectorAll('.quiz-opt').forEach(function (b) { if (b !== btn) b.style.opacity = 0.45; });
+                    var n = solved.filter(Boolean).length;
+                    quizCountEl.textContent = n;
+                    if (n === 3) {
+                        setBanner('ok', '🎉 데이터 속성을 모두 정확히 구분했어요! 이제 데이터 전처리 탭으로 넘어가 봅시다.');
+                        if (typeof confetti === 'function') confetti({ particleCount: 90, spread: 70, origin: { x: 0.5, y: 0.4 } });
+                    } else {
+                        setBanner('', '');
+                    }
+                } else {
+                    btn.classList.remove('wrong');
+                    void btn.offsetWidth;
+                    btn.classList.add('wrong');
+                    setBanner('bad', '아쉬워요. 왼쪽 정보 카드의 설명을 다시 읽고 생각해 보세요.');
+                }
+            });
+        });
+    });
+
+    renderTable('all');
+})();
+</script>
+</body>
+</html>

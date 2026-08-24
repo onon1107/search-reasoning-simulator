@@ -156,6 +156,9 @@
     .tennis-table td.play-x { color: var(--red); font-weight: 700; }
     .tennis-table tr.dimmed td { opacity: 0.28; }
     .tennis-table tr.focused td { background: var(--gold-light); }
+    .tennis-table tbody tr { cursor: pointer; }
+    .tennis-table tbody tr.marked td { background: var(--blue-light); }
+    .tennis-table tbody tr.focused.marked td { background: #bcd3fb; }
     .table-note { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.6; }
 
     /* ---------- 규칙 현황 ---------- */
@@ -339,7 +342,7 @@
                 </thead>
                 <tbody id="tennis-tbody"></tbody>
             </table>
-            <p class="table-note" id="table-note">○ = 경기를 한 날 (9일) · × = 경기를 하지 않은 날 (5일)</p>
+            <p class="table-note" id="table-note">○ = 경기를 한 날 (9일) · × = 경기를 하지 않은 날 (5일)<br>💡 행을 클릭하면 파란색 표시가 켜져요. 세면서 표시해 두고, 다시 클릭하면 지워집니다.</p>
         </div>
 
         <div class="work-panel">
@@ -457,6 +460,8 @@
             tr.innerHTML =
                 '<td>' + day.d + '</td><td>' + day.w + '</td><td>' + day.t + '</td><td>' + day.h + '</td><td>' + day.s + '</td>' +
                 '<td class="' + (day.play ? 'play-o' : 'play-x') + '">' + (day.play ? '○' : '×') + '</td>';
+            tr.title = '클릭하면 세면서 표시해 둘 수 있어요';
+            tr.addEventListener('click', function () { tr.classList.toggle('marked'); });
             tbody.appendChild(tr);
         });
     }

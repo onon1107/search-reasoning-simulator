@@ -14,21 +14,204 @@
     <a class="home-link" href="index.html">← 인공지능 기초 시뮬레이터</a>
 </header>
 
+<nav class="tab-nav">
+    <button class="tab-btn" data-tab="home">홈</button>
+    <button class="tab-btn" data-tab="explore">데이터 살펴보기</button>
+    <button class="tab-btn" data-tab="preprocess">데이터 전처리</button>
+    <button class="tab-btn" data-tab="knn">k-NN 분류</button>
+    <button class="tab-btn" data-tab="eval">성능 평가</button>
+</nav>
+
 <main>
 
-    <div class="hero">
-        <span class="eng">Data &amp; Machine Learning — Iris Dataset</span>
-        <h2>2단원: 데이터와 기계학습 — 붓꽃 데이터</h2>
-        <p>붓꽃(Iris) 데이터셋은 세 품종의 붓꽃 150송이의 꽃잎·꽃받침 길이와 너비를 기록한, 기계학습에서 가장 널리 쓰이는 데이터셋입니다.</p>
-        <p>이 페이지에서는 붓꽃 데이터를 직접 살펴보고 분류해 보며 데이터와 기계학습의 원리를 익히는 시뮬레이터가 제공될 예정입니다.</p>
-    </div>
+    <!-- 홈 -->
+    <section id="tab-home" class="tab-panel">
+        <div class="hero">
+            <span class="eng">Data &amp; Machine Learning — Iris Dataset</span>
+            <h2>붓꽃 데이터로 배우는 기계학습</h2>
+            <p>붓꽃(Iris) 데이터셋은 통계학자 피셔가 1936년에 붓꽃을 측정하여 만든, 기계학습에서 가장 널리 쓰이는 데이터셋입니다. 세 품종(세토사·버시컬러·버지니카)의 붓꽃에 대해 꽃받침과 꽃잎의 길이·너비를 기록했습니다.</p>
+            <p>이 사이트에서는 교과서 2단원의 기계학습 문제 해결 과정을 그대로 따라가며, <strong>"꽃잎과 꽃받침의 크기로 붓꽃의 품종을 분류하는 지능 시스템"</strong>을 직접 만들어 봅니다.</p>
+        </div>
 
-    <div class="section-block" style="text-align:center; padding:64px 40px;">
-        <h3 style="margin-top:0;">시뮬레이터 준비 중</h3>
-        <p style="font-size:15px; line-height:1.85; color:var(--text-muted); margin:0;">
-            붓꽃 데이터 시뮬레이터를 만들고 있습니다. 수업 진도에 맞추어 곧 공개됩니다.
+        <div class="section-block">
+            <h3>기계학습 문제 해결 과정</h3>
+            <p class="block-lead">
+                기계학습으로 문제를 해결하는 과정은 다음 순서로 진행됩니다. 위의 탭을 순서대로 따라가 보세요.
+            </p>
+            <div class="table-scroll">
+                <table class="compare-table">
+                    <thead>
+                        <tr><th>단계</th><th>하는 일</th><th>탭</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><th class="row-head">① 데이터 수집</th><td>문제 해결에 필요한 데이터를 모으고 통합합니다. (Iris1.csv 150개 + 새로 수집한 Iris2.csv 30개)</td><td>데이터 살펴보기</td></tr>
+                        <tr><th class="row-head">② 데이터 전처리</th><td>결측치·이상치를 처리하고, 핵심 속성(꽃잎 길이·너비)을 찾습니다.</td><td>데이터 전처리</td></tr>
+                        <tr><th class="row-head">③ 모델 학습</th><td>훈련 데이터로 k-최근접 이웃(k-NN) 분류 모델을 학습시키고 새로운 붓꽃을 분류합니다.</td><td>k-NN 분류</td></tr>
+                        <tr><th class="row-head">④ 성능 평가</th><td>테스트 데이터의 혼동행렬로 정확도·정밀도·재현율·F1-점수를 구합니다.</td><td>성능 평가</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- 데이터 살펴보기 -->
+    <section id="tab-explore" class="tab-panel">
+        <div class="algo-head">
+            <h2>데이터 살펴보기</h2>
+            <span class="algo-en">Exploring the Iris Dataset</span>
+        </div>
+        <p class="algo-desc">
+            기계학습의 재료는 데이터입니다. 데이터는 <strong>속성명</strong>(꽃받침 길이, 종류 등)과 <strong>속성값</strong>(5.1, 세토사 등)으로 이루어지고,
+            속성은 유형에 따라 <strong>수치형·범주형</strong>으로, 역할에 따라 <strong>독립 변수·종속 변수</strong>로 구분합니다.
+            피셔의 원본 데이터 150개에 새로 수집한 30개를 통합한 180개의 데이터를 직접 살펴보고, 속성 구분 퀴즈를 풀어 보세요.
         </p>
-    </div>
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">붓꽃 데이터 180개 &amp; 속성 퀴즈</span>
+                        <span class="en">Iris1 + Iris2 — Attributes Quiz</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>활동 안내</h4>
+                            <ul>
+                                <li>표에서 <strong>180개의 붓꽃 데이터</strong>를 살펴보세요. 품종 버튼으로 골라 볼 수 있고, 151~180번은 <strong>새로 수집한 데이터(NEW)</strong>입니다.</li>
+                                <li>새로 수집한 데이터에는 값이 비어 있는 칸('–')이 보일 거예요. 이런 값을 어떻게 처리하는지는 <strong>데이터 전처리</strong> 탭에서 다룹니다.</li>
+                                <li>오른쪽 <strong>퀴즈 3문제</strong>로 수치형·범주형, 독립 변수·종속 변수를 구분해 보세요.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/iris-explore.html" title="붓꽃 데이터 살펴보기" style="height:760px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 데이터 전처리 -->
+    <section id="tab-preprocess" class="tab-panel">
+        <div class="algo-head">
+            <h2>데이터 전처리</h2>
+            <span class="algo-en">Data Preprocessing</span>
+        </div>
+        <p class="algo-desc">
+            수집한 데이터를 그대로 쓰면 기계학습이 제대로 되지 않습니다. 누락되어 비어 있는 <strong>결측치</strong>와,
+            범위를 크게 벗어난 <strong>이상치</strong>를 찾아 제거하고, 속성 간 <strong>상관관계</strong>를 분석해
+            문제 해결에 가장 큰 영향을 주는 <strong>핵심 속성</strong>을 찾아냅니다.
+        </p>
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">결측치 · 이상치 · 핵심 속성</span>
+                        <span class="en">Missing Values, Outliers &amp; Key Features</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>활동 안내</h4>
+                            <ul>
+                                <li><strong>1단계</strong> — 새로 수집한 30개 데이터에서 <strong>결측치('–')가 있는 행</strong>을 모두 클릭해 선택한 뒤 제거하세요.</li>
+                                <li><strong>2단계</strong> — 남은 데이터의 <strong>기초 통계량(max)</strong>을 단서로, <strong>이상치가 들어 있는 행</strong>을 찾아 제거하세요. 붓꽃의 크기는 보통 몇 cm 정도라는 점을 기억하세요.</li>
+                                <li><strong>3단계</strong> — 정제된 데이터의 <strong>상관계수 히트맵</strong>에서 상관계수가 가장 높은 속성 쌍을 골라 <strong>핵심 속성</strong>을 찾아내세요.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/iris-preprocess.html" title="붓꽃 데이터 전처리" style="height:900px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- k-NN 분류 -->
+    <section id="tab-knn" class="tab-panel">
+        <div class="algo-head">
+            <h2>k-NN 분류</h2>
+            <span class="algo-en">k-Nearest Neighbors Classification</span>
+        </div>
+        <p class="algo-desc">
+            <strong>k-최근접 이웃(k-NN)</strong>은 간단하고 직관적인 분류 알고리즘입니다.
+            새로운 데이터가 들어오면 기존 데이터 중에서 <strong>가장 가까운 k개의 이웃</strong>을 찾고,
+            <strong>다수결</strong>로 가장 많은 이웃의 품종을 새로운 데이터의 품종으로 결정합니다.
+            핵심 속성인 꽃잎 길이·너비의 산점도 위에 새로운 붓꽃을 직접 놓아 보며 체험해 보세요.
+        </p>
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">새로운 붓꽃 분류하기</span>
+                        <span class="en">Classify a New Iris with k-NN</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>활동 안내</h4>
+                            <ul>
+                                <li>산점도의 점 하나하나가 전처리를 마친 <strong>붓꽃 데이터</strong>입니다. 색이 품종을 나타내요.</li>
+                                <li><strong>이웃의 수 k</strong>를 정하고(기본 5), 그래프를 클릭해 <strong>새로운 붓꽃(⊗)</strong>을 놓으세요. 가장 가까운 이웃 k개가 노란 테두리로 표시됩니다.</li>
+                                <li>이웃들의 색을 세어 <strong>다수결</strong>로 새로운 붓꽃의 품종을 판단해 클릭하세요. 맞히면 투표 결과가 공개됩니다.</li>
+                                <li><strong>교과서 예제</strong> 버튼은 교과서 81쪽의 "꽃잎 길이 1.0, 꽃잎 너비 1.5" 붓꽃을 놓아 줍니다.</li>
+                                <li>k를 바꾸면 분류 결과가 달라질 수 있어요. 품종의 경계 근처에 점을 놓고 k를 바꿔 보며 비교해 보세요.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/iris-knn.html" title="붓꽃 k-NN 분류" style="height:720px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 성능 평가 -->
+    <section id="tab-eval" class="tab-panel">
+        <div class="algo-head">
+            <h2>성능 평가</h2>
+            <span class="algo-en">Model Evaluation</span>
+        </div>
+        <p class="algo-desc">
+            학습을 마친 모델이 얼마나 잘 분류하는지는 <strong>학습에 쓰지 않은 테스트 데이터</strong>로 평가합니다.
+            예측 결과를 실젯값과 비교해 정리한 표가 <strong>혼동행렬(confusion matrix)</strong>이고,
+            이로부터 <strong>정확도 · 정밀도 · 재현율 · F1-점수</strong> 같은 평가 지표를 계산할 수 있습니다.
+        </p>
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">혼동행렬 &amp; 평가 지표</span>
+                        <span class="en">Confusion Matrix &amp; Metrics</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>활동 안내</h4>
+                            <ul>
+                                <li><strong>1단계</strong> — 테스트 데이터 30개의 3×3 혼동행렬을 읽고 <strong>정확도</strong>를 분수로 구하세요.</li>
+                                <li><strong>2단계</strong> — 교과서 81쪽 스스로 해결하기: "버시컬러인가?"를 기준으로 <strong>2×2 혼동행렬(TP·FN·FP·TN)</strong>을 만들어 보세요.</li>
+                                <li><strong>3단계</strong> — 2×2 혼동행렬로 <strong>정밀도·재현율·F1-점수</strong>를 계산하세요.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/iris-eval.html" title="붓꽃 분류 모델 성능 평가" style="height:860px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 </main>
 
@@ -36,5 +219,6 @@
     부산동성고 인공지능 기초 · 붓꽃 데이터 시뮬레이터
 </footer>
 
+<script src="js/app.js"></script>
 </body>
 </html>
