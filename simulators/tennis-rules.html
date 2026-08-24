@@ -338,6 +338,7 @@
             <div class="sub">14일치 데이터에서 정확도가 높은 조건을 골라 논리 규칙을 한 단계씩 완성합니다.</div>
         </div>
         <div class="controls">
+            <button class="action primary" id="btn-new">새 예제 불러오기</button>
             <button class="action" id="btn-reset">처음부터 다시</button>
         </div>
     </div>
@@ -351,7 +352,7 @@
 
     <div class="stage">
         <div class="data-panel">
-            <p class="panel-title">표 Ⅰ-6 테니스 경기 유무 데이터셋</p>
+            <p class="panel-title" id="table-title">표 Ⅰ-6 테니스 경기 유무 데이터셋</p>
             <table class="tennis-table" id="tennis-table">
                 <thead>
                     <tr><th>Day</th><th>날씨</th><th>기온</th><th>습도</th><th>바람의 세기</th><th>경기 유무</th></tr>
@@ -370,7 +371,7 @@
             <!-- 1단계: 전체 비율 -->
             <div class="step-card" id="card-1">
                 <div class="step-head"><span class="step-num">1단계</span><span class="step-title">속성값별 '경기를 한 날'의 비율 구하기</span></div>
-                <p class="step-desc">속성값마다 <b>경기를 한 날 수 / 그 속성값인 날 수</b>를 표에서 직접 세어 입력하고 확인을 누르세요. 예) 날씨가 '맑음'인 날 5일 중 2일 경기 → 2/5</p>
+                <p class="step-desc" id="card1-desc">속성값마다 <b>경기를 한 날 수 / 그 속성값인 날 수</b>를 표에서 직접 세어 입력하고 확인을 누르세요. 예) 날씨가 '맑음'인 날 5일 중 2일 경기 → 2/5</p>
                 <div class="frac-groups" id="frac-groups-1"></div>
             </div>
 
@@ -383,16 +384,16 @@
 
             <!-- 3단계: 맑음 -->
             <div class="step-card locked" id="card-3">
-                <div class="step-head"><span class="step-num">3단계</span><span class="step-title">날씨가 '맑음'인 날만 다시 살펴보기</span></div>
-                <p class="step-desc">이제 표에서 <b>날씨가 '맑음'인 5일</b>만 남았습니다(노란 줄). 이 5일에 대해 나머지 속성의 비율을 세어 입력하고, 정확도가 가장 높은 속성값을 고른 뒤, 규칙을 확장하세요.</p>
+                <div class="step-head"><span class="step-num">3단계</span><span class="step-title" id="card3-title">날씨가 '맑음'인 날만 다시 살펴보기</span></div>
+                <p class="step-desc" id="card3-desc">이제 표에서 <b>날씨가 '맑음'인 5일</b>만 남았습니다(노란 줄). 이 5일에 대해 나머지 속성의 비율을 세어 입력하고, 정확도가 가장 높은 속성값을 고른 뒤, 규칙을 확장하세요.</p>
                 <div class="frac-groups" id="frac-groups-3"></div>
                 <div class="choice-list" id="rule-choice-2" style="display:none; margin-top:12px;"></div>
             </div>
 
             <!-- 4단계: 비 -->
             <div class="step-card locked" id="card-4">
-                <div class="step-head"><span class="step-num">4단계</span><span class="step-title">날씨가 '비'인 날만 다시 살펴보기</span></div>
-                <p class="step-desc">마지막으로 <b>날씨가 '비'인 5일</b>입니다(노란 줄). 같은 방법으로 비율을 채우고, 정확도가 가장 높은 속성값을 골라 규칙을 완성하세요.</p>
+                <div class="step-head"><span class="step-num">4단계</span><span class="step-title" id="card4-title">날씨가 '비'인 날만 다시 살펴보기</span></div>
+                <p class="step-desc" id="card4-desc">마지막으로 <b>날씨가 '비'인 5일</b>입니다(노란 줄). 같은 방법으로 비율을 채우고, 정확도가 가장 높은 속성값을 골라 규칙을 완성하세요.</p>
                 <div class="frac-groups" id="frac-groups-4"></div>
                 <div class="choice-list" id="rule-choice-3" style="display:none; margin-top:12px;"></div>
             </div>
@@ -400,7 +401,7 @@
             <!-- 5단계: 검증 -->
             <div class="step-card locked" id="card-5">
                 <div class="step-head"><span class="step-num">5단계</span><span class="step-title">완성한 규칙 검증하기</span></div>
-                <p class="step-desc">완성된 규칙이 경기를 한 9일을 모두 설명하는지 확인해 봅시다.</p>
+                <p class="step-desc" id="card5-desc">완성된 규칙이 경기를 한 9일을 모두 설명하는지 확인해 봅시다.</p>
                 <div class="verify-list" id="verify-list"></div>
             </div>
         </div>
@@ -409,24 +410,7 @@
 
 <script>
 (function () {
-    // 교과서 표 Ⅰ-6 테니스 경기 유무 데이터셋 (사진/테니스1.png 대조)
-    var DAYS = [
-        { d: 1,  w: '맑음', t: '더움',   h: '높음', s: '약함', play: false },
-        { d: 2,  w: '맑음', t: '더움',   h: '높음', s: '강함', play: false },
-        { d: 3,  w: '흐림', t: '더움',   h: '높음', s: '약함', play: true },
-        { d: 4,  w: '비',   t: '온화함', h: '높음', s: '약함', play: true },
-        { d: 5,  w: '비',   t: '추움',   h: '보통', s: '약함', play: true },
-        { d: 6,  w: '비',   t: '추움',   h: '보통', s: '강함', play: false },
-        { d: 7,  w: '흐림', t: '추움',   h: '보통', s: '강함', play: true },
-        { d: 8,  w: '맑음', t: '온화함', h: '높음', s: '약함', play: false },
-        { d: 9,  w: '맑음', t: '추움',   h: '보통', s: '약함', play: true },
-        { d: 10, w: '비',   t: '온화함', h: '보통', s: '약함', play: true },
-        { d: 11, w: '맑음', t: '온화함', h: '보통', s: '강함', play: true },
-        { d: 12, w: '흐림', t: '온화함', h: '높음', s: '강함', play: true },
-        { d: 13, w: '흐림', t: '더움',   h: '보통', s: '약함', play: true },
-        { d: 14, w: '비',   t: '온화함', h: '높음', s: '강함', play: false }
-    ];
-
+    var ATTR_ORDER = ['w', 't', 'h', 's'];
     var ATTRS = {
         w: { name: '날씨',       values: ['맑음', '흐림', '비'] },
         t: { name: '기온',       values: ['더움', '온화함', '추움'] },
@@ -434,26 +418,149 @@
         s: { name: '바람의 세기', values: ['강함', '약함'] }
     };
 
-    function subset(filter) {
-        return DAYS.filter(function (day) { return !filter || day.w === filter; });
-    }
-    function frac(attrKey, value, filter) {
-        var days = subset(filter).filter(function (day) { return day[attrKey] === value; });
+    // 예제 데이터셋. 각 데이터셋은 다음 성질을 만족하도록 설계·검증됨:
+    // ① 1단계에서 비율 1(동률이면 근거 많은 쪽)인 속성값이 유일하게 존재
+    // ② 그 속성의 나머지 값(분기)마다 비율 1로 분기의 경기일 전부를 설명하는 속성값이 유일하게 존재
+    // ③ 완성 규칙이 경기를 한 날에만 정확히 발화
+    var EXAMPLES = [
+        {
+            name: '교과서 표 Ⅰ-6',
+            title: '표 Ⅰ-6 테니스 경기 유무 데이터셋',
+            // 교과서 표 Ⅰ-6 (사진/테니스1.png 대조)
+            days: [
+                { d: 1,  w: '맑음', t: '더움',   h: '높음', s: '약함', play: false },
+                { d: 2,  w: '맑음', t: '더움',   h: '높음', s: '강함', play: false },
+                { d: 3,  w: '흐림', t: '더움',   h: '높음', s: '약함', play: true },
+                { d: 4,  w: '비',   t: '온화함', h: '높음', s: '약함', play: true },
+                { d: 5,  w: '비',   t: '추움',   h: '보통', s: '약함', play: true },
+                { d: 6,  w: '비',   t: '추움',   h: '보통', s: '강함', play: false },
+                { d: 7,  w: '흐림', t: '추움',   h: '보통', s: '강함', play: true },
+                { d: 8,  w: '맑음', t: '온화함', h: '높음', s: '약함', play: false },
+                { d: 9,  w: '맑음', t: '추움',   h: '보통', s: '약함', play: true },
+                { d: 10, w: '비',   t: '온화함', h: '보통', s: '약함', play: true },
+                { d: 11, w: '맑음', t: '온화함', h: '보통', s: '강함', play: true },
+                { d: 12, w: '흐림', t: '온화함', h: '높음', s: '강함', play: true },
+                { d: 13, w: '흐림', t: '더움',   h: '보통', s: '약함', play: true },
+                { d: 14, w: '비',   t: '온화함', h: '높음', s: '강함', play: false }
+            ]
+        },
+        {
+            name: '연습 데이터셋 A',
+            title: '연습 데이터셋 A · 테니스 경기 유무',
+            days: [
+                { d: 1,  w: '맑음', t: '온화함', h: '높음', s: '강함', play: true },
+                { d: 2,  w: '흐림', t: '온화함', h: '보통', s: '약함', play: true },
+                { d: 3,  w: '비',   t: '온화함', h: '높음', s: '약함', play: true },
+                { d: 4,  w: '맑음', t: '온화함', h: '보통', s: '강함', play: true },
+                { d: 5,  w: '흐림', t: '온화함', h: '높음', s: '강함', play: true },
+                { d: 6,  w: '맑음', t: '더움',   h: '높음', s: '약함', play: true },
+                { d: 7,  w: '비',   t: '더움',   h: '보통', s: '약함', play: true },
+                { d: 8,  w: '흐림', t: '더움',   h: '높음', s: '강함', play: false },
+                { d: 9,  w: '맑음', t: '더움',   h: '보통', s: '강함', play: false },
+                { d: 10, w: '비',   t: '추움',   h: '보통', s: '강함', play: true },
+                { d: 11, w: '흐림', t: '추움',   h: '보통', s: '강함', play: true },
+                { d: 12, w: '맑음', t: '추움',   h: '높음', s: '약함', play: false },
+                { d: 13, w: '비',   t: '추움',   h: '높음', s: '강함', play: false },
+                { d: 14, w: '흐림', t: '추움',   h: '높음', s: '약함', play: false }
+            ]
+        },
+        {
+            name: '연습 데이터셋 B',
+            title: '연습 데이터셋 B · 테니스 경기 유무',
+            days: [
+                { d: 1,  w: '비',   t: '더움',   h: '높음', s: '약함', play: true },
+                { d: 2,  w: '비',   t: '온화함', h: '보통', s: '강함', play: true },
+                { d: 3,  w: '비',   t: '추움',   h: '높음', s: '강함', play: true },
+                { d: 4,  w: '비',   t: '온화함', h: '보통', s: '약함', play: true },
+                { d: 5,  w: '맑음', t: '더움',   h: '높음', s: '강함', play: true },
+                { d: 6,  w: '맑음', t: '추움',   h: '높음', s: '약함', play: true },
+                { d: 7,  w: '맑음', t: '온화함', h: '보통', s: '약함', play: false },
+                { d: 8,  w: '맑음', t: '더움',   h: '보통', s: '강함', play: false },
+                { d: 9,  w: '맑음', t: '추움',   h: '보통', s: '강함', play: false },
+                { d: 10, w: '흐림', t: '온화함', h: '보통', s: '강함', play: true },
+                { d: 11, w: '흐림', t: '더움',   h: '높음', s: '강함', play: true },
+                { d: 12, w: '흐림', t: '추움',   h: '보통', s: '강함', play: true },
+                { d: 13, w: '흐림', t: '온화함', h: '높음', s: '약함', play: false },
+                { d: 14, w: '흐림', t: '추움',   h: '보통', s: '약함', play: false }
+            ]
+        }
+    ];
+
+    var exIdx = 0;
+    var DAYS = EXAMPLES[0].days;
+    var PLAN = null;
+
+    // ---------- 계산 ----------
+    function frac(attrKey, value, filterValue) {
+        var days = DAYS.filter(function (day) {
+            return (!PLAN || filterValue == null || day[PLAN.splitKey] === filterValue) && day[attrKey] === value;
+        });
         var played = days.filter(function (day) { return day.play; });
         return { num: played.length, den: days.length };
+    }
+    function fracIn(days, attrKey, value) {
+        var sub = days.filter(function (day) { return day[attrKey] === value; });
+        return { num: sub.filter(function (d) { return d.play; }).length, den: sub.length };
+    }
+    // 비율이 가장 높은 속성값(동률이면 근거가 많은 쪽)과, 비율은 같지만 근거가 적은 값 목록
+    function findWinner(days, attrKeys) {
+        var cells = [];
+        attrKeys.forEach(function (k) {
+            ATTRS[k].values.forEach(function (v) {
+                var f = fracIn(days, k, v);
+                if (f.den > 0) cells.push({ attrKey: k, value: v, num: f.num, den: f.den, ratio: f.num / f.den });
+            });
+        });
+        cells.sort(function (a, b) { return (b.ratio - a.ratio) || (b.num - a.num); });
+        var w = cells[0];
+        var near = cells.filter(function (c) { return c !== w && c.ratio === w.ratio && c.num < w.num; });
+        return { winner: w, near: near };
+    }
+
+    function condStr(k, v) { return '(' + ATTRS[k].name + ' = ' + v + ')'; }
+    function josa(word, withBatchim, without) {
+        var code = word.charCodeAt(word.length - 1);
+        if (code < 0xAC00 || code > 0xD7A3) return without;
+        return ((code - 0xAC00) % 28) ? withBatchim : without;
+    }
+
+    // 데이터셋에서 5단계 진행 계획(분할 속성, 분기, 규칙 문장)을 도출
+    function buildPlan(days) {
+        var s1 = findWinner(days, ATTR_ORDER);
+        var splitKey = s1.winner.attrKey, splitVal = s1.winner.value;
+        var otherKeys = ATTR_ORDER.filter(function (k) { return k !== splitKey; });
+        var branches = ATTRS[splitKey].values
+            .filter(function (v) { return v !== splitVal; })
+            .map(function (bv) {
+                var sub = days.filter(function (d) { return d[splitKey] === bv; });
+                var bw = findWinner(sub, otherKeys);
+                return {
+                    value: bv,
+                    count: sub.length,
+                    pick: bw.winner,
+                    near: bw.near,
+                    groups: otherKeys.map(function (k) {
+                        return { attrKey: k, values: ATTRS[k].values.filter(function (v) { return fracIn(sub, k, v).den > 0; }) };
+                    })
+                };
+            });
+        var rules = ['테니스 경기를 한다. ← ' + condStr(splitKey, splitVal)];
+        branches.forEach(function (b, i) {
+            rules.push(rules[i] + ' ∨ {' + condStr(splitKey, b.value) + ' ∧ ' + condStr(b.pick.attrKey, b.pick.value) + '}');
+        });
+        return {
+            splitKey: splitKey, splitVal: splitVal,
+            splitWin: s1.winner, splitNear: s1.near,
+            branches: branches, rules: rules,
+            playTotal: days.filter(function (d) { return d.play; }).length
+        };
     }
 
     var statusBanner = document.getElementById('status-banner');
     var missionHint = document.getElementById('mission-hint');
     var stepNowEl = document.getElementById('step-now');
     var ruleTextEl = document.getElementById('rule-text');
-
-    var RULES = {
-        empty: '테니스 경기를 한다. ← (텅 빈 규칙)',
-        r1: '테니스 경기를 한다. ← (날씨 = 흐림)',
-        r2: '테니스 경기를 한다. ← (날씨 = 흐림) ∨ {(날씨 = 맑음) ∧ (습도 = 보통)}',
-        r3: '테니스 경기를 한다. ← (날씨 = 흐림) ∨ {(날씨 = 맑음) ∧ (습도 = 보통)} ∨ {(날씨 = 비) ∧ (바람의 세기 = 약함)}'
-    };
+    var EMPTY_RULE = '테니스 경기를 한다. ← (텅 빈 규칙)';
 
     function setBanner(kind, text) {
         statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
@@ -465,13 +572,13 @@
     }
 
     // ---------- 표 ----------
-    function renderTable(focusWeather) {
+    function renderTable(focusValue) {
         var tbody = document.getElementById('tennis-tbody');
         tbody.innerHTML = '';
         DAYS.forEach(function (day) {
             var tr = document.createElement('tr');
-            if (focusWeather) {
-                tr.className = (day.w === focusWeather) ? 'focused' : 'dimmed';
+            if (focusValue) {
+                tr.className = (day[PLAN.splitKey] === focusValue) ? 'focused' : 'dimmed';
             }
             tr.innerHTML =
                 '<td>' + day.d + '</td><td>' + day.w + '</td><td>' + day.t + '</td><td>' + day.h + '</td><td>' + day.s + '</td>' +
@@ -566,7 +673,10 @@
 
     // ---------- 최고 정확도 고르기 ----------
     // 완료된 분수 칩을 클릭 가능하게 바꾼다. best = {attrKey, value}, near = 정확도는 같지만 근거가 적은 값
-    function enablePicking(cells, best, nearMsgValues, onPicked) {
+    function enablePicking(cells, best, nearValues, onPicked) {
+        // 마지막 '확인' 클릭이 셀로 버블링되며 방금 붙인 선택 리스너를 발동시키지 않도록 다음 틱에 등록
+        setTimeout(function () { attach(); }, 0);
+        function attach() {
         cells.forEach(function (c) {
             c.el.classList.add('pickable');
             c.el.addEventListener('click', function handler() {
@@ -574,7 +684,7 @@
                     cells.forEach(function (x) { x.el.classList.remove('pickable'); });
                     c.el.classList.add('picked');
                     onPicked();
-                } else if (nearMsgValues && nearMsgValues.some(function (n) { return n.attrKey === c.attrKey && n.value === c.value; })) {
+                } else if (nearValues && nearValues.some(function (n) { return n.attrKey === c.attrKey && n.value === c.value; })) {
                     setBanner('info', '정확도는 1이지만 근거가 되는 날이 더 적어요. 정확도가 같다면 더 많은 날이 뒷받침하는 속성값을 골라 보세요.');
                 } else {
                     c.el.classList.remove('shake');
@@ -584,6 +694,7 @@
                 }
             });
         });
+        }
     }
 
     // ---------- 규칙 고르기 ----------
@@ -614,7 +725,7 @@
                     btn.classList.remove('wrong');
                     void btn.offsetWidth;
                     btn.classList.add('wrong');
-                    setBanner('bad', '아쉬워요. ∨(또는)와 ∧(그리고)의 역할, 조건이 어느 날씨에 대한 것인지 다시 생각해 보세요.');
+                    setBanner('bad', '아쉬워요. ∨(또는)와 ∧(그리고)의 역할, 조건이 어떤 속성값에 대한 것인지 다시 생각해 보세요.');
                 }
             });
             container.appendChild(btn);
@@ -635,7 +746,21 @@
 
     // ---------- 진행 흐름 ----------
     function start() {
-        ruleTextEl.textContent = RULES.empty;
+        var ex = EXAMPLES[exIdx];
+        DAYS = ex.days;
+        PLAN = buildPlan(DAYS);
+        var splitName = ATTRS[PLAN.splitKey].name;
+
+        document.getElementById('table-title').textContent = ex.title;
+        var exW = fracIn(DAYS, 'w', ATTRS.w.values[0]);
+        document.getElementById('card1-desc').innerHTML =
+            '속성값마다 <b>경기를 한 날 수 / 그 속성값인 날 수</b>를 표에서 직접 세어 입력하고 확인을 누르세요. ' +
+            '예) 날씨가 \'' + ATTRS.w.values[0] + '\'인 날 ' + exW.den + '일 중 ' + exW.num + '일 경기 → ' + exW.num + '/' + exW.den;
+        document.getElementById('table-note').innerHTML =
+            '○ = 경기를 한 날 (' + PLAN.playTotal + '일) · × = 경기를 하지 않은 날 (' + (DAYS.length - PLAN.playTotal) + '일)' +
+            '<br>💡 행을 클릭하면 파란색 표시가 켜져요. 세면서 표시해 두고, 다시 클릭하면 지워집니다.';
+
+        ruleTextEl.textContent = EMPTY_RULE;
         renderTable(null);
         setStep(1, '먼저 표를 보고 속성값별 비율을 채우세요.');
         setBanner('', '');
@@ -652,99 +777,86 @@
         delete document.getElementById('rule-choice-2').dataset.done;
         delete document.getElementById('rule-choice-3').dataset.done;
         document.getElementById('verify-list').innerHTML = '';
+        document.getElementById('frac-groups-3').innerHTML = '';
+        document.getElementById('frac-groups-4').innerHTML = '';
 
         // 1단계
         buildFracStage({
             containerId: 'frac-groups-1',
             filter: null,
-            groups: [
-                { attrKey: 'w', values: ATTRS.w.values },
-                { attrKey: 't', values: ATTRS.t.values },
-                { attrKey: 'h', values: ATTRS.h.values },
-                { attrKey: 's', values: ATTRS.s.values }
-            ],
+            groups: ATTR_ORDER.map(function (k) { return { attrKey: k, values: ATTRS[k].values }; }),
             onAllDone: function (cells) {
                 markDone('card-1');
                 openCard('card-2');
                 setStep(2, '정확도가 1에 가장 가까운 속성값을 클릭하세요.');
                 setBanner('info', '비율을 모두 채웠습니다! 이제 정확도가 가장 높은 속성값을 위 1단계 칩에서 클릭하세요.');
-                enablePicking(cells, { attrKey: 'w', value: '흐림' }, null, function () {
-                    setBanner('info', '날씨 = 흐림(4/4)! 흐린 날은 무조건 경기를 했어요. 이제 이것을 논리 규칙으로 표현해 봅시다.');
+                enablePicking(cells, PLAN.splitWin, PLAN.splitNear, function () {
+                    setBanner('info', splitName + ' = ' + PLAN.splitVal + '(' + PLAN.splitWin.num + '/' + PLAN.splitWin.den + ')! ' +
+                        splitName + josa(splitName, '이', '가') + ' \'' + PLAN.splitVal + '\'인 날은 무조건 경기를 했어요. 이제 이것을 논리 규칙으로 표현해 봅시다.');
                     buildRuleChoice('rule-choice-1', [
-                        RULES.r1,
-                        '테니스 경기를 한다. ← (날씨 = 맑음)',
-                        '(날씨 = 흐림) ← 테니스 경기를 한다.'
+                        PLAN.rules[0],
+                        '테니스 경기를 한다. ← ' + condStr(PLAN.splitKey, PLAN.branches[0].value),
+                        condStr(PLAN.splitKey, PLAN.splitVal) + ' ← 테니스 경기를 한다.'
                     ], 0, function () {
-                        ruleTextEl.textContent = RULES.r1;
+                        ruleTextEl.textContent = PLAN.rules[0];
                         markDone('card-2');
-                        stage3();
+                        branchStage(0);
                     });
                 });
             }
         });
     }
 
-    function stage3() {
-        openCard('card-3');
-        renderTable('맑음');
-        setStep(3, "날씨가 '맑음'인 날만 세어 비율을 채우세요.");
-        setBanner('info', '흐린 날은 규칙으로 설명되었습니다. 이제 표에 노랗게 남은 \'맑음\'인 5일만 살펴봅니다.');
-        buildFracStage({
-            containerId: 'frac-groups-3',
-            filter: '맑음',
-            groups: [
-                { attrKey: 't', values: ATTRS.t.values },
-                { attrKey: 'h', values: ATTRS.h.values },
-                { attrKey: 's', values: ATTRS.s.values }
-            ],
-            onAllDone: function (cells) {
-                setBanner('info', '이제 정확도가 가장 높은 속성값을 3단계 칩에서 클릭하세요.');
-                enablePicking(
-                    cells,
-                    { attrKey: 'h', value: '보통' },
-                    [ { attrKey: 't', value: '추움' } ],
-                    function () {
-                        setBanner('info', '습도 = 보통(2/2)! 맑아도 습도가 보통인 날은 무조건 경기를 했어요. 규칙을 확장해 봅시다.');
-                        buildRuleChoice('rule-choice-2', [
-                            RULES.r2,
-                            '테니스 경기를 한다. ← (날씨 = 흐림) ∧ {(날씨 = 맑음) ∨ (습도 = 보통)}',
-                            '테니스 경기를 한다. ← (날씨 = 흐림) ∨ (습도 = 보통)'
-                        ], 0, function () {
-                            ruleTextEl.textContent = RULES.r2;
-                            markDone('card-3');
-                            stage4();
-                        });
-                    }
-                );
-            }
-        });
-    }
+    // i = 0(3단계), 1(4단계)
+    function branchStage(i) {
+        var b = PLAN.branches[i];
+        var splitName = ATTRS[PLAN.splitKey].name;
+        var cardId = i === 0 ? 'card-3' : 'card-4';
+        var stepNum = i + 3;
+        var phrase = splitName + josa(splitName, '이', '가') + ' \'' + b.value + '\'인';
 
-    function stage4() {
-        openCard('card-4');
-        renderTable('비');
-        setStep(4, "날씨가 '비'인 날만 세어 비율을 채우세요.");
-        setBanner('info', '마지막으로 \'비\'가 온 5일입니다. 같은 방법으로 비율을 채워 보세요.');
+        document.getElementById(cardId === 'card-3' ? 'card3-title' : 'card4-title').textContent =
+            phrase + ' 날만 다시 살펴보기';
+        document.getElementById(cardId === 'card-3' ? 'card3-desc' : 'card4-desc').innerHTML =
+            (i === 0
+                ? '이제 표에서 <b>' + phrase + ' ' + b.count + '일</b>만 남았습니다(노란 줄). 이 ' + b.count + '일에 대해 나머지 속성의 비율을 세어 입력하고, 정확도가 가장 높은 속성값을 고른 뒤, 규칙을 확장하세요.'
+                : '마지막으로 <b>' + phrase + ' ' + b.count + '일</b>입니다(노란 줄). 같은 방법으로 비율을 채우고, 정확도가 가장 높은 속성값을 골라 규칙을 완성하세요.');
+
+        openCard(cardId);
+        renderTable(b.value);
+        setStep(stepNum, phrase + ' 날만 세어 비율을 채우세요.');
+        setBanner('info', i === 0
+            ? splitName + josa(splitName, '이', '가') + ' \'' + PLAN.splitVal + '\'인 날은 규칙으로 설명되었습니다. 이제 표에 노랗게 남은 \'' + b.value + '\'인 ' + b.count + '일만 살펴봅니다.'
+            : '마지막으로 \'' + b.value + '\'인 ' + b.count + '일입니다. 같은 방법으로 비율을 채워 보세요.');
+
+        var pickName = ATTRS[b.pick.attrKey].name;
+        var correctRule = PLAN.rules[i + 1];
+        var prevRule = PLAN.rules[i];
+        var branchCond = condStr(PLAN.splitKey, b.value);
+        var pickCond = condStr(b.pick.attrKey, b.pick.value);
+        var otherVal = ATTRS[b.pick.attrKey].values.filter(function (v) { return v !== b.pick.value; })[0];
+        var options = i === 0
+            ? [correctRule,
+               prevRule + ' ∧ {' + branchCond + ' ∨ ' + pickCond + '}',
+               prevRule + ' ∨ ' + pickCond]
+            : [correctRule,
+               prevRule + ' ∨ {' + branchCond + ' ∨ ' + pickCond + '}',
+               prevRule + ' ∨ {' + branchCond + ' ∧ ' + condStr(b.pick.attrKey, otherVal) + '}'];
+
         buildFracStage({
-            containerId: 'frac-groups-4',
-            filter: '비',
-            groups: [
-                { attrKey: 't', values: ['온화함', '추움'] },
-                { attrKey: 'h', values: ATTRS.h.values },
-                { attrKey: 's', values: ATTRS.s.values }
-            ],
+            containerId: i === 0 ? 'frac-groups-3' : 'frac-groups-4',
+            filter: b.value,
+            groups: b.groups,
             onAllDone: function (cells) {
-                setBanner('info', '이제 정확도가 가장 높은 속성값을 4단계 칩에서 클릭하세요.');
-                enablePicking(cells, { attrKey: 's', value: '약함' }, null, function () {
-                    setBanner('info', '바람의 세기 = 약함(3/3)! 비가 와도 바람이 약한 날은 무조건 경기를 했어요. 규칙을 완성해 봅시다.');
-                    buildRuleChoice('rule-choice-3', [
-                        RULES.r3,
-                        RULES.r2 + ' ∨ {(날씨 = 비) ∨ (바람의 세기 = 약함)}',
-                        RULES.r2 + ' ∨ {(날씨 = 비) ∧ (바람의 세기 = 강함)}'
-                    ], 0, function () {
-                        ruleTextEl.textContent = RULES.r3;
-                        markDone('card-4');
-                        stage5();
+                setBanner('info', '이제 정확도가 가장 높은 속성값을 ' + stepNum + '단계 칩에서 클릭하세요.');
+                enablePicking(cells, b.pick, b.near, function () {
+                    setBanner('info', pickName + ' = ' + b.pick.value + '(' + b.pick.num + '/' + b.pick.den + ')! \'' + b.value + '\'이어도 ' +
+                        pickName + josa(pickName, '이', '가') + ' \'' + b.pick.value + '\'인 날은 무조건 경기를 했어요. 규칙을 ' + (i === 0 ? '확장해' : '완성해') + ' 봅시다.');
+                    buildRuleChoice(i === 0 ? 'rule-choice-2' : 'rule-choice-3', options, 0, function () {
+                        ruleTextEl.textContent = correctRule;
+                        markDone(cardId);
+                        if (i === 0) branchStage(1);
+                        else stage5();
                     });
                 });
             }
@@ -754,25 +866,39 @@
     function stage5() {
         openCard('card-5');
         renderTable(null);
-        setStep(5, '완성한 규칙이 경기한 9일을 모두 설명하는지 확인하세요.');
+        setStep(5, '완성한 규칙이 경기한 ' + PLAN.playTotal + '일을 모두 설명하는지 확인하세요.');
+        document.getElementById('card5-desc').textContent =
+            '완성된 규칙이 경기를 한 ' + PLAN.playTotal + '일을 모두 설명하는지 확인해 봅시다.';
         var list = document.getElementById('verify-list');
         list.innerHTML = '';
         DAYS.filter(function (day) { return day.play; }).forEach(function (day) {
             var cond;
-            if (day.w === '흐림') cond = '날씨 = 흐림';
-            else if (day.w === '맑음' && day.h === '보통') cond = '(날씨 = 맑음) ∧ (습도 = 보통)';
-            else if (day.w === '비' && day.s === '약함') cond = '(날씨 = 비) ∧ (바람의 세기 = 약함)';
+            if (day[PLAN.splitKey] === PLAN.splitVal) {
+                cond = ATTRS[PLAN.splitKey].name + ' = ' + PLAN.splitVal;
+            } else {
+                PLAN.branches.forEach(function (b) {
+                    if (day[PLAN.splitKey] === b.value && day[b.pick.attrKey] === b.pick.value) {
+                        cond = condStr(PLAN.splitKey, b.value) + ' ∧ ' + condStr(b.pick.attrKey, b.pick.value);
+                    }
+                });
+            }
             var row = document.createElement('div');
             row.className = 'verify-row';
             row.innerHTML = '<span class="day-chip">Day ' + day.d + '</span><span>' + day.w + ' · ' + day.t + ' · ' + day.h + ' · ' + day.s + '</span><span class="cond">→ ' + cond + ' ✓</span>';
             list.appendChild(row);
         });
         markDone('card-5');
-        setBanner('ok', '🎉 완성! 규칙 세 조건이 경기를 한 9일을 빠짐없이 설명합니다. 데이터에서 논리 규칙을 이끌어 내는 예측 지능 시스템을 직접 만들어 보았어요.');
+        setBanner('ok', '🎉 완성! 규칙 세 조건이 경기를 한 ' + PLAN.playTotal + '일을 빠짐없이 설명합니다. 데이터에서 논리 규칙을 이끌어 내는 예측 지능 시스템을 직접 만들어 보았어요. 새 예제 불러오기로 다른 데이터에도 도전해 보세요!');
         fireConfetti();
     }
 
     document.getElementById('btn-reset').addEventListener('click', start);
+    document.getElementById('btn-new').addEventListener('click', function () {
+        exIdx = (exIdx + 1) % EXAMPLES.length;
+        start();
+        setBanner('info', '새 예제를 불러왔어요: ' + EXAMPLES[exIdx].name + '. 표가 달라졌으니 처음부터 다시 세어 보세요!');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
     start();
 })();
 </script>
