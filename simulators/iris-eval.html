@@ -142,7 +142,7 @@
             <div class="sub">교과서 80~81쪽 — 테스트 데이터 30개에 대한 k-NN 모델의 혼동행렬로 성능을 평가합니다.</div>
         </div>
         <div class="controls">
-            <span class="mission-chip">단계 <b id="step-now">1</b> / 3</span>
+            <span class="mission-chip">단계 <b id="step-now">1</b> / 4</span>
             <button class="action" id="btn-reset">처음부터 다시</button>
         </div>
     </div>
@@ -224,6 +224,55 @@
                 <span class="metric-name">F1-점수</span>
                 <span class="formula">= 2 × (정밀도×재현율) / (정밀도+재현율) ≈</span>
                 <span class="choice-inline" id="f1-choice"></span>
+            </div>
+        </div>
+
+        <!-- 4단계: 질병 진단 AI -->
+        <div class="step-card locked" id="card-4">
+            <div class="step-head"><span class="step-num">4단계</span><span class="step-title">문제에 따라 중요한 지표가 다르다 — "질병 진단 AI" (교과서 78~79쪽)</span></div>
+            <p class="step-desc">
+                이번에는 붓꽃이 아니라 <b>질병을 예측하는 AI</b>입니다. 100명을 진단한 결과가 아래 혼동행렬이에요.
+                같은 방법으로 지표를 계산해 보고, 붓꽃 분류와 무엇이 다른지 생각해 보세요.
+            </p>
+            <table class="cm-table">
+                <tr><th colspan="2" rowspan="2"></th><th colspan="2">예측값</th></tr>
+                <tr><th>질병 ○</th><th>질병 ×</th></tr>
+                <tr><th rowspan="2" style="writing-mode:vertical-rl;">실젯값</th><th>질병 ○</th><td class="diag">9 <span style="font-size:10px;color:var(--text-muted);">TP</span></td><td class="err">1 <span style="font-size:10px;color:var(--text-muted);">FN</span></td></tr>
+                <tr><th>질병 ×</th><td>30 <span style="font-size:10px;color:var(--text-muted);">FP</span></td><td class="diag">60 <span style="font-size:10px;color:var(--text-muted);">TN</span></td></tr>
+            </table>
+            <div class="metric-row">
+                <span class="metric-name">정확도</span>
+                <span class="formula">= (TP+TN) / 전체 =</span>
+                <span class="frac-cell" id="d-acc-frac">
+                    <input type="number" id="d-acc-num" min="0" max="100">
+                    <span class="frac-slash">/</span>
+                    <input type="number" id="d-acc-den" min="1" max="100">
+                    <button class="frac-check" id="d-acc-check">확인</button>
+                </span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-name">정밀도</span>
+                <span class="formula">= TP / (TP+FP) =</span>
+                <span class="frac-cell" id="d-prec-frac">
+                    <input type="number" id="d-prec-num" min="0" max="100">
+                    <span class="frac-slash">/</span>
+                    <input type="number" id="d-prec-den" min="1" max="100">
+                    <button class="frac-check" id="d-prec-check">확인</button>
+                </span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-name">재현율</span>
+                <span class="formula">= TP / (TP+FN) =</span>
+                <span class="frac-cell" id="d-rec-frac">
+                    <input type="number" id="d-rec-num" min="0" max="100">
+                    <span class="frac-slash">/</span>
+                    <input type="number" id="d-rec-den" min="1" max="100">
+                    <button class="frac-check" id="d-rec-check">확인</button>
+                </span>
+            </div>
+            <div class="tip-box" id="disease-insight" style="display:none;">
+                💊 정확도는 69/100 = 0.69지만, 실제 병이 있는 사람 10명 중 <b>1명(FN)</b>을 "병이 없다"라고 놓쳤어요.
+                질병 진단처럼 <b>놓치면 안 되는 문제에서는 재현율</b>이, 스팸 메일 분류처럼 <b>멀쩡한 것을 잘못 잡으면 곤란한 문제에서는 정밀도</b>가 중요한 지표가 됩니다.
             </div>
         </div>
     </div>
@@ -329,8 +378,9 @@
                                 btn.classList.add('right');
                                 Array.prototype.forEach.call(container.children, function (el) { if (el !== btn) el.style.opacity = 0.45; });
                                 markDone('card-3');
-                                setBanner('ok', '🎉 성능 평가 완성! 정확도 0.967, 정밀도 14/15, 재현율 14/14, F1-점수 약 0.97 — 붓꽃 k-NN 모델은 아주 좋은 성능을 보여요.');
-                                fire();
+                                stepNowEl.textContent = '4';
+                                setBanner('info', '정확도 0.967, 정밀도 14/15, 재현율 14/14, F1 약 0.97 — 붓꽃 모델은 성능이 아주 좋네요. 마지막으로 다른 문제에도 적용해 봅시다.');
+                                openCard('card-4');
                             } else {
                                 btn.classList.remove('wrong');
                                 void btn.offsetWidth;
@@ -373,11 +423,44 @@
         });
     }
 
+    // ---------- 4단계: 질병 진단 ----------
+    function initStage4() {
+        var done = { acc: false, prec: false, rec: false };
+        function maybeFinish() {
+            if (done.acc && done.prec && done.rec) {
+                document.getElementById('disease-insight').style.display = 'block';
+                markDone('card-4');
+                setBanner('ok', '🎉 성능 평가 완성! 정확도가 같아도 문제에 따라 재현율·정밀도를 함께 봐야 한다는 것까지 배웠어요.');
+                fire();
+            }
+        }
+        function bindFrac(key, checkId, numId, denId, fracId, ansN, ansD, lockText, wrongMsg) {
+            document.getElementById(checkId).addEventListener('click', function () {
+                var a = parseInt(document.getElementById(numId).value, 10);
+                var b = parseInt(document.getElementById(denId).value, 10);
+                if (isNaN(a) || isNaN(b)) { setBanner('info', '분자와 분모를 모두 입력하세요.'); return; }
+                if (a === ansN && b === ansD) {
+                    lockFrac(fracId, lockText);
+                    done[key] = true;
+                    setBanner('', '');
+                    maybeFinish();
+                } else {
+                    shakeEl(document.getElementById(fracId));
+                    setBanner('bad', wrongMsg);
+                }
+            });
+        }
+        bindFrac('acc', 'd-acc-check', 'd-acc-num', 'd-acc-den', 'd-acc-frac', 69, 100, '69/100 = 0.69', '아쉬워요. 맞게 예측한 수는 TP와 TN을 더한 값이에요.');
+        bindFrac('prec', 'd-prec-check', 'd-prec-num', 'd-prec-den', 'd-prec-frac', 9, 39, '9/39 ≈ 0.23', '아쉬워요. 질병이라고 예측한 사람(TP+FP) 중 실제 질병(TP)의 비율이에요.');
+        bindFrac('rec', 'd-rec-check', 'd-rec-num', 'd-rec-den', 'd-rec-frac', 9, 10, '9/10 = 0.9', '아쉬워요. 실제 질병이 있는 사람(TP+FN) 중 질병으로 예측된 사람(TP)의 비율이에요.');
+    }
+
     document.getElementById('btn-reset').addEventListener('click', function () { location.reload(); });
 
     initStage1();
     initStage2();
     initStage3();
+    initStage4();
 })();
 </script>
 </body>

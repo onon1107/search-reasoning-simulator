@@ -50,7 +50,7 @@
     var initialBtn = document.querySelector('.tab-btn[data-tab="' + initial + '"]');
     if (initialBtn && !initialBtn.classList.contains('disabled')) {
         activate(initial);
-    } else {
-        activate('home');
+    } else if (tabBtns.length) {
+        activate(tabBtns[0].dataset.tab);
     }
 })();

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>k-평균 군집화 체험</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF;
+        --blue: #1C60EF;
+        --blue-light: #DBE8FE;
+        --text: #16223f;
+        --text-muted: #55647f;
+        --red: #ef4444;
+        --red-light: #fee2e2;
+        --green: #16a34a;
+        --green-light: #dcfce7;
+        --gold: #d4a017;
+        --gold-light: #fef3c7;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; height: 100%; font-family: var(--font-body); color: var(--text); background: var(--white); }
+    .app { display: flex; flex-direction: column; min-height: 100%; }
+    .topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        padding: 12px 18px; border-bottom: 1px solid var(--blue-light); background: #fbfcff; flex-shrink: 0;
+    }
+    .topbar h1 { font-family: var(--font-title); font-weight: 700; font-size: 15px; margin: 0; }
+    .topbar .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    button.action {
+        font-family: var(--font-body); font-weight: 700; font-size: 12.5px; border-radius: 8px; padding: 8px 14px;
+        border: 1px solid var(--blue-light); background: var(--white); color: var(--blue); cursor: pointer;
+    }
+    button.action:hover:not(:disabled) { background: var(--blue-light); }
+    button.action.primary { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    button.action.primary:hover:not(:disabled) { background: #164fce; }
+    button.action:disabled { opacity: 0.4; cursor: default; }
+    .status-banner { display: none; padding: 9px 18px; font-size: 13px; font-weight: 700; text-align: center; flex-shrink: 0; }
+    .status-banner.show { display: block; }
+    .status-banner.ok { background: var(--gold-light); color: #92700c; }
+    .status-banner.bad { background: var(--red-light); color: #b91c1c; }
+    .status-banner.info { background: var(--blue-light); color: #16419e; }
+
+    .stage { flex: 1; display: flex; gap: 16px; padding: 16px 18px 24px; overflow: auto; align-items: flex-start; flex-wrap: wrap; }
+    .plot-panel { flex: 1 1 480px; min-width: 360px; }
+    .plot-wrap { border: 1.5px solid var(--blue-light); border-radius: 14px; background: #fdfefe; }
+    .plot-wrap svg { width: 100%; height: auto; display: block; }
+    .step-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .step-chip {
+        font-family: var(--font-title); font-weight: 700; font-size: 11px;
+        border: 1px solid var(--blue-light); border-radius: 999px; padding: 4px 12px;
+        color: var(--text-muted); background: var(--white);
+    }
+    .step-chip.now { background: var(--blue); color: var(--white); border-color: var(--blue); }
+
+    .side-panel { flex: 1 1 280px; min-width: 260px; display: flex; flex-direction: column; gap: 12px; }
+    .side-card { border: 1.5px solid var(--blue-light); border-radius: 14px; background: var(--white); padding: 12px 16px; }
+    .side-card h3 { font-family: var(--font-title); font-size: 12.5px; color: var(--blue); margin: 0 0 8px; }
+    .side-card p { font-size: 12.5px; color: var(--text-muted); line-height: 1.75; margin: 0 0 8px; }
+    .ctrl-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+    .ctrl-row select {
+        font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
+        border: 1.5px solid var(--blue-light); border-radius: 8px; padding: 6px 8px; background: var(--white); color: var(--text);
+    }
+    .stat-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .stat-box { border: 1.5px solid var(--blue-light); border-radius: 12px; padding: 8px 14px; text-align: center; background: #fbfcff; flex: 1; }
+    .stat-box .num { font-family: var(--font-title); font-weight: 700; font-size: 18px; color: var(--blue); }
+    .stat-box .lbl { font-size: 10.5px; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
+    .compare-label { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; margin-top: 8px; }
+    .tip-box { border: 1px dashed rgba(28,96,239,0.35); border-radius: 10px; background: #f7faff; padding: 10px 12px; font-size: 12px; color: var(--text-muted); line-height: 1.8; }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1>k-평균(k-means) 군집화 체험</h1>
+            <div class="sub">정답(품종) 없이, 비슷한 것끼리 스스로 묶는 비지도학습을 단계별로 실행해 봅니다. (교과서 88~89쪽)</div>
+        </div>
+        <button class="action" id="btn-reset">초기화</button>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="stage">
+        <div class="plot-panel">
+            <div class="plot-wrap">
+                <svg id="plot" viewBox="0 0 640 480"></svg>
+            </div>
+            <div class="step-chips">
+                <span class="step-chip now" data-s="0">0. 대기</span>
+                <span class="step-chip" data-s="1">1. 중심 배치</span>
+                <span class="step-chip" data-s="2">2. 군집 할당</span>
+                <span class="step-chip" data-s="3">3. 중심 이동</span>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div class="side-card">
+                <h3>① 군집 수 k 정하기</h3>
+                <div class="ctrl-row">
+                    <label for="k-select" style="font-size:12.5px; font-weight:700;">군집 수 k</label>
+                    <select id="k-select">
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+                <p style="margin:0;">이번에는 <b>정답(품종) 열이 없는</b> 데이터예요. 점들이 모두 회색인 이유입니다. 몇 개의 그룹으로 나눌지(k)만 사람이 정해 줍니다.</p>
+            </div>
+
+            <div class="side-card">
+                <h3>② 단계별로 실행하기</h3>
+                <p><b>중심 배치 → 군집 할당(가까운 중심으로) → 중심 이동(평균 위치로)</b>을 반복하다가, 중심이 더 이상 움직이지 않으면 <b>수렴</b>한 것입니다.</p>
+                <div class="ctrl-row">
+                    <button class="action primary" id="btn-step">다음 단계 ▶</button>
+                    <button class="action" id="btn-auto">자동 반복</button>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-box"><div class="num" id="stat-iter">0</div><div class="lbl">반복 횟수</div></div>
+                    <div class="stat-box"><div class="num" id="stat-inertia">–</div><div class="lbl">군집 내 거리 합</div></div>
+                </div>
+            </div>
+
+            <div class="side-card">
+                <h3>③ 결과 확인하기</h3>
+                <label class="compare-label">
+                    <input type="checkbox" id="chk-reveal" disabled>
+                    실제 품종과 비교해 보기 (테두리 색)
+                </label>
+                <div class="tip-box" style="margin-top:10px;">
+                    💡 수렴한 뒤 체크박스를 켜면 각 점의 <b>테두리에 실제 품종 색</b>이 표시됩니다.
+                    정답을 전혀 알려 주지 않았는데도 k=3이면 품종과 비슷하게 묶이는지 확인해 보세요.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/iris-data.js"></script>
+<script>
+(function () {
+    function hasMissing(r) { return r.sl === null || r.sw === null || r.pl === null || r.pw === null; }
+    var OUTLIER_IDS = [161, 164, 165, 171, 173];
+    var DATA = IRIS1.concat(IRIS2).filter(function (r) {
+        return !hasMissing(r) && OUTLIER_IDS.indexOf(r.id) === -1;
+    });
+
+    var SP_COLORS = { '세토사': '#2563eb', '버시컬러': '#d97706', '버지니카': '#059669' };
+    var CLUSTER_COLORS = ['#7c3aed', '#0891b2', '#db2777', '#ca8a04'];
+
+    var W = 640, H = 480, PAD = { l: 52, r: 16, t: 14, b: 44 };
+    var xMin = 0.5, xMax = 7.5, yMin = 0, yMax = 2.8;
+    function sx(v) { return PAD.l + (v - xMin) / (xMax - xMin) * (W - PAD.l - PAD.r); }
+    function sy(v) { return H - PAD.b - (v - yMin) / (yMax - yMin) * (H - PAD.t - PAD.b); }
+
+    var svg = document.getElementById('plot');
+    var ns = 'http://www.w3.org/2000/svg';
+    var statusBanner = document.getElementById('status-banner');
+
+    var k = 3;
+    var centroids = [];   // {x, y}
+    var assign = [];      // point index -> cluster index (or -1)
+    var phase = 0;        // 0 대기, 1 중심 배치됨, 2 할당됨, 3 이동됨
+    var iter = 0;
+    var converged = false;
+    var autoTimer = null;
+
+    function setBanner(kind, text) {
+        statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
+        statusBanner.textContent = text || '';
+    }
+    function el(tag, attrs) {
+        var e = document.createElementNS(ns, tag);
+        Object.keys(attrs || {}).forEach(function (key) { e.setAttribute(key, attrs[key]); });
+        return e;
+    }
+    function setPhaseChip(p) {
+        document.querySelectorAll('.step-chip').forEach(function (c) {
+            c.classList.toggle('now', c.dataset.s === String(p));
+        });
+    }
+
+    function render() {
+        svg.innerHTML = '';
+        for (var gx = 1; gx <= 7; gx++) {
+            svg.appendChild(el('line', { x1: sx(gx), y1: sy(yMin), x2: sx(gx), y2: sy(yMax), stroke: '#eef2fb' }));
+            var tx = el('text', { x: sx(gx), y: H - PAD.b + 18, 'text-anchor': 'middle', 'font-size': 11, fill: '#55647f' });
+            tx.textContent = gx; svg.appendChild(tx);
+        }
+        for (var gy = 0; gy <= 2.5; gy += 0.5) {
+            svg.appendChild(el('line', { x1: sx(xMin), y1: sy(gy), x2: sx(xMax), y2: sy(gy), stroke: '#eef2fb' }));
+            var ty = el('text', { x: PAD.l - 8, y: sy(gy) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#55647f' });
+            ty.textContent = gy.toFixed(1); svg.appendChild(ty);
+        }
+        svg.appendChild(el('line', { x1: sx(xMin), y1: sy(yMin), x2: sx(xMax), y2: sy(yMin), stroke: '#c6d4f0', 'stroke-width': 1.5 }));
+        svg.appendChild(el('line', { x1: sx(xMin), y1: sy(yMin), x2: sx(xMin), y2: sy(yMax), stroke: '#c6d4f0', 'stroke-width': 1.5 }));
+        var xl = el('text', { x: (sx(xMin) + sx(xMax)) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#16223f' });
+        xl.textContent = '꽃잎 길이 (cm)'; svg.appendChild(xl);
+        var yl = el('text', { x: 14, y: (sy(yMin) + sy(yMax)) / 2, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#16223f', transform: 'rotate(-90 14 ' + (sy(yMin) + sy(yMax)) / 2 + ')' });
+        yl.textContent = '꽃잎 너비 (cm)'; svg.appendChild(yl);
+
+        var reveal = document.getElementById('chk-reveal').checked;
+        DATA.forEach(function (r, i) {
+            var fill = (assign[i] >= 0) ? CLUSTER_COLORS[assign[i]] : '#aab4c8';
+            var attrs = { cx: sx(r.pl), cy: sy(r.pw), r: 4.5, fill: fill, opacity: 0.85 };
+            if (reveal) { attrs.stroke = SP_COLORS[r.sp]; attrs['stroke-width'] = 2.2; attrs.r = 4.8; }
+            svg.appendChild(el('circle', attrs));
+        });
+
+        centroids.forEach(function (c, ci) {
+            var cx = sx(c.x), cy = sy(c.y);
+            svg.appendChild(el('circle', { cx: cx, cy: cy, r: 11, fill: CLUSTER_COLORS[ci], opacity: 0.25 }));
+            svg.appendChild(el('rect', { x: cx - 6, y: cy - 6, width: 12, height: 12, fill: CLUSTER_COLORS[ci], stroke: '#fff', 'stroke-width': 2, transform: 'rotate(45 ' + cx + ' ' + cy + ')' }));
+        });
+    }
+
+    function placeCentroids() {
+        centroids = [];
+        var used = {};
+        while (centroids.length < k) {
+            var i = Math.floor(Math.random() * DATA.length);
+            if (used[i]) continue;
+            used[i] = true;
+            centroids.push({ x: DATA[i].pl, y: DATA[i].pw });
+        }
+        assign = DATA.map(function () { return -1; });
+        phase = 1;
+        iter = 0;
+        converged = false;
+        document.getElementById('stat-iter').textContent = 0;
+        document.getElementById('stat-inertia').textContent = '–';
+        document.getElementById('chk-reveal').checked = false;
+        document.getElementById('chk-reveal').disabled = true;
+        setPhaseChip(1);
+        setBanner('info', '중심(◆) ' + k + '개를 무작위 위치에 배치했어요. 다음 단계에서 각 점을 가장 가까운 중심에 배정합니다.');
+    }
+
+    function assignClusters() {
+        DATA.forEach(function (r, i) {
+            var best = -1, bestD = Infinity;
+            centroids.forEach(function (c, ci) {
+                var dx = r.pl - c.x, dy = r.pw - c.y;
+                var d = dx * dx + dy * dy;
+                if (d < bestD) { bestD = d; best = ci; }
+            });
+            assign[i] = best;
+        });
+        var inertia = 0;
+        DATA.forEach(function (r, i) {
+            var c = centroids[assign[i]];
+            var dx = r.pl - c.x, dy = r.pw - c.y;
+            inertia += Math.sqrt(dx * dx + dy * dy);
+        });
+        document.getElementById('stat-inertia').textContent = inertia.toFixed(1);
+        phase = 2;
+        setPhaseChip(2);
+        setBanner('info', '각 점을 가장 가까운 중심의 색으로 배정했어요. 다음 단계에서 중심이 자기 군집의 평균 위치로 이동합니다.');
+    }
+
+    function moveCentroids() {
+        var moved = 0;
+        centroids = centroids.map(function (c, ci) {
+            var xs = [], ys = [];
+            DATA.forEach(function (r, i) { if (assign[i] === ci) { xs.push(r.pl); ys.push(r.pw); } });
+            if (xs.length === 0) return c;
+            var nx = xs.reduce(function (s, v) { return s + v; }, 0) / xs.length;
+            var ny = ys.reduce(function (s, v) { return s + v; }, 0) / ys.length;
+            moved += Math.abs(nx - c.x) + Math.abs(ny - c.y);
+            return { x: nx, y: ny };
+        });
+        iter++;
+        document.getElementById('stat-iter').textContent = iter;
+        phase = 3;
+        setPhaseChip(3);
+        if (moved < 0.005) {
+            converged = true;
+            stopAuto();
+            document.getElementById('chk-reveal').disabled = false;
+            setBanner('ok', '🎉 중심이 더 이상 움직이지 않아요 — 군집화가 수렴했습니다! (반복 ' + iter + '회) 이제 실제 품종과 비교해 보세요.');
+            if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 68, origin: { x: 0.5, y: 0.4 } });
+        } else {
+            setBanner('info', '중심이 군집의 평균 위치로 이동했어요. (반복 ' + iter + '회) 다시 군집 할당으로 돌아갑니다.');
+        }
+    }
+
+    function step() {
+        if (converged) { setBanner('info', '이미 수렴했어요. 초기화를 누르면 다른 시작 위치로 다시 해 볼 수 있습니다.'); return; }
+        if (phase === 0) placeCentroids();
+        else if (phase === 1 || phase === 3) assignClusters();
+        else if (phase === 2) moveCentroids();
+        render();
+    }
+
+    function stopAuto() {
+        if (autoTimer) { clearInterval(autoTimer); autoTimer = null; document.getElementById('btn-auto').textContent = '자동 반복'; }
+    }
+
+    document.getElementById('btn-step').addEventListener('click', function () { stopAuto(); step(); });
+    document.getElementById('btn-auto').addEventListener('click', function () {
+        if (autoTimer) { stopAuto(); return; }
+        document.getElementById('btn-auto').textContent = '정지';
+        autoTimer = setInterval(function () {
+            if (converged) { stopAuto(); return; }
+            step();
+        }, 650);
+    });
+    document.getElementById('btn-reset').addEventListener('click', function () {
+        stopAuto();
+        phase = 0; iter = 0; converged = false;
+        centroids = [];
+        assign = DATA.map(function () { return -1; });
+        document.getElementById('stat-iter').textContent = 0;
+        document.getElementById('stat-inertia').textContent = '–';
+        document.getElementById('chk-reveal').checked = false;
+        document.getElementById('chk-reveal').disabled = true;
+        setPhaseChip(0);
+        setBanner('', '');
+        render();
+    });
+    document.getElementById('k-select').addEventListener('change', function () {
+        k = parseInt(this.value, 10);
+        document.getElementById('btn-reset').click();
+        setBanner('info', '군집 수를 k = ' + k + '(으)로 정했어요. 다음 단계를 눌러 시작하세요.');
+    });
+    document.getElementById('chk-reveal').addEventListener('change', render);
+
+    assign = DATA.map(function () { return -1; });
+    render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학습·평가 데이터 나누기</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF;
+        --blue: #1C60EF;
+        --blue-light: #DBE8FE;
+        --text: #16223f;
+        --text-muted: #55647f;
+        --red: #ef4444;
+        --red-light: #fee2e2;
+        --green: #16a34a;
+        --green-light: #dcfce7;
+        --gold: #d4a017;
+        --gold-light: #fef3c7;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; height: 100%; font-family: var(--font-body); color: var(--text); background: var(--white); }
+    .app { display: flex; flex-direction: column; min-height: 100%; }
+    .topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        padding: 12px 18px; border-bottom: 1px solid var(--blue-light); background: #fbfcff; flex-shrink: 0;
+    }
+    .topbar h1 { font-family: var(--font-title); font-weight: 700; font-size: 15px; margin: 0; }
+    .topbar .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    button.action {
+        font-family: var(--font-body); font-weight: 700; font-size: 12.5px; border-radius: 8px; padding: 8px 14px;
+        border: 1px solid var(--blue-light); background: var(--white); color: var(--blue); cursor: pointer;
+    }
+    button.action:hover:not(:disabled) { background: var(--blue-light); }
+    button.action.primary { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    button.action.primary:hover:not(:disabled) { background: #164fce; }
+    button.action:disabled { opacity: 0.4; cursor: default; }
+    .status-banner { display: none; padding: 9px 18px; font-size: 13px; font-weight: 700; text-align: center; flex-shrink: 0; }
+    .status-banner.show { display: block; }
+    .status-banner.ok { background: var(--gold-light); color: #92700c; }
+    .status-banner.bad { background: var(--red-light); color: #b91c1c; }
+    .status-banner.info { background: var(--blue-light); color: #16419e; }
+
+    .stage { flex: 1; padding: 16px 18px 24px; overflow: auto; }
+    .card { border: 1.5px solid var(--blue-light); border-radius: 14px; background: var(--white); padding: 14px 16px; margin-bottom: 14px; }
+    .card h3 { font-family: var(--font-title); font-size: 13px; color: var(--blue); margin: 0 0 8px; }
+    .card p { font-size: 12.5px; color: var(--text-muted); line-height: 1.8; margin: 0 0 10px; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .dots-strip { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 12px; }
+    .dot {
+        width: 12px; height: 12px; border-radius: 50%;
+        background: #d5dced; transition: background 0.3s ease;
+    }
+    .dot.train { background: var(--blue); }
+    .dot.test { background: var(--gold); }
+    .dot.test.correct { background: var(--green); }
+    .dot.test.wrong { background: var(--red); }
+    .strip-legend { font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; }
+    .strip-legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; margin: 0 3px 0 10px; }
+    .stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+    .stat-box {
+        border: 1.5px solid var(--blue-light); border-radius: 12px; padding: 10px 18px; text-align: center; background: #fbfcff;
+    }
+    .stat-box .num { font-family: var(--font-title); font-weight: 700; font-size: 20px; color: var(--blue); }
+    .stat-box .lbl { font-size: 11px; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
+    .frac-cell {
+        display: inline-flex; align-items: center; gap: 6px;
+        border: 1.5px solid var(--blue-light); border-radius: 10px; padding: 7px 12px;
+        font-size: 13px; font-weight: 700; background: var(--white);
+    }
+    .frac-cell.ok { border-color: var(--green); background: var(--green-light); }
+    .frac-cell.ok .frac-result { color: var(--green); font-family: var(--font-title); }
+    .frac-cell.shake { animation: shakeN 0.35s ease; border-color: var(--red); }
+    .frac-cell input {
+        width: 44px; font-family: var(--font-title); font-weight: 700; font-size: 13px; text-align: center;
+        border: 1px solid var(--blue-light); border-radius: 6px; padding: 3px 2px; color: var(--text);
+    }
+    .frac-check {
+        font-family: var(--font-body); font-weight: 700; font-size: 11px;
+        border: 1px solid var(--blue-light); border-radius: 6px; background: var(--white); color: var(--blue);
+        padding: 3px 8px; cursor: pointer;
+    }
+    .frac-check:hover { background: var(--blue-light); }
+    .tip-box { border: 1px dashed rgba(28,96,239,0.35); border-radius: 10px; background: #f7faff; padding: 10px 14px; font-size: 12px; color: var(--text-muted); line-height: 1.8; }
+    @keyframes shakeN { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1>학습·평가 데이터 나누기</h1>
+            <div class="sub">모델을 제대로 평가하려면 학습에 쓰지 않은 데이터로 시험을 봐야 해요. (교과서 76쪽 train_test_split)</div>
+        </div>
+        <button class="action" id="btn-reset">처음부터 다시</button>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="stage">
+        <div class="card">
+            <h3>전처리를 마친 붓꽃 데이터 167개</h3>
+            <p>
+                점 하나가 붓꽃 한 송이입니다. 전체 데이터를 <b>훈련 데이터(train) 8 : 테스트 데이터(test) 2</b>로 무작위로 나눈 뒤,
+                훈련 데이터로만 k-NN(k=5) 모델을 학습시키고 테스트 데이터로 성능을 평가해 봅시다.
+            </p>
+            <div class="dots-strip" id="dots"></div>
+            <div class="strip-legend" id="strip-legend">
+                <span class="sw" style="background:#d5dced;"></span>아직 나누기 전
+            </div>
+            <div class="btn-row">
+                <button class="action primary" id="btn-split">① 8 : 2로 나누기</button>
+                <button class="action" id="btn-evaluate" disabled>② 학습하고 테스트 데이터 채점하기</button>
+            </div>
+            <div class="stat-row">
+                <div class="stat-box"><div class="num" id="stat-train">–</div><div class="lbl">훈련 데이터 수</div></div>
+                <div class="stat-box"><div class="num" id="stat-test">–</div><div class="lbl">테스트 데이터 수</div></div>
+                <div class="stat-box"><div class="num" id="stat-correct">–</div><div class="lbl">테스트에서 맞힌 수</div></div>
+            </div>
+        </div>
+
+        <div class="card" id="acc-card" style="display:none;">
+            <h3>정확도 구하기</h3>
+            <p>테스트 결과가 나왔어요. 위의 <b>맞힌 수</b>와 <b>테스트 데이터 수</b>로 정확도를 분수로 입력해 보세요.</p>
+            <span class="frac-cell" id="acc-frac">
+                <span>정확도 =</span>
+                <input type="number" id="acc-num" min="0" max="200">
+                <span>/</span>
+                <input type="number" id="acc-den" min="1" max="200">
+                <button class="frac-check" id="acc-check">확인</button>
+            </span>
+            <div class="tip-box" id="done-tip" style="display:none; margin-top:12px;">
+                💡 훈련에 쓴 데이터로 시험을 보면 답을 외운 것과 같아서 성능이 부풀려져요(과대적합).
+                그래서 꼭 <b>학습에 쓰지 않은 테스트 데이터</b>로 평가합니다. 테스트 30개 기준의 혼동행렬은 <b>3. 모델 평가</b> 탭에서 이어집니다.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/iris-data.js"></script>
+<script>
+(function () {
+    function hasMissing(r) { return r.sl === null || r.sw === null || r.pl === null || r.pw === null; }
+    var OUTLIER_IDS = [161, 164, 165, 171, 173];
+    var DATA = IRIS1.concat(IRIS2).filter(function (r) {
+        return !hasMissing(r) && OUTLIER_IDS.indexOf(r.id) === -1;
+    });
+
+    // 시드 고정 난수 — 항상 같은 분할이 되도록 (교과서 random_state와 같은 역할)
+    function mulberry32(seed) {
+        return function () {
+            seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+            var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+
+    var statusBanner = document.getElementById('status-banner');
+    function setBanner(kind, text) {
+        statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
+        statusBanner.textContent = text || '';
+    }
+
+    var dotsEl = document.getElementById('dots');
+    var train = [], test = [], correctCount = 0;
+
+    function renderDots(assignment) {
+        dotsEl.innerHTML = '';
+        DATA.forEach(function (r, i) {
+            var d = document.createElement('span');
+            d.className = 'dot' + (assignment ? ' ' + assignment[i] : '');
+            d.title = '붓꽃 #' + r.id;
+            dotsEl.appendChild(d);
+        });
+    }
+
+    function knnPredict(trainSet, p, k) {
+        var sorted = trainSet.map(function (r) {
+            var dx = r.pl - p.pl, dy = r.pw - p.pw;
+            return { sp: r.sp, d: dx * dx + dy * dy };
+        }).sort(function (a, b) { return a.d - b.d; });
+        var votes = {};
+        sorted.slice(0, k).forEach(function (n) { votes[n.sp] = (votes[n.sp] || 0) + 1; });
+        var best = null, bestN = -1;
+        Object.keys(votes).forEach(function (sp) { if (votes[sp] > bestN) { bestN = votes[sp]; best = sp; } });
+        return best;
+    }
+
+    function doSplit() {
+        var rand = mulberry32(7);
+        var idx = DATA.map(function (_, i) { return i; });
+        for (var i = idx.length - 1; i > 0; i--) {
+            var j = Math.floor(rand() * (i + 1));
+            var t = idx[i]; idx[i] = idx[j]; idx[j] = t;
+        }
+        var nTest = Math.round(DATA.length * 0.2);
+        var testIdx = {};
+        idx.slice(0, nTest).forEach(function (i) { testIdx[i] = true; });
+        train = []; test = [];
+        var assignment = [];
+        DATA.forEach(function (r, i) {
+            if (testIdx[i]) { test.push(r); assignment.push('test'); }
+            else { train.push(r); assignment.push('train'); }
+        });
+        renderDots(assignment);
+        document.getElementById('stat-train').textContent = train.length;
+        document.getElementById('stat-test').textContent = test.length;
+        document.getElementById('strip-legend').innerHTML =
+            '<span class="sw" style="background:var(--blue);"></span>훈련 데이터 (' + train.length + ')' +
+            '<span class="sw" style="background:var(--gold);"></span>테스트 데이터 (' + test.length + ')';
+        document.getElementById('btn-split').disabled = true;
+        document.getElementById('btn-evaluate').disabled = false;
+        setBanner('info', '전체 ' + DATA.length + '개를 훈련 ' + train.length + '개 : 테스트 ' + test.length + '개로 나눴어요. 이제 훈련 데이터로만 학습시키고, 테스트 데이터로 채점해 봅시다.');
+    }
+
+    function doEvaluate() {
+        correctCount = 0;
+        var results = [];
+        test.forEach(function (r) {
+            var pred = knnPredict(train, r, 5);
+            var ok = pred === r.sp;
+            if (ok) correctCount++;
+            results.push(ok);
+        });
+        // 테스트 점들만 채점 색으로 갱신
+        var ti = 0;
+        var assignment = [];
+        var testSet = {};
+        test.forEach(function (r) { testSet[r.id] = true; });
+        DATA.forEach(function (r) {
+            if (testSet[r.id]) { assignment.push('test ' + (results[ti] ? 'correct' : 'wrong')); ti++; }
+            else assignment.push('train');
+        });
+        renderDots(assignment);
+        document.getElementById('strip-legend').innerHTML =
+            '<span class="sw" style="background:var(--blue);"></span>훈련 데이터' +
+            '<span class="sw" style="background:var(--green);"></span>맞힌 테스트' +
+            '<span class="sw" style="background:var(--red);"></span>틀린 테스트';
+        document.getElementById('stat-correct').textContent = correctCount;
+        document.getElementById('btn-evaluate').disabled = true;
+        document.getElementById('acc-card').style.display = 'block';
+        setBanner('info', '채점 완료! 테스트 데이터 ' + test.length + '개 중 ' + correctCount + '개를 맞혔어요. 아래에서 정확도를 직접 구해 보세요.');
+    }
+
+    document.getElementById('btn-split').addEventListener('click', doSplit);
+    document.getElementById('btn-evaluate').addEventListener('click', doEvaluate);
+
+    document.getElementById('acc-check').addEventListener('click', function () {
+        var a = parseInt(document.getElementById('acc-num').value, 10);
+        var b = parseInt(document.getElementById('acc-den').value, 10);
+        if (isNaN(a) || isNaN(b)) { setBanner('info', '분자(맞힌 수)와 분모(테스트 데이터 수)를 모두 입력하세요.'); return; }
+        if (a === correctCount && b === test.length) {
+            var cell = document.getElementById('acc-frac');
+            cell.classList.add('ok');
+            cell.innerHTML = '<span class="frac-result">정확도 = ' + a + '/' + b + ' ≈ ' + (a / b).toFixed(3) + '</span>';
+            document.getElementById('done-tip').style.display = 'block';
+            setBanner('ok', '🎉 정확도 ' + (a / b).toFixed(3) + '! 학습에 쓰지 않은 데이터로 평가한 진짜 성능이에요.');
+            if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 68, origin: { x: 0.5, y: 0.4 } });
+        } else {
+            var cell2 = document.getElementById('acc-frac');
+            cell2.classList.remove('shake');
+            void cell2.offsetWidth;
+            cell2.classList.add('shake');
+            setBanner('bad', '아쉬워요. 위의 통계 상자에서 맞힌 수와 테스트 데이터 수를 다시 확인해 보세요.');
+        }
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', function () { location.reload(); });
+
+    renderDots(null);
+})();
+</script>
+</body>
+</html>

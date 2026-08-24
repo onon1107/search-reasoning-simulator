@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>파이썬 코드 완성하기</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+    @font-face {
+        font-family: 'KIMM';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'A2z';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    :root {
+        --white: #FFFFFF;
+        --blue: #1C60EF;
+        --blue-light: #DBE8FE;
+        --text: #16223f;
+        --text-muted: #55647f;
+        --red: #ef4444;
+        --red-light: #fee2e2;
+        --green: #16a34a;
+        --green-light: #dcfce7;
+        --gold: #d4a017;
+        --gold-light: #fef3c7;
+        --font-title: 'KIMM', 'Malgun Gothic', sans-serif;
+        --font-body: 'A2z', 'Malgun Gothic', sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; height: 100%; font-family: var(--font-body); color: var(--text); background: var(--white); }
+    .app { display: flex; flex-direction: column; min-height: 100%; }
+    .topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        padding: 12px 18px; border-bottom: 1px solid var(--blue-light); background: #fbfcff; flex-shrink: 0;
+    }
+    .topbar h1 { font-family: var(--font-title); font-weight: 700; font-size: 15px; margin: 0; }
+    .topbar .sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .mission-chip {
+        display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700;
+        background: var(--white); border: 1px solid rgba(28,96,239,0.22); border-radius: 999px; padding: 6px 14px; white-space: nowrap;
+    }
+    .mission-chip b { color: var(--blue); font-family: var(--font-title); }
+    .status-banner { display: none; padding: 9px 18px; font-size: 13px; font-weight: 700; text-align: center; flex-shrink: 0; }
+    .status-banner.show { display: block; }
+    .status-banner.ok { background: var(--gold-light); color: #92700c; }
+    .status-banner.bad { background: var(--red-light); color: #b91c1c; }
+    .status-banner.info { background: var(--blue-light); color: #16419e; }
+
+    .stage { flex: 1; padding: 16px 18px 24px; overflow: auto; }
+    .code-card { border: 1.5px solid var(--blue-light); border-radius: 14px; background: var(--white); padding: 14px 16px; margin-bottom: 14px; }
+    .code-card.done { border-color: var(--green); background: #f7fdf9; }
+    .code-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .code-num {
+        font-family: var(--font-title); font-weight: 700; font-size: 11.5px; color: var(--white);
+        background: var(--blue); border-radius: 999px; padding: 4px 12px; white-space: nowrap;
+    }
+    .code-card.done .code-num { background: var(--green); }
+    .code-title { font-family: var(--font-title); font-weight: 700; font-size: 13px; }
+    .code-page { font-size: 11px; color: var(--text-muted); font-weight: 700; }
+    pre.code-block {
+        font-family: 'Consolas', 'SFMono-Regular', monospace;
+        font-size: 12.5px;
+        line-height: 1.9;
+        background: #f6f8fd;
+        border: 1px solid var(--blue-light);
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin: 0 0 10px;
+        overflow-x: auto;
+        white-space: pre;
+    }
+    pre.code-block .cmt { color: #6a8759; }
+    pre.code-block .blank-slot {
+        display: inline-block;
+        min-width: 74px;
+        text-align: center;
+        border-bottom: 2px dashed var(--blue);
+        color: var(--blue);
+        font-weight: 700;
+    }
+    pre.code-block .blank-slot.filled {
+        border-bottom: none;
+        background: var(--green-light);
+        color: var(--green);
+        border-radius: 5px;
+        padding: 0 5px;
+    }
+    .blank-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .blank-label { font-family: var(--font-title); font-weight: 700; font-size: 12px; color: var(--blue); }
+    .code-opt {
+        font-family: 'Consolas', monospace; font-weight: 700; font-size: 12px;
+        border: 2px solid var(--blue-light); border-radius: 8px; background: var(--white); color: var(--text);
+        padding: 6px 11px; cursor: pointer; transition: all 0.12s ease;
+    }
+    .code-opt:hover { border-color: var(--blue); }
+    .code-opt.wrong { animation: shakeN 0.35s ease; border-color: var(--red); background: var(--red-light); }
+    .code-opt.right { border-color: var(--green); background: var(--green-light); color: var(--green); cursor: default; }
+    @keyframes shakeN { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar">
+        <div>
+            <h1>파이썬 코드 완성하기</h1>
+            <div class="sub">교과서에서 배운 붓꽃 분류 코드입니다. 빈칸에 알맞은 것을 골라 전체 코드를 완성해 보세요.</div>
+        </div>
+        <span class="mission-chip">빈칸 <b id="blank-count">0</b> / <span id="blank-total">0</span></span>
+    </div>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="stage" id="cards"></div>
+</div>
+
+<script>
+(function () {
+    // 코드 카드: text 안의 {{정답}} 이 빈칸이 된다. wrongs[i] 는 i번째 빈칸의 오답 보기.
+    var CARDS = [
+        {
+            title: '데이터 불러오기', page: '교과서 65·67쪽',
+            code: "import pandas as pd  # 판다스 모듈 불러오기\ndf1 = pd.{{read_csv}}('Iris1.csv', encoding = 'cp949')\ndf2 = pd.read_csv('Iris2.csv', encoding = 'cp949')",
+            wrongs: [['open_file', 'get_table']]
+        },
+        {
+            title: '두 데이터 파일 합치기', page: '교과서 67쪽',
+            code: "df = pd.{{concat}}([df1, df2])  # df1 뒤에 df2를 위아래로 붙이기",
+            wrongs: [['split', 'divide']]
+        },
+        {
+            title: '결측치 확인하기', page: '교과서 68쪽',
+            code: "df.{{isna}}().sum()  # 속성별 결측치 개수 세기",
+            wrongs: [['count_full', 'describe']]
+        },
+        {
+            title: '결측치가 있는 행 제거하기', page: '교과서 68쪽',
+            code: "df3 = df.{{dropna}}(axis = 0)  # 결측치가 있는 행 삭제",
+            wrongs: [['isna', 'fillup']]
+        },
+        {
+            title: '기초 통계량으로 이상치 확인하기', page: '교과서 69쪽',
+            code: "df3.{{describe}}()  # 평균·최솟값·최댓값 등 기초 통계량 출력",
+            wrongs: [['summary', 'statistics']]
+        },
+        {
+            title: '훈련 데이터와 테스트 데이터 나누기', page: '교과서 76쪽',
+            code: "X = df3[['꽃잎 길이', '꽃잎 너비']]  # 독립 변수(핵심 속성)\ny = df3['종류']  # 종속 변수\nX_train, X_test, y_train, y_test = {{train_test_split}}(X, y, test_size = {{0.2}})",
+            wrongs: [['data_divide', 'make_group'], ['2', '0.8']]
+        },
+        {
+            title: '모델 만들고 학습시키기', page: '교과서 77쪽',
+            code: "from sklearn.neighbors import KNeighborsClassifier\nmodel = {{KNeighborsClassifier}}()  # k-최근접 이웃 모델 생성\nmodel.{{fit}}(X_train, y_train)  # 훈련 데이터로 학습",
+            wrongs: [['LinearRegression', 'KMeans'], ['score', 'predict']]
+        },
+        {
+            title: '평가하고 새로운 붓꽃 예측하기', page: '교과서 78·81쪽',
+            code: "acc = model.{{score}}(X_test, y_test)  # 테스트 데이터로 정확도 계산\nnew = [[1.0, 1.5]]  # 꽃잎 길이 1.0, 꽃잎 너비 1.5\nprint(model.{{predict}}(new))  # 출력: ['세토사']",
+            wrongs: [['fit', 'check'], ['guess', 'fit']]
+        }
+    ];
+
+    var statusBanner = document.getElementById('status-banner');
+    var cardsEl = document.getElementById('cards');
+    var totalBlanks = 0, solvedBlanks = 0, doneCards = 0;
+
+    function setBanner(kind, text) {
+        statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
+        statusBanner.textContent = text || '';
+    }
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function shuffle(arr) {
+        var a = arr.slice();
+        for (var i = a.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+    }
+
+    var CIRCLED = ['①', '②', '③'];
+
+    CARDS.forEach(function (card, ci) {
+        var answers = [];
+        var codeHtml = esc(card.code).replace(/\{\{([^}]+)\}\}/g, function (m, ans) {
+            var bi = answers.length;
+            answers.push(ans);
+            return '<span class="blank-slot" data-b="' + bi + '">____' + (card.wrongs.length > 1 ? CIRCLED[bi] : '') + '</span>';
+        }).replace(/(#[^\n<]*)/g, '<span class="cmt">$1</span>');
+
+        totalBlanks += answers.length;
+
+        var div = document.createElement('div');
+        div.className = 'code-card';
+        var head = '<div class="code-head"><span class="code-num">' + (ci + 1) + '</span><span class="code-title">' + card.title + '</span><span class="code-page">' + card.page + '</span></div>';
+        div.innerHTML = head + '<pre class="code-block">' + codeHtml + '</pre>';
+
+        var solvedInCard = 0;
+        answers.forEach(function (ans, bi) {
+            var row = document.createElement('div');
+            row.className = 'blank-row';
+            var label = document.createElement('span');
+            label.className = 'blank-label';
+            label.textContent = '빈칸' + (answers.length > 1 ? ' ' + CIRCLED[bi] : '');
+            row.appendChild(label);
+            var opts = shuffle([ans].concat(card.wrongs[bi]));
+            var done = false;
+            opts.forEach(function (opt) {
+                var btn = document.createElement('button');
+                btn.className = 'code-opt';
+                btn.textContent = opt;
+                btn.addEventListener('click', function () {
+                    if (done) return;
+                    if (opt === ans) {
+                        done = true;
+                        btn.classList.add('right');
+                        row.querySelectorAll('.code-opt').forEach(function (b) { if (b !== btn) b.style.opacity = 0.4; });
+                        var slot = div.querySelector('.blank-slot[data-b="' + bi + '"]');
+                        slot.textContent = ans;
+                        slot.classList.add('filled');
+                        solvedBlanks++;
+                        solvedInCard++;
+                        document.getElementById('blank-count').textContent = solvedBlanks;
+                        if (solvedInCard === answers.length) {
+                            div.classList.add('done');
+                            doneCards++;
+                        }
+                        if (solvedBlanks === totalBlanks) {
+                            setBanner('ok', '🎉 코드 완성! 데이터 불러오기부터 전처리, 학습, 평가, 예측까지 — 교과서의 전체 코드를 완성했어요.');
+                            if (typeof confetti === 'function') confetti({ particleCount: 110, spread: 75, origin: { x: 0.5, y: 0.4 } });
+                            try { window.parent.postMessage({ type: 'iris-badge', id: 'm5' }, '*'); } catch (e) {}
+                        } else {
+                            setBanner('', '');
+                        }
+                    } else {
+                        btn.classList.remove('wrong');
+                        void btn.offsetWidth;
+                        btn.classList.add('wrong');
+                        setBanner('bad', '아쉬워요. 주석(#)의 설명과 코드가 하는 일을 다시 비교해 보세요.');
+                    }
+                });
+                row.appendChild(btn);
+            });
+            div.appendChild(row);
+        });
+        cardsEl.appendChild(div);
+    });
+
+    document.getElementById('blank-total').textContent = totalBlanks;
+})();
+</script>
+</body>
+</html>

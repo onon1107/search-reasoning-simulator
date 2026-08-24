@@ -81,6 +81,18 @@
     .table-note { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.6; }
 
     .quiz-panel { flex: 1 1 340px; min-width: 300px; display: flex; flex-direction: column; gap: 12px; }
+    .scatter-panel { flex: 1 1 100%; }
+    .scatter-card { border: 1.5px solid var(--blue-light); border-radius: 14px; background: #fdfefe; padding: 12px 16px; }
+    .scatter-card h3 { font-family: var(--font-title); font-size: 13px; color: var(--blue); margin: 0 0 6px; }
+    .scatter-card p { font-size: 12.5px; color: var(--text-muted); line-height: 1.75; margin: 0 0 10px; }
+    .axis-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; font-size: 12.5px; font-weight: 700; }
+    .axis-row select {
+        font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
+        border: 1.5px solid var(--blue-light); border-radius: 8px; padding: 6px 8px; color: var(--text); background: var(--white);
+    }
+    .scatter-card svg { width: 100%; max-width: 760px; height: auto; display: block; margin: 0 auto; }
+    .legend-row { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; font-weight: 700; margin-top: 6px; justify-content: center; }
+    .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
     .info-card { border: 1.5px solid var(--blue-light); border-radius: 14px; background: #fbfcff; padding: 12px 16px; font-size: 12.5px; line-height: 1.8; }
     .info-card h3 { font-family: var(--font-title); font-size: 12.5px; color: var(--blue); margin: 0 0 6px; }
     .quiz-card { border: 1.5px solid var(--blue-light); border-radius: 14px; background: var(--white); padding: 12px 16px; }
@@ -168,6 +180,35 @@
                 </div>
             </div>
         </div>
+
+        <div class="scatter-panel">
+            <div class="scatter-card">
+                <h3>산점도로 데이터 살펴보기</h3>
+                <p>두 속성을 골라 축을 바꿔 보면서, 품종별로 값이 어떻게 갈라지는지 확인해 보세요. (피셔의 원본 150개 기준) 어떤 속성 조합이 세 품종을 가장 잘 구분하나요?</p>
+                <div class="axis-row">
+                    <label for="axis-x">X축</label>
+                    <select id="axis-x">
+                        <option value="sl">꽃받침 길이</option>
+                        <option value="sw">꽃받침 너비</option>
+                        <option value="pl" selected>꽃잎 길이</option>
+                        <option value="pw">꽃잎 너비</option>
+                    </select>
+                    <label for="axis-y">Y축</label>
+                    <select id="axis-y">
+                        <option value="sl">꽃받침 길이</option>
+                        <option value="sw">꽃받침 너비</option>
+                        <option value="pl">꽃잎 길이</option>
+                        <option value="pw" selected>꽃잎 너비</option>
+                    </select>
+                </div>
+                <svg id="scatter" viewBox="0 0 760 440"></svg>
+                <div class="legend-row">
+                    <span><span class="legend-dot" style="background:var(--setosa);"></span>세토사</span>
+                    <span><span class="legend-dot" style="background:var(--versicolor);"></span>버시컬러</span>
+                    <span><span class="legend-dot" style="background:var(--virginica);"></span>버지니카</span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -243,6 +284,52 @@
     });
 
     renderTable('all');
+
+    // ---------- 산점도 ----------
+    var SP_COLORS = { '세토사': '#2563eb', '버시컬러': '#d97706', '버지니카': '#059669' };
+    var ATTR_NAMES = { sl: '꽃받침 길이', sw: '꽃받침 너비', pl: '꽃잎 길이', pw: '꽃잎 너비' };
+    var ATTR_RANGES = { sl: [4, 8], sw: [1.8, 4.6], pl: [0.5, 7.5], pw: [0, 2.8] };
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var scatterSvg = document.getElementById('scatter');
+    var SW = 760, SH = 440, SPAD = { l: 56, r: 16, t: 14, b: 46 };
+
+    function drawScatter() {
+        var xKey = document.getElementById('axis-x').value;
+        var yKey = document.getElementById('axis-y').value;
+        var xr = ATTR_RANGES[xKey], yr = ATTR_RANGES[yKey];
+        function sx(v) { return SPAD.l + (v - xr[0]) / (xr[1] - xr[0]) * (SW - SPAD.l - SPAD.r); }
+        function sy(v) { return SH - SPAD.b - (v - yr[0]) / (yr[1] - yr[0]) * (SH - SPAD.t - SPAD.b); }
+        function mk(tag, attrs, text) {
+            var e = document.createElementNS(svgNS, tag);
+            Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+            if (text) e.textContent = text;
+            return e;
+        }
+        scatterSvg.innerHTML = '';
+        // 격자 + 눈금
+        var xStep = (xr[1] - xr[0]) >= 4 ? 1 : 0.5;
+        var yStep = (yr[1] - yr[0]) >= 4 ? 1 : 0.5;
+        for (var gx = Math.ceil(xr[0] / xStep) * xStep; gx <= xr[1] + 1e-9; gx += xStep) {
+            scatterSvg.appendChild(mk('line', { x1: sx(gx), y1: sy(yr[0]), x2: sx(gx), y2: sy(yr[1]), stroke: '#eef2fb', 'stroke-width': 1 }));
+            scatterSvg.appendChild(mk('text', { x: sx(gx), y: SH - SPAD.b + 18, 'text-anchor': 'middle', 'font-size': 11, fill: '#55647f' }, (Math.round(gx * 10) / 10)));
+        }
+        for (var gy = Math.ceil(yr[0] / yStep) * yStep; gy <= yr[1] + 1e-9; gy += yStep) {
+            scatterSvg.appendChild(mk('line', { x1: sx(xr[0]), y1: sy(gy), x2: sx(xr[1]), y2: sy(gy), stroke: '#eef2fb', 'stroke-width': 1 }));
+            scatterSvg.appendChild(mk('text', { x: SPAD.l - 8, y: sy(gy) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#55647f' }, (Math.round(gy * 10) / 10)));
+        }
+        scatterSvg.appendChild(mk('line', { x1: sx(xr[0]), y1: sy(yr[0]), x2: sx(xr[1]), y2: sy(yr[0]), stroke: '#c6d4f0', 'stroke-width': 1.5 }));
+        scatterSvg.appendChild(mk('line', { x1: sx(xr[0]), y1: sy(yr[0]), x2: sx(xr[0]), y2: sy(yr[1]), stroke: '#c6d4f0', 'stroke-width': 1.5 }));
+        scatterSvg.appendChild(mk('text', { x: (sx(xr[0]) + sx(xr[1])) / 2, y: SH - 8, 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 700, fill: '#16223f' }, ATTR_NAMES[xKey] + ' (cm)'));
+        scatterSvg.appendChild(mk('text', { x: 15, y: (sy(yr[0]) + sy(yr[1])) / 2, 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 700, fill: '#16223f', transform: 'rotate(-90 15 ' + (sy(yr[0]) + sy(yr[1])) / 2 + ')' }, ATTR_NAMES[yKey] + ' (cm)'));
+        // 데이터 점 (피셔의 원본 150개)
+        IRIS1.forEach(function (r) {
+            if (r[xKey] === null || r[yKey] === null) return;
+            scatterSvg.appendChild(mk('circle', { cx: sx(r[xKey]), cy: sy(r[yKey]), r: 4.5, fill: SP_COLORS[r.sp], opacity: 0.8 }));
+        });
+    }
+    document.getElementById('axis-x').addEventListener('change', drawScatter);
+    document.getElementById('axis-y').addEventListener('change', drawScatter);
+    drawScatter();
 })();
 </script>
 </body>

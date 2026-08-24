@@ -6,6 +6,103 @@
 <title>2단원: 데이터와 기계학습 — 붓꽃 데이터</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
 <link rel="stylesheet" href="css/style.css">
+<style>
+    /* ---------- 배지 진행판 ---------- */
+    .badge-wrap { max-width: 1200px; margin: 18px auto 0; padding: 0 32px; }
+    .badge-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(28, 96, 239, 0.14);
+        border-radius: 16px;
+        padding: 12px 18px;
+        box-shadow: 0 6px 20px rgba(28, 96, 239, 0.07);
+    }
+    .badge-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 12.5px;
+        color: #a9b3c7;
+        background: #f4f6fb;
+        border: 1px solid #e7ecf6;
+        border-radius: 999px;
+        padding: 6px 14px;
+        filter: grayscale(1);
+        transition: all 0.25s ease;
+        white-space: nowrap;
+    }
+    .badge.earned {
+        color: #92700c;
+        background: #fef3c7;
+        border-color: #d4a017;
+        filter: none;
+        box-shadow: 0 3px 10px rgba(212, 160, 23, 0.25);
+    }
+    .badge-score {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--blue);
+        background: var(--blue-light);
+        border-radius: 999px;
+        padding: 7px 16px;
+        white-space: nowrap;
+    }
+    .complete-card {
+        display: none;
+        margin-top: 12px;
+        text-align: center;
+        background: linear-gradient(135deg, #fff5db, #ffe8a3);
+        border: 1.5px solid #d4a017;
+        border-radius: 16px;
+        padding: 18px 20px;
+    }
+    .complete-card.show { display: block; }
+    .complete-card h3 { font-family: var(--font-title); font-size: 17px; margin: 0 0 6px; color: #92700c; }
+    .complete-card p { font-size: 13.5px; color: #92700c; margin: 0; font-weight: 700; }
+
+    /* ---------- 확인 퀴즈 ---------- */
+    .quiz-zone { margin-top: 28px; }
+    .quiz-zone .quiz-note { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; font-weight: 700; }
+    .quiz-card {
+        border: 1.5px solid var(--blue-light);
+        border-radius: 14px;
+        background: var(--white);
+        padding: 14px 18px;
+        margin-bottom: 10px;
+    }
+    .quiz-card.done { border-color: #16a34a; background: #f7fdf9; }
+    .quiz-q { font-size: 14px; font-weight: 700; margin: 0 0 10px; line-height: 1.7; }
+    .quiz-q .num { color: var(--blue); font-family: var(--font-title); margin-right: 6px; }
+    .quiz-opts { display: flex; gap: 8px; flex-wrap: wrap; }
+    .quiz-opt {
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 13px;
+        line-height: 1.6;
+        text-align: left;
+        border: 2px solid var(--blue-light);
+        border-radius: 10px;
+        background: var(--white);
+        color: var(--text);
+        padding: 8px 14px;
+        cursor: pointer;
+        transition: all 0.12s ease;
+        word-break: keep-all;
+    }
+    .quiz-opt:hover { border-color: var(--blue); }
+    .quiz-opt.wrong { animation: quizShake 0.35s ease; border-color: #ef4444; background: #fee2e2; }
+    .quiz-opt.right { border-color: #16a34a; background: #dcfce7; cursor: default; }
+    @keyframes quizShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+</style>
 </head>
 <body>
 
@@ -14,63 +111,52 @@
     <a class="home-link" href="index.html">← 인공지능 기초 시뮬레이터</a>
 </header>
 
+<div class="badge-wrap">
+    <div class="badge-card">
+        <div class="badge-row">
+            <span class="badge" data-badge="m1">🧹 데이터 탐정</span>
+            <span class="badge" data-badge="m2">🎯 분류 마스터</span>
+            <span class="badge" data-badge="m3">📊 평가 전문가</span>
+            <span class="badge" data-badge="m4">🧭 군집화 탐험가</span>
+            <span class="badge" data-badge="m5">💻 코드 완성 장인</span>
+        </div>
+        <span class="badge-score" id="badge-score">획득 배지 0 / 5</span>
+    </div>
+    <div class="complete-card" id="complete-card">
+        <h3>🎉 오늘의 도전 완료!</h3>
+        <p>데이터 이해부터 분류, 평가, 군집화, 코드 완성까지 — 기계학습의 핵심 흐름을 모두 체험하고 배지 5개를 전부 모았어요!</p>
+    </div>
+</div>
+
 <nav class="tab-nav">
-    <button class="tab-btn" data-tab="home">홈</button>
-    <button class="tab-btn" data-tab="explore">데이터 살펴보기</button>
-    <button class="tab-btn" data-tab="preprocess">데이터 전처리</button>
-    <button class="tab-btn" data-tab="knn">k-NN 분류</button>
-    <button class="tab-btn" data-tab="eval">성능 평가</button>
+    <button class="tab-btn" data-tab="m1">1. 데이터 이해하기</button>
+    <button class="tab-btn" data-tab="m2">2. 분류 (k-NN)</button>
+    <button class="tab-btn" data-tab="m3">3. 모델 평가</button>
+    <button class="tab-btn" data-tab="m4">4. 군집화 (k-means)</button>
+    <button class="tab-btn" data-tab="m5">5. 코드 완성하기</button>
 </nav>
 
 <main>
 
-    <!-- 홈 -->
-    <section id="tab-home" class="tab-panel">
-        <div class="hero">
-            <span class="eng">Data &amp; Machine Learning — Iris Dataset</span>
-            <h2>붓꽃 데이터로 배우는 기계학습</h2>
-            <p>붓꽃(Iris) 데이터셋은 통계학자 피셔가 1936년에 붓꽃을 측정하여 만든, 기계학습에서 가장 널리 쓰이는 데이터셋입니다. 세 품종(세토사·버시컬러·버지니카)의 붓꽃에 대해 꽃받침과 꽃잎의 길이·너비를 기록했습니다.</p>
-            <p>이 사이트에서는 교과서 2단원의 기계학습 문제 해결 과정을 그대로 따라가며, <strong>"꽃잎과 꽃받침의 크기로 붓꽃의 품종을 분류하는 지능 시스템"</strong>을 직접 만들어 봅니다.</p>
-        </div>
-
-        <div class="section-block">
-            <h3>기계학습 문제 해결 과정</h3>
-            <p class="block-lead">
-                기계학습으로 문제를 해결하는 과정은 다음 순서로 진행됩니다. 위의 탭을 순서대로 따라가 보세요.
-            </p>
-            <div class="table-scroll">
-                <table class="compare-table">
-                    <thead>
-                        <tr><th>단계</th><th>하는 일</th><th>탭</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><th class="row-head">① 데이터 수집</th><td>문제 해결에 필요한 데이터를 모으고 통합합니다. (Iris1.csv 150개 + 새로 수집한 Iris2.csv 30개)</td><td>데이터 살펴보기</td></tr>
-                        <tr><th class="row-head">② 데이터 전처리</th><td>결측치·이상치를 처리하고, 핵심 속성(꽃잎 길이·너비)을 찾습니다.</td><td>데이터 전처리</td></tr>
-                        <tr><th class="row-head">③ 모델 학습</th><td>훈련 데이터로 k-최근접 이웃(k-NN) 분류 모델을 학습시키고 새로운 붓꽃을 분류합니다.</td><td>k-NN 분류</td></tr>
-                        <tr><th class="row-head">④ 성능 평가</th><td>테스트 데이터의 혼동행렬로 정확도·정밀도·재현율·F1-점수를 구합니다.</td><td>성능 평가</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <!-- 데이터 살펴보기 -->
-    <section id="tab-explore" class="tab-panel">
+    <!-- ============ 1. 데이터 이해하기 ============ -->
+    <section id="tab-m1" class="tab-panel">
         <div class="algo-head">
-            <h2>데이터 살펴보기</h2>
-            <span class="algo-en">Exploring the Iris Dataset</span>
+            <h2>1. 데이터 이해하기</h2>
+            <span class="algo-en">Understanding the Iris Dataset</span>
         </div>
         <p class="algo-desc">
-            기계학습의 재료는 데이터입니다. 데이터는 <strong>속성명</strong>(꽃받침 길이, 종류 등)과 <strong>속성값</strong>(5.1, 세토사 등)으로 이루어지고,
-            속성은 유형에 따라 <strong>수치형·범주형</strong>으로, 역할에 따라 <strong>독립 변수·종속 변수</strong>로 구분합니다.
-            피셔의 원본 데이터 150개에 새로 수집한 30개를 통합한 180개의 데이터를 직접 살펴보고, 속성 구분 퀴즈를 풀어 보세요.
+            기계학습의 재료는 데이터입니다. 붓꽃(Iris) 데이터셋은 통계학자 피셔가 1936년에 만든, 기계학습에서 가장 널리 쓰이는 데이터셋으로,
+            세 품종(세토사·버시컬러·버지니카)의 <strong>꽃받침·꽃잎 길이와 너비</strong>를 기록했습니다.
+            먼저 데이터를 직접 살펴보며 <strong>속성의 유형과 역할</strong>을 구분하고, 새로 수집한 데이터에 섞인
+            <strong>결측치와 이상치를 청소</strong>한 뒤, <strong>핵심 속성</strong>을 찾아냅니다.
         </p>
+
         <div class="accordion">
             <div class="accordion-item open" data-accordion-item>
                 <button class="accordion-trigger" data-accordion-trigger>
                     <span class="accordion-trigger-title">
-                        <span class="kr">붓꽃 데이터 180개 &amp; 속성 퀴즈</span>
-                        <span class="en">Iris1 + Iris2 — Attributes Quiz</span>
+                        <span class="kr">붓꽃 데이터 180개 · 산점도 · 속성 퀴즈</span>
+                        <span class="en">Iris1 + Iris2 — Table, Scatter &amp; Attributes</span>
                     </span>
                     <span class="accordion-chevron"></span>
                 </button>
@@ -79,36 +165,22 @@
                         <div class="rule-block">
                             <h4>활동 안내</h4>
                             <ul>
-                                <li>표에서 <strong>180개의 붓꽃 데이터</strong>를 살펴보세요. 품종 버튼으로 골라 볼 수 있고, 151~180번은 <strong>새로 수집한 데이터(NEW)</strong>입니다.</li>
-                                <li>새로 수집한 데이터에는 값이 비어 있는 칸('–')이 보일 거예요. 이런 값을 어떻게 처리하는지는 <strong>데이터 전처리</strong> 탭에서 다룹니다.</li>
-                                <li>오른쪽 <strong>퀴즈 3문제</strong>로 수치형·범주형, 독립 변수·종속 변수를 구분해 보세요.</li>
+                                <li>표에서 <strong>180개의 붓꽃 데이터</strong>를 살펴보세요. 151~180번은 <strong>새로 수집한 데이터(NEW)</strong>로, 값이 비어 있는 칸('–')이 섞여 있어요.</li>
+                                <li><strong>속성 퀴즈 3문제</strong>로 수치형·범주형, 독립 변수·종속 변수를 구분해 보세요.</li>
+                                <li>아래 <strong>산점도</strong>에서 X·Y축 속성을 바꿔 가며, 어떤 속성 조합이 세 품종을 가장 잘 갈라놓는지 눈으로 확인해 보세요.</li>
                             </ul>
                         </div>
                         <div class="sim-frame-wrap" style="margin-top:16px;">
-                            <iframe src="simulators/iris-explore.html" title="붓꽃 데이터 살펴보기" style="height:760px; min-height:0;"></iframe>
+                            <iframe src="simulators/iris-explore.html" title="붓꽃 데이터 살펴보기" style="height:1240px; min-height:0;"></iframe>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- 데이터 전처리 -->
-    <section id="tab-preprocess" class="tab-panel">
-        <div class="algo-head">
-            <h2>데이터 전처리</h2>
-            <span class="algo-en">Data Preprocessing</span>
-        </div>
-        <p class="algo-desc">
-            수집한 데이터를 그대로 쓰면 기계학습이 제대로 되지 않습니다. 누락되어 비어 있는 <strong>결측치</strong>와,
-            범위를 크게 벗어난 <strong>이상치</strong>를 찾아 제거하고, 속성 간 <strong>상관관계</strong>를 분석해
-            문제 해결에 가장 큰 영향을 주는 <strong>핵심 속성</strong>을 찾아냅니다.
-        </p>
-        <div class="accordion">
-            <div class="accordion-item open" data-accordion-item>
+            <div class="accordion-item" data-accordion-item>
                 <button class="accordion-trigger" data-accordion-trigger>
                     <span class="accordion-trigger-title">
-                        <span class="kr">결측치 · 이상치 · 핵심 속성</span>
+                        <span class="kr">결측치 · 이상치 청소하고 핵심 속성 찾기</span>
                         <span class="en">Missing Values, Outliers &amp; Key Features</span>
                     </span>
                     <span class="accordion-chevron"></span>
@@ -130,20 +202,26 @@
                 </div>
             </div>
         </div>
+
+        <div class="section-block quiz-zone" id="quiz-m1">
+            <h3>✅ 확인 퀴즈 — 🧹 데이터 탐정 배지에 도전!</h3>
+            <p class="quiz-note">3문제를 모두 맞히면 배지를 획득합니다.</p>
+        </div>
     </section>
 
-    <!-- k-NN 분류 -->
-    <section id="tab-knn" class="tab-panel">
+    <!-- ============ 2. 분류 (k-NN) ============ -->
+    <section id="tab-m2" class="tab-panel">
         <div class="algo-head">
-            <h2>k-NN 분류</h2>
-            <span class="algo-en">k-Nearest Neighbors Classification</span>
+            <h2>2. 분류 (k-NN)</h2>
+            <span class="algo-en">Classification with k-Nearest Neighbors</span>
         </div>
         <p class="algo-desc">
-            <strong>k-최근접 이웃(k-NN)</strong>은 간단하고 직관적인 분류 알고리즘입니다.
-            새로운 데이터가 들어오면 기존 데이터 중에서 <strong>가장 가까운 k개의 이웃</strong>을 찾고,
-            <strong>다수결</strong>로 가장 많은 이웃의 품종을 새로운 데이터의 품종으로 결정합니다.
-            핵심 속성인 꽃잎 길이·너비의 산점도 위에 새로운 붓꽃을 직접 놓아 보며 체험해 보세요.
+            <strong>k-최근접 이웃(k-NN)</strong>은 새로운 데이터가 들어오면 <strong>가장 가까운 k개의 이웃</strong>을 찾아
+            <strong>다수결</strong>로 품종을 결정하는, 간단하고 직관적인 <strong>지도학습(분류)</strong> 알고리즘입니다.
+            핵심 속성인 꽃잎 길이·너비의 산점도 위에 새로운 붓꽃을 직접 놓아 보고,
+            훈련 데이터와 테스트 데이터를 나누어 모델의 정확도까지 확인해 봅니다.
         </p>
+
         <div class="accordion">
             <div class="accordion-item open" data-accordion-item>
                 <button class="accordion-trigger" data-accordion-trigger>
@@ -162,7 +240,7 @@
                                 <li><strong>이웃의 수 k</strong>를 정하고(기본 5), 그래프를 클릭해 <strong>새로운 붓꽃(⊗)</strong>을 놓으세요. 가장 가까운 이웃 k개가 노란 테두리로 표시됩니다.</li>
                                 <li>이웃들의 색을 세어 <strong>다수결</strong>로 새로운 붓꽃의 품종을 판단해 클릭하세요. 맞히면 투표 결과가 공개됩니다.</li>
                                 <li><strong>교과서 예제</strong> 버튼은 교과서 81쪽의 "꽃잎 길이 1.0, 꽃잎 너비 1.5" 붓꽃을 놓아 줍니다.</li>
-                                <li>k를 바꾸면 분류 결과가 달라질 수 있어요. 품종의 경계 근처에 점을 놓고 k를 바꿔 보며 비교해 보세요.</li>
+                                <li>품종의 경계 근처에 점을 놓고 <strong>k를 바꿔 보며</strong> 분류 결과가 달라지는지 관찰해 보세요.</li>
                             </ul>
                         </div>
                         <div class="sim-frame-wrap" style="margin-top:16px;">
@@ -171,25 +249,57 @@
                     </div>
                 </div>
             </div>
+
+            <div class="accordion-item" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">학습 · 평가 데이터 나누기</span>
+                        <span class="en">Train / Test Split &amp; Accuracy</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>활동 안내</h4>
+                            <ul>
+                                <li>모델을 공정하게 평가하려면 데이터의 일부는 <strong>학습(훈련)에만</strong>, 나머지는 <strong>평가(테스트)에만</strong> 써야 합니다.</li>
+                                <li><strong>① 8:2로 나누기</strong>를 눌러 훈련·테스트 데이터를 나누고, <strong>② 학습하고 채점하기</strong>로 k-NN 모델의 테스트 결과를 확인하세요.</li>
+                                <li>마지막으로 <strong>정확도를 분수로 직접 계산</strong>해 입력해 보세요.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/iris-split.html" title="학습·평가 데이터 나누기" style="height:640px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-block quiz-zone" id="quiz-m2">
+            <h3>✅ 확인 퀴즈 — 🎯 분류 마스터 배지에 도전!</h3>
+            <p class="quiz-note">3문제를 모두 맞히면 배지를 획득합니다.</p>
         </div>
     </section>
 
-    <!-- 성능 평가 -->
-    <section id="tab-eval" class="tab-panel">
+    <!-- ============ 3. 모델 평가 ============ -->
+    <section id="tab-m3" class="tab-panel">
         <div class="algo-head">
-            <h2>성능 평가</h2>
+            <h2>3. 모델 평가</h2>
             <span class="algo-en">Model Evaluation</span>
         </div>
         <p class="algo-desc">
-            학습을 마친 모델이 얼마나 잘 분류하는지는 <strong>학습에 쓰지 않은 테스트 데이터</strong>로 평가합니다.
+            학습을 마친 모델의 성능은 <strong>학습에 쓰지 않은 테스트 데이터</strong>로 평가합니다.
             예측 결과를 실젯값과 비교해 정리한 표가 <strong>혼동행렬(confusion matrix)</strong>이고,
-            이로부터 <strong>정확도 · 정밀도 · 재현율 · F1-점수</strong> 같은 평가 지표를 계산할 수 있습니다.
+            이로부터 <strong>정확도 · 정밀도 · 재현율 · F1-점수</strong>를 계산합니다.
+            같은 정확도라도 문제에 따라 봐야 할 지표가 달라진다는 것까지, 질병 진단 AI 예제로 확인해 보세요.
         </p>
+
         <div class="accordion">
             <div class="accordion-item open" data-accordion-item>
                 <button class="accordion-trigger" data-accordion-trigger>
                     <span class="accordion-trigger-title">
-                        <span class="kr">혼동행렬 &amp; 평가 지표</span>
+                        <span class="kr">혼동행렬 &amp; 평가 지표 &amp; 질병 진단 AI</span>
                         <span class="en">Confusion Matrix &amp; Metrics</span>
                     </span>
                     <span class="accordion-chevron"></span>
@@ -202,10 +312,95 @@
                                 <li><strong>1단계</strong> — 테스트 데이터 30개의 3×3 혼동행렬을 읽고 <strong>정확도</strong>를 분수로 구하세요.</li>
                                 <li><strong>2단계</strong> — 교과서 81쪽 스스로 해결하기: "버시컬러인가?"를 기준으로 <strong>2×2 혼동행렬(TP·FN·FP·TN)</strong>을 만들어 보세요.</li>
                                 <li><strong>3단계</strong> — 2×2 혼동행렬로 <strong>정밀도·재현율·F1-점수</strong>를 계산하세요.</li>
+                                <li><strong>4단계</strong> — 교과서 78~79쪽의 <strong>질병 진단 AI</strong> 혼동행렬로 같은 지표를 계산하고, 정확도만으로는 부족한 이유를 확인하세요.</li>
                             </ul>
                         </div>
                         <div class="sim-frame-wrap" style="margin-top:16px;">
-                            <iframe src="simulators/iris-eval.html" title="붓꽃 분류 모델 성능 평가" style="height:860px; min-height:0;"></iframe>
+                            <iframe src="simulators/iris-eval.html" title="붓꽃 분류 모델 성능 평가" style="height:1240px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-block quiz-zone" id="quiz-m3">
+            <h3>✅ 확인 퀴즈 — 📊 평가 전문가 배지에 도전!</h3>
+            <p class="quiz-note">3문제를 모두 맞히면 배지를 획득합니다.</p>
+        </div>
+    </section>
+
+    <!-- ============ 4. 군집화 (k-means) ============ -->
+    <section id="tab-m4" class="tab-panel">
+        <div class="algo-head">
+            <h2>4. 군집화 (k-means)</h2>
+            <span class="algo-en">Clustering with k-Means</span>
+        </div>
+        <p class="algo-desc">
+            이번에는 <strong>정답(품종) 열이 없는</strong> 데이터입니다.
+            <strong>k-평균(k-means) 군집화</strong>는 레이블 없이 비슷한 데이터끼리 스스로 묶는 <strong>비지도학습</strong> 알고리즘으로,
+            <strong>중심 배치 → 군집 할당 → 중심 이동</strong>을 중심이 멈출 때까지(수렴) 반복합니다.
+            단계별로 직접 실행해 보고, 다 묶인 뒤에 실제 품종과 비교해 보세요.
+        </p>
+
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">k-평균 군집화 단계별 실행</span>
+                        <span class="en">Step-by-step k-Means</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="rule-block">
+                            <h4>활동 안내</h4>
+                            <ul>
+                                <li><strong>군집 수 k</strong>(2~4)를 정하고 <strong>다음 단계</strong> 버튼으로 한 단계씩 실행하세요: 중심(◆) 배치 → 각 점을 가까운 중심에 할당 → 중심을 평균 위치로 이동.</li>
+                                <li>중심이 더 이상 움직이지 않으면 <strong>수렴</strong>입니다. <strong>자동 반복</strong>으로 빠르게 돌릴 수도 있어요.</li>
+                                <li>수렴한 뒤 <strong>실제 품종과 비교해 보기</strong>를 켜서, 정답 없이도 품종과 비슷하게 묶였는지 확인하세요. k=2, 4일 때와도 비교해 보세요.</li>
+                                <li><strong>군집 내 거리 합</strong>이 반복할수록 어떻게 변하는지도 관찰해 보세요.</li>
+                            </ul>
+                        </div>
+                        <div class="sim-frame-wrap" style="margin-top:16px;">
+                            <iframe src="simulators/iris-kmeans.html" title="k-평균 군집화 체험" style="height:700px; min-height:0;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-block quiz-zone" id="quiz-m4">
+            <h3>✅ 확인 퀴즈 — 🧭 군집화 탐험가 배지에 도전!</h3>
+            <p class="quiz-note">3문제를 모두 맞히면 배지를 획득합니다.</p>
+        </div>
+    </section>
+
+    <!-- ============ 5. 코드 완성하기 ============ -->
+    <section id="tab-m5" class="tab-panel">
+        <div class="algo-head">
+            <h2>5. 코드 완성하기</h2>
+            <span class="algo-en">Complete the Python Code</span>
+        </div>
+        <p class="algo-desc">
+            지금까지 체험한 전체 과정은 파이썬 코드 몇 줄로 실행할 수 있습니다.
+            교과서에 실린 실제 코드의 <strong>빈칸을 채우며</strong> 데이터 불러오기부터 전처리, 학습, 평가, 예측까지 완성해 보세요.
+            <strong>빈칸 11개를 모두 채우면 💻 코드 완성 장인 배지</strong>를 획득합니다.
+        </p>
+
+        <div class="accordion">
+            <div class="accordion-item open" data-accordion-item>
+                <button class="accordion-trigger" data-accordion-trigger>
+                    <span class="accordion-trigger-title">
+                        <span class="kr">파이썬 코드 빈칸 채우기</span>
+                        <span class="en">Fill in the Blanks</span>
+                    </span>
+                    <span class="accordion-chevron"></span>
+                </button>
+                <div class="accordion-panel">
+                    <div class="accordion-body">
+                        <div class="sim-frame-wrap">
+                            <iframe src="simulators/iris-code.html" title="파이썬 코드 완성하기" style="height:1350px; min-height:0;"></iframe>
                         </div>
                     </div>
                 </div>
@@ -220,5 +415,118 @@
 </footer>
 
 <script src="js/app.js"></script>
+<script>
+(function () {
+    // ---------- 배지 ----------
+    var BADGE_KEY = 'irisBadges';
+    var badges = {};
+    try { badges = JSON.parse(localStorage.getItem(BADGE_KEY)) || {}; } catch (e) { badges = {}; }
+
+    function saveBadges() {
+        try { localStorage.setItem(BADGE_KEY, JSON.stringify(badges)); } catch (e) {}
+    }
+    function refreshBadgeUI() {
+        var n = 0;
+        document.querySelectorAll('.badge').forEach(function (b) {
+            var earned = !!badges[b.dataset.badge];
+            b.classList.toggle('earned', earned);
+            if (earned) n++;
+        });
+        document.getElementById('badge-score').textContent = '획득 배지 ' + n + ' / 5';
+        document.getElementById('complete-card').classList.toggle('show', n === 5);
+    }
+    function awardBadge(id) {
+        if (badges[id]) return;
+        badges[id] = true;
+        saveBadges();
+        refreshBadgeUI();
+    }
+
+    // 코드 완성하기(iframe)에서 배지 알림 수신
+    window.addEventListener('message', function (ev) {
+        if (ev.data && ev.data.type === 'iris-badge' && ev.data.id === 'm5') awardBadge('m5');
+    });
+
+    // ---------- 확인 퀴즈 ----------
+    var QUIZZES = {
+        m1: [
+            { q: '모델이 보고 학습하는 값(꽃잎 길이·너비 등)을 부르는 말은?', a: '특성(독립 변수)', w: ['정답(레이블)', '결측치'] },
+            { q: '수집한 데이터에서 누락되어 비어 있는 값을 부르는 말은?', a: '결측치', w: ['이상치', '상관계수'] },
+            { q: '결측치가 있는 행을 제거하는 판다스 함수는?', a: 'dropna()', w: ['concat()', 'describe()'] }
+        ],
+        m2: [
+            { q: 'k-NN이 새로운 데이터의 품종을 정하는 방법은?', a: '가장 가까운 이웃 k개의 다수결', w: ['전체 데이터의 평균 구하기', '무작위로 고르기'] },
+            { q: '훈련 데이터와 테스트 데이터를 나누는 이유는?', a: '학습에 쓰지 않은 데이터로 성능을 공정하게 평가하려고', w: ['데이터가 많으면 느려져서 버리려고', '결측치를 제거하려고'] },
+            { q: 'k를 보통 홀수로 정하는 이유는?', a: '다수결이 동점이 되는 것을 피하려고', w: ['계산이 더 빨라서', '짝수는 사용할 수 없어서'] }
+        ],
+        m3: [
+            { q: '혼동행렬에서 대각선 칸의 의미는?', a: '실젯값과 예측값이 일치한(맞게 예측한) 수', w: ['틀리게 예측한 수', '결측치의 수'] },
+            { q: '질병 진단처럼 실제 양성을 놓치면 안 되는 문제에서 특히 중요한 지표는?', a: '재현율', w: ['정확도', '학습 속도'] },
+            { q: '정밀도(precision)의 뜻은?', a: '양성이라고 예측한 것 중 실제 양성의 비율', w: ['실제 양성 중 양성으로 예측된 비율', '전체 중 맞게 예측한 비율'] }
+        ],
+        m4: [
+            { q: 'k-평균 군집화는 어떤 학습 유형일까요?', a: '비지도학습', w: ['지도학습', '강화 학습'] },
+            { q: '군집화를 할 때 필요 없는 것은?', a: '정답(레이블)', w: ['데이터', '군집 수 k'] },
+            { q: '중심이 더 이상 움직이지 않게 되면?', a: '수렴했다고 하며 군집화가 끝난다', w: ['오류가 난 것이므로 다시 시작한다', 'k를 늘려야 한다'] }
+        ]
+    };
+
+    function shuffle(arr) {
+        var a = arr.slice();
+        for (var i = a.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+    }
+
+    Object.keys(QUIZZES).forEach(function (mid) {
+        var zone = document.getElementById('quiz-' + mid);
+        var solved = 0;
+        var total = QUIZZES[mid].length;
+        QUIZZES[mid].forEach(function (item, qi) {
+            var card = document.createElement('div');
+            card.className = 'quiz-card';
+            var q = document.createElement('p');
+            q.className = 'quiz-q';
+            q.innerHTML = '<span class="num">Q' + (qi + 1) + '.</span>' + item.q;
+            card.appendChild(q);
+            var opts = document.createElement('div');
+            opts.className = 'quiz-opts';
+            var done = false;
+            shuffle([item.a].concat(item.w)).forEach(function (opt) {
+                var btn = document.createElement('button');
+                btn.className = 'quiz-opt';
+                btn.textContent = opt;
+                btn.addEventListener('click', function () {
+                    if (done) return;
+                    if (opt === item.a) {
+                        done = true;
+                        card.classList.add('done');
+                        btn.classList.add('right');
+                        opts.querySelectorAll('.quiz-opt').forEach(function (b) { if (b !== btn) b.style.opacity = 0.45; });
+                        solved++;
+                        if (solved === total) {
+                            awardBadge(mid);
+                            var note = zone.querySelector('.quiz-note');
+                            note.textContent = '🎉 배지 획득! 상단 진행판에서 확인해 보세요.';
+                            note.style.color = '#92700c';
+                        }
+                    } else {
+                        btn.classList.remove('wrong');
+                        void btn.offsetWidth;
+                        btn.classList.add('wrong');
+                    }
+                });
+                opts.appendChild(btn);
+            });
+            card.appendChild(opts);
+            zone.appendChild(card);
+        });
+    });
+
+    refreshBadgeUI();
+})();
+</script>
 </body>
 </html>

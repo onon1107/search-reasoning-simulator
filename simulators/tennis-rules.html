@@ -128,6 +128,22 @@
 
     /* ---------- 데이터 표 ---------- */
     .data-panel { flex: 0 1 360px; min-width: 300px; }
+    /* 표와 규칙 박스는 스크롤을 따라 내려온다 */
+    @media (min-width: 860px) {
+        .data-panel {
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            background: var(--white);
+            z-index: 5;
+        }
+    }
+    .rule-box {
+        position: sticky;
+        top: 0;
+        z-index: 4;
+        box-shadow: 0 4px 14px rgba(212, 160, 23, 0.14);
+    }
     .panel-title {
         font-family: var(--font-title);
         font-weight: 700;
