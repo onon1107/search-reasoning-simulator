@@ -131,6 +131,31 @@
     .choice-btn.wrong { animation: shakeN 0.35s ease; border-color: var(--red); background: var(--red-light); }
     .choice-btn.right { border-color: var(--green); background: var(--green-light); cursor: default; }
     .tip-box { border: 1px dashed rgba(28,96,239,0.35); border-radius: 10px; background: #f7faff; padding: 10px 14px; font-size: 12px; color: var(--text-muted); line-height: 1.8; margin-bottom: 12px; }
+
+    details.explain {
+        margin-top: 12px;
+        border: 1px solid var(--blue-light);
+        border-radius: 10px;
+        background: #fbfcff;
+        padding: 10px 14px;
+    }
+    details.explain summary {
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--blue);
+        user-select: none;
+    }
+    details.explain summary:hover { text-decoration: underline; }
+    details.explain p { font-size: 12.5px; color: var(--text-muted); line-height: 1.9; margin: 10px 0 0; }
+
+    .fit-wrap svg { width: 100%; max-width: 760px; height: auto; display: block; }
+    .fit-krow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .fit-krow input[type=range] { flex: 1; min-width: 180px; }
+    .fit-kval { font-family: var(--font-title); font-weight: 700; font-size: 14px; color: var(--blue); white-space: nowrap; }
+    .fit-read { font-size: 12.5px; font-weight: 700; }
+    .fit-read .tr { color: var(--blue); }
+    .fit-read .te { color: #b8860b; }
     @keyframes shakeN { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 </style>
 </head>
@@ -274,9 +299,56 @@
                 💊 정확도는 69/100 = 0.69지만, 실제 병이 있는 사람 10명 중 <b>1명(FN)</b>을 "병이 없다"라고 놓쳤어요.
                 질병 진단처럼 <b>놓치면 안 되는 문제에서는 재현율</b>이, 스팸 메일 분류처럼 <b>멀쩡한 것을 잘못 잡으면 곤란한 문제에서는 정밀도</b>가 중요한 지표가 됩니다.
             </div>
+            <details class="explain">
+                <summary>🤔 왜 정확도만으로는 부족할까요?</summary>
+                <p>
+                    이 예시에서 실제로 병이 있는 사람은 100명 중 <b>10명뿐</b>입니다.
+                    그래서 아무것도 진단하지 않고 <b>모두에게 "병이 없다"라고만 답하는 엉터리 AI</b>도 정확도가 90/100 = <b>0.9</b>나 나와요.
+                    지금 우리 AI(0.69)보다 정확도는 높지만, 병자를 <b>한 명도 찾아내지 못하므로</b>(재현율 0/10 = 0) 진단 AI로는 완전히 실격이죠.
+                </p>
+                <p>
+                    이렇게 한쪽 데이터가 훨씬 많은 문제에서는 정확도가 성능을 속일 수 있습니다.
+                    그래서 실제 양성을 잘 찾아내는지 보는 <b>재현율</b>, 양성이라고 한 것 중 진짜 양성의 비율인 <b>정밀도</b>,
+                    그리고 둘의 균형을 보는 <b>F1-점수</b>를 함께 확인해야 합니다.
+                </p>
+            </details>
+        </div>
+
+        <!-- 더 알아보기: 과대적합과 과소적합 -->
+        <div class="step-card locked" id="card-5">
+            <div class="step-head"><span class="step-num">더 알아보기</span><span class="step-title">과대적합과 과소적합 — k를 바꾸면 성능이 어떻게 변할까?</span></div>
+            <p class="step-desc">
+                실제 붓꽃 데이터를 8:2로 나누어(훈련 134개), <b>이웃의 수 k를 1부터 133까지</b> 바꿔 가며 훈련 데이터 정확도와 테스트 데이터 정확도를 잰 그래프입니다.
+                슬라이더를 움직여 보세요.
+            </p>
+            <div class="fit-wrap">
+                <svg id="fit-chart" viewBox="0 0 760 320"></svg>
+            </div>
+            <div class="fit-krow">
+                <span class="fit-kval">k = <span id="fit-k">5</span></span>
+                <input type="range" id="fit-slider" min="1" max="133" step="2" value="5">
+                <span class="fit-read"><span class="tr">● 훈련 정확도 <span id="fit-train">–</span></span> &nbsp; <span class="te">● 테스트 정확도 <span id="fit-test">–</span></span></span>
+            </div>
+            <details class="explain">
+                <summary>🤔 과대적합·과소적합이 뭐예요?</summary>
+                <p>
+                    <b>과대적합(overfitting)</b>은 모델이 훈련 데이터에 너무 꼭 맞춰져서, 새로운 데이터에서는 오히려 성능이 나빠지는 현상이에요.
+                    k=1이면 자기 자신과 가장 가까운 한 점만 보므로 훈련 정확도는 1.0에 가깝게 완벽해 보이지만, 훈련 데이터의 잡음까지 몽땅 외운 상태라 테스트에서는 그만 못합니다.
+                </p>
+                <p>
+                    <b>과소적합(underfitting)</b>은 반대로 모델이 너무 단순해서 훈련 데이터의 패턴조차 제대로 배우지 못한 상태예요.
+                    k를 훈련 데이터 수(134개)에 가깝게 키우면 사실상 <b>전체에서 가장 많은 품종으로만 답하는 모델</b>이 되어 버려서,
+                    그래프의 오른쪽 끝처럼 훈련·테스트 정확도가 뚝 떨어집니다.
+                </p>
+                <p>
+                    그래서 하이퍼 파라미터 k는 <b>훈련과 테스트 정확도가 모두 높은 적당한 값</b>으로 고르는 것이 좋아요. 교과서 80쪽에서 k를 1~19까지 바꿔 본 것도 이 때문입니다.
+                </p>
+            </details>
         </div>
     </div>
 </div>
+
+<script src="../js/iris-data.js"></script>
 
 <script>
 (function () {
@@ -380,6 +452,7 @@
                                 markDone('card-3');
                                 stepNowEl.textContent = '4';
                                 setBanner('info', '정확도 0.967, 정밀도 14/15, 재현율 14/14, F1 약 0.97 — 붓꽃 모델은 성능이 아주 좋네요. 마지막으로 다른 문제에도 적용해 봅시다.');
+                                document.getElementById('card-5').classList.remove('locked');
                                 openCard('card-4');
                             } else {
                                 btn.classList.remove('wrong');
@@ -455,12 +528,121 @@
         bindFrac('rec', 'd-rec-check', 'd-rec-num', 'd-rec-den', 'd-rec-frac', 9, 10, '9/10 = 0.9', '아쉬워요. 실제 질병이 있는 사람(TP+FN) 중 질병으로 예측된 사람(TP)의 비율이에요.');
     }
 
+    // ---------- 더 알아보기: 과대적합·과소적합 (실제 데이터로 k별 정확도 계산) ----------
+    function initFitChart() {
+        function hasMissing(r) { return r.sl === null || r.sw === null || r.pl === null || r.pw === null; }
+        var OUTLIER_IDS = [161, 164, 165, 171, 173];
+        var DATA = IRIS1.concat(IRIS2).filter(function (r) {
+            return !hasMissing(r) && OUTLIER_IDS.indexOf(r.id) === -1;
+        });
+        // 시드 고정 분할 — 그래프가 매번 같게 유지되도록
+        function mulberry32(seed) {
+            return function () {
+                seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+                var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+                t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            };
+        }
+        var rand = mulberry32(7);
+        var idx = DATA.map(function (_, i) { return i; });
+        for (var i = idx.length - 1; i > 0; i--) {
+            var j = Math.floor(rand() * (i + 1));
+            var t = idx[i]; idx[i] = idx[j]; idx[j] = t;
+        }
+        var nTest = Math.round(DATA.length * 0.2);
+        var testSet = {}, train = [], test = [];
+        idx.slice(0, nTest).forEach(function (i) { testSet[i] = true; });
+        DATA.forEach(function (r, i) { (testSet[i] ? test : train).push(r); });
+
+        function predict(p, k, excludeSelf) {
+            var sorted = train.map(function (r) {
+                var dx = r.pl - p.pl, dy = r.pw - p.pw;
+                return { r: r, d: dx * dx + dy * dy };
+            }).sort(function (a, b) { return a.d - b.d; });
+            var votes = {};
+            sorted.slice(0, k).forEach(function (n) { votes[n.r.sp] = (votes[n.r.sp] || 0) + 1; });
+            var best = null, bestN = -1;
+            Object.keys(votes).forEach(function (sp) { if (votes[sp] > bestN) { bestN = votes[sp]; best = sp; } });
+            return best;
+        }
+        function accuracy(set, k) {
+            var ok = 0;
+            set.forEach(function (r) { if (predict(r, k) === r.sp) ok++; });
+            return ok / set.length;
+        }
+
+        var K_MAX = 133;
+        var KS = [];
+        for (var k = 1; k <= K_MAX; k += 2) KS.push(k);
+        var trainAcc = {}, testAcc = {};
+        KS.forEach(function (k) {
+            trainAcc[k] = accuracy(train, k);
+            testAcc[k] = accuracy(test, k);
+        });
+
+        // 그래프 그리기
+        var svg = document.getElementById('fit-chart');
+        var ns = 'http://www.w3.org/2000/svg';
+        var W = 760, H = 320, PAD = { l: 54, r: 18, t: 18, b: 46 };
+        var yMin = 0.25, yMax = 1.03;
+        function sx(k) { return PAD.l + (k - 1) / (K_MAX - 1) * (W - PAD.l - PAD.r); }
+        function sy(a) { return H - PAD.b - (a - yMin) / (yMax - yMin) * (H - PAD.t - PAD.b); }
+        function el(tag, attrs, text) {
+            var e = document.createElementNS(ns, tag);
+            Object.keys(attrs || {}).forEach(function (key) { e.setAttribute(key, attrs[key]); });
+            if (text) e.textContent = text;
+            return e;
+        }
+        var marker;
+        function draw() {
+            svg.innerHTML = '';
+            [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0].forEach(function (gy) {
+                svg.appendChild(el('line', { x1: sx(1), y1: sy(gy), x2: sx(K_MAX), y2: sy(gy), stroke: '#eef2fb' }));
+                svg.appendChild(el('text', { x: PAD.l - 8, y: sy(gy) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#55647f' }, gy.toFixed(1)));
+            });
+            [1, 20, 40, 60, 80, 100, 120, 133].forEach(function (gk) {
+                svg.appendChild(el('text', { x: sx(gk), y: H - PAD.b + 18, 'text-anchor': 'middle', 'font-size': 11, fill: '#55647f' }, gk));
+            });
+            svg.appendChild(el('line', { x1: sx(1), y1: sy(yMin), x2: sx(K_MAX), y2: sy(yMin), stroke: '#c6d4f0', 'stroke-width': 1.5 }));
+            svg.appendChild(el('line', { x1: sx(1), y1: sy(yMin), x2: sx(1), y2: sy(yMax), stroke: '#c6d4f0', 'stroke-width': 1.5 }));
+            svg.appendChild(el('text', { x: (sx(1) + sx(K_MAX)) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#16223f' }, '이웃의 수 k'));
+            svg.appendChild(el('text', { x: 14, y: (sy(yMin) + sy(yMax)) / 2, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#16223f', transform: 'rotate(-90 14 ' + (sy(yMin) + sy(yMax)) / 2 + ')' }, '정확도'));
+            // 구간 라벨
+            svg.appendChild(el('text', { x: sx(5), y: PAD.t + 10, 'font-size': 11, 'font-weight': 700, fill: '#b91c1c' }, '← k 너무 작음: 과대적합 위험'));
+            svg.appendChild(el('text', { x: sx(131), y: PAD.t + 10, 'text-anchor': 'end', 'font-size': 11, 'font-weight': 700, fill: '#b91c1c' }, 'k 너무 큼: 과소적합 위험 →'));
+            // 선
+            function polyline(accMap, color) {
+                var pts = KS.map(function (k) { return sx(k) + ',' + sy(accMap[k]); }).join(' ');
+                svg.appendChild(el('polyline', { points: pts, fill: 'none', stroke: color, 'stroke-width': 2.5, 'stroke-linejoin': 'round' }));
+            }
+            polyline(trainAcc, '#1C60EF');
+            polyline(testAcc, '#d4a017');
+            marker = el('line', { x1: 0, y1: sy(yMin), x2: 0, y2: sy(yMax), stroke: '#ef4444', 'stroke-width': 1.5, 'stroke-dasharray': '4 3' });
+            svg.appendChild(marker);
+        }
+        draw();
+
+        var slider = document.getElementById('fit-slider');
+        function update() {
+            var k = parseInt(slider.value, 10);
+            document.getElementById('fit-k').textContent = k;
+            document.getElementById('fit-train').textContent = trainAcc[k].toFixed(3);
+            document.getElementById('fit-test').textContent = testAcc[k].toFixed(3);
+            marker.setAttribute('x1', sx(k));
+            marker.setAttribute('x2', sx(k));
+        }
+        slider.addEventListener('input', update);
+        update();
+    }
+
     document.getElementById('btn-reset').addEventListener('click', function () { location.reload(); });
 
     initStage1();
     initStage2();
     initStage3();
     initStage4();
+    initFitChart();
 })();
 </script>
 </body>

@@ -102,6 +102,29 @@
         25% { transform: translateX(-5px); }
         75% { transform: translateX(5px); }
     }
+
+    /* ---------- 특성과 정답 카드 ---------- */
+    .fl-card { margin-bottom: 24px; }
+    .fl-tags { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 10px; }
+    .fl-tag {
+        font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
+        border-radius: 999px; padding: 6px 14px;
+    }
+    .fl-tag.feature { color: #16419e; background: var(--blue-light); border: 1px solid rgba(28,96,239,0.3); }
+    .fl-tag.label { color: #166534; background: #dcfce7; border: 1px solid rgba(22,163,74,0.35); }
+    .fl-scroll { overflow-x: auto; }
+    table.fl-table { border-collapse: collapse; font-size: 13px; width: 100%; max-width: 640px; }
+    .fl-table th, .fl-table td { border: 1px solid rgba(28,96,239,0.18); padding: 7px 10px; text-align: center; white-space: nowrap; }
+    .fl-table th { font-family: var(--font-title); font-weight: 700; font-size: 12px; }
+    .fl-table .col-id { background: #fbfcff; color: var(--text-muted); }
+    .fl-table .col-x { background: #eaf1fe; }
+    .fl-table th.col-x { color: #16419e; }
+    .fl-table .col-y { background: #e6f8ec; }
+    .fl-table th.col-y { color: #166534; }
+    .fl-tip {
+        margin-top: 12px; border: 1px dashed rgba(28,96,239,0.35); border-radius: 10px;
+        background: #f7faff; padding: 10px 14px; font-size: 12.5px; color: var(--text-muted); line-height: 1.8;
+    }
 </style>
 </head>
 <body>
@@ -151,8 +174,45 @@
             <strong>결측치와 이상치를 청소</strong>한 뒤, <strong>핵심 속성</strong>을 찾아냅니다.
         </p>
 
+        <div class="section-block fl-card">
+            <h3>🌼 특성(feature)과 정답(label)</h3>
+            <p class="block-lead">
+                아래는 붓꽃 데이터의 일부입니다. 꽃잎·꽃받침의 길이·너비처럼 모델이 <strong>보고 학습하는 값</strong>을
+                <strong>특성(feature)</strong>, 우리가 <strong>맞히고 싶은 값</strong>(품종)을 <strong>정답(label)</strong>이라고 합니다.
+            </p>
+            <div class="fl-tags">
+                <span class="fl-tag feature">🔵 특성 (feature) = 독립 변수 X</span>
+                <span class="fl-tag label">🟢 정답 (label) = 종속 변수 y</span>
+            </div>
+            <div class="fl-scroll">
+                <table class="fl-table">
+                    <thead>
+                        <tr>
+                            <th class="col-id">일련번호</th>
+                            <th class="col-x">꽃받침 길이</th>
+                            <th class="col-x">꽃받침 너비</th>
+                            <th class="col-x">꽃잎 길이</th>
+                            <th class="col-x">꽃잎 너비</th>
+                            <th class="col-y">종류</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="col-id">1</td><td class="col-x">5.1</td><td class="col-x">3.5</td><td class="col-x">1.4</td><td class="col-x">0.2</td><td class="col-y">세토사</td></tr>
+                        <tr><td class="col-id">2</td><td class="col-x">4.9</td><td class="col-x">3.0</td><td class="col-x">1.4</td><td class="col-x">0.2</td><td class="col-y">세토사</td></tr>
+                        <tr><td class="col-id">51</td><td class="col-x">7.0</td><td class="col-x">3.2</td><td class="col-x">4.7</td><td class="col-x">1.4</td><td class="col-y">버시컬러</td></tr>
+                        <tr><td class="col-id">101</td><td class="col-x">6.3</td><td class="col-x">3.3</td><td class="col-x">6.0</td><td class="col-x">2.5</td><td class="col-y">버지니카</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="fl-tip">
+                💡 표의 <b>파란 배경 열이 특성(X)</b>, <b>초록 배경 열이 정답(y)</b>입니다.
+                모델은 파란 열만 보고 초록 열을 맞히도록 학습해요. 특성은 결과에 영향을 주므로 <b>독립 변수</b>,
+                정답은 특성의 영향을 받으므로 <b>종속 변수</b>라고도 부릅니다. (일련번호는 데이터를 구분하는 번호일 뿐, 학습에 쓰지 않아요.)
+            </p>
+        </div>
+
         <div class="accordion">
-            <div class="accordion-item open" data-accordion-item>
+            <div class="accordion-item" data-accordion-item>
                 <button class="accordion-trigger" data-accordion-trigger>
                     <span class="accordion-trigger-title">
                         <span class="kr">붓꽃 데이터 180개 · 산점도 · 속성 퀴즈</span>
@@ -223,7 +283,7 @@
         </p>
 
         <div class="accordion">
-            <div class="accordion-item open" data-accordion-item>
+            <div class="accordion-item" data-accordion-item>
                 <button class="accordion-trigger" data-accordion-trigger>
                     <span class="accordion-trigger-title">
                         <span class="kr">새로운 붓꽃 분류하기</span>
@@ -265,11 +325,12 @@
                             <ul>
                                 <li>모델을 공정하게 평가하려면 데이터의 일부는 <strong>학습(훈련)에만</strong>, 나머지는 <strong>평가(테스트)에만</strong> 써야 합니다.</li>
                                 <li><strong>① 8:2로 나누기</strong>를 눌러 훈련·테스트 데이터를 나누고, <strong>② 학습하고 채점하기</strong>로 k-NN 모델의 테스트 결과를 확인하세요.</li>
-                                <li>마지막으로 <strong>정확도를 분수로 직접 계산</strong>해 입력해 보세요.</li>
+                                <li>나누기 버튼을 <strong>여러 번 눌러 보세요</strong> — 누를 때마다 테스트 데이터(노란 점)의 위치가 무작위로 달라집니다. 코드에서 <strong>random_state를 지정하지 않으면</strong> 실행할 때마다 이렇게 다르게 나뉘어요.</li>
+                                <li>마지막으로 <strong>정확도를 분수로 직접 계산</strong>해 입력해 보세요. 분할이 달라지면 정확도도 조금씩 달라집니다.</li>
                             </ul>
                         </div>
                         <div class="sim-frame-wrap" style="margin-top:16px;">
-                            <iframe src="simulators/iris-split.html" title="학습·평가 데이터 나누기" style="height:640px; min-height:0;"></iframe>
+                            <iframe src="simulators/iris-split.html" title="학습·평가 데이터 나누기" style="height:780px; min-height:0;"></iframe>
                         </div>
                     </div>
                 </div>
@@ -296,7 +357,7 @@
         </p>
 
         <div class="accordion">
-            <div class="accordion-item open" data-accordion-item>
+            <div class="accordion-item" data-accordion-item>
                 <button class="accordion-trigger" data-accordion-trigger>
                     <span class="accordion-trigger-title">
                         <span class="kr">혼동행렬 &amp; 평가 지표 &amp; 질병 진단 AI</span>
@@ -312,11 +373,12 @@
                                 <li><strong>1단계</strong> — 테스트 데이터 30개의 3×3 혼동행렬을 읽고 <strong>정확도</strong>를 분수로 구하세요.</li>
                                 <li><strong>2단계</strong> — 교과서 81쪽 스스로 해결하기: "버시컬러인가?"를 기준으로 <strong>2×2 혼동행렬(TP·FN·FP·TN)</strong>을 만들어 보세요.</li>
                                 <li><strong>3단계</strong> — 2×2 혼동행렬로 <strong>정밀도·재현율·F1-점수</strong>를 계산하세요.</li>
-                                <li><strong>4단계</strong> — 교과서 78~79쪽의 <strong>질병 진단 AI</strong> 혼동행렬로 같은 지표를 계산하고, 정확도만으로는 부족한 이유를 확인하세요.</li>
+                                <li><strong>4단계</strong> — 교과서 78~79쪽의 <strong>질병 진단 AI</strong> 혼동행렬로 같은 지표를 계산하고, "왜 정확도만으로는 부족할까요?"를 열어 이유를 확인하세요.</li>
+                                <li><strong>더 알아보기</strong> — k를 1~79까지 바꿔 가며 훈련·테스트 정확도 그래프로 <strong>과대적합과 과소적합</strong>을 관찰해 보세요.</li>
                             </ul>
                         </div>
                         <div class="sim-frame-wrap" style="margin-top:16px;">
-                            <iframe src="simulators/iris-eval.html" title="붓꽃 분류 모델 성능 평가" style="height:1240px; min-height:0;"></iframe>
+                            <iframe src="simulators/iris-eval.html" title="붓꽃 분류 모델 성능 평가" style="height:1860px; min-height:0;"></iframe>
                         </div>
                     </div>
                 </div>
@@ -343,7 +405,7 @@
         </p>
 
         <div class="accordion">
-            <div class="accordion-item open" data-accordion-item>
+            <div class="accordion-item" data-accordion-item>
                 <button class="accordion-trigger" data-accordion-trigger>
                     <span class="accordion-trigger-title">
                         <span class="kr">k-평균 군집화 단계별 실행</span>
@@ -389,7 +451,7 @@
         </p>
 
         <div class="accordion">
-            <div class="accordion-item open" data-accordion-item>
+            <div class="accordion-item" data-accordion-item>
                 <button class="accordion-trigger" data-accordion-trigger>
                     <span class="accordion-trigger-title">
                         <span class="kr">파이썬 코드 빈칸 채우기</span>

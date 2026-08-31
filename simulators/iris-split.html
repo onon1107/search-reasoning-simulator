@@ -56,6 +56,11 @@
     button.action.primary { background: var(--blue); color: var(--white); border-color: var(--blue); }
     button.action.primary:hover:not(:disabled) { background: #164fce; }
     button.action:disabled { opacity: 0.4; cursor: default; }
+    .mission-chip {
+        display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700;
+        background: var(--white); border: 1px solid rgba(28,96,239,0.22); border-radius: 999px; padding: 6px 14px; white-space: nowrap;
+    }
+    .mission-chip b { color: var(--blue); font-family: var(--font-title); }
     .status-banner { display: none; padding: 9px 18px; font-size: 13px; font-weight: 700; text-align: center; flex-shrink: 0; }
     .status-banner.show { display: block; }
     .status-banner.ok { background: var(--gold-light); color: #92700c; }
@@ -66,11 +71,11 @@
     .card { border: 1.5px solid var(--blue-light); border-radius: 14px; background: var(--white); padding: 14px 16px; margin-bottom: 14px; }
     .card h3 { font-family: var(--font-title); font-size: 13px; color: var(--blue); margin: 0 0 8px; }
     .card p { font-size: 12.5px; color: var(--text-muted); line-height: 1.8; margin: 0 0 10px; }
-    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
     .dots-strip { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 12px; }
     .dot {
         width: 12px; height: 12px; border-radius: 50%;
-        background: #d5dced; transition: background 0.3s ease;
+        background: #d5dced; transition: background 0.25s ease;
     }
     .dot.train { background: var(--blue); }
     .dot.test { background: var(--gold); }
@@ -103,6 +108,10 @@
     }
     .frac-check:hover { background: var(--blue-light); }
     .tip-box { border: 1px dashed rgba(28,96,239,0.35); border-radius: 10px; background: #f7faff; padding: 10px 14px; font-size: 12px; color: var(--text-muted); line-height: 1.8; }
+    .random-tip {
+        border: 1px dashed rgba(212,160,23,0.55); border-radius: 10px; background: #fffdf3;
+        padding: 10px 14px; font-size: 12px; color: #92700c; line-height: 1.8; font-weight: 700; margin-bottom: 12px;
+    }
     @keyframes shakeN { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 </style>
 </head>
@@ -113,7 +122,7 @@
             <h1>학습·평가 데이터 나누기</h1>
             <div class="sub">모델을 제대로 평가하려면 학습에 쓰지 않은 데이터로 시험을 봐야 해요. (교과서 76쪽 train_test_split)</div>
         </div>
-        <button class="action" id="btn-reset">처음부터 다시</button>
+        <span class="mission-chip">나눈 횟수 <b id="split-count">0</b>번</span>
     </div>
 
     <div class="status-banner" id="status-banner"></div>
@@ -122,7 +131,7 @@
         <div class="card">
             <h3>전처리를 마친 붓꽃 데이터 167개</h3>
             <p>
-                점 하나가 붓꽃 한 송이입니다. 전체 데이터를 <b>훈련 데이터(train) 8 : 테스트 데이터(test) 2</b>로 무작위로 나눈 뒤,
+                점 하나가 붓꽃 한 송이입니다. 전체 데이터를 <b>훈련 데이터(train) 8 : 테스트 데이터 2</b>로 <b>무작위로</b> 나눈 뒤,
                 훈련 데이터로만 k-NN(k=5) 모델을 학습시키고 테스트 데이터로 성능을 평가해 봅시다.
             </p>
             <div class="dots-strip" id="dots"></div>
@@ -132,6 +141,11 @@
             <div class="btn-row">
                 <button class="action primary" id="btn-split">① 8 : 2로 나누기</button>
                 <button class="action" id="btn-evaluate" disabled>② 학습하고 테스트 데이터 채점하기</button>
+            </div>
+            <div class="random-tip" id="random-tip" style="display:none;">
+                🎲 <b>나누기 버튼을 다시 눌러 보세요!</b> 누를 때마다 노란 점(테스트)의 위치가 매번 달라지죠?
+                코드에서 train_test_split에 <b>random_state</b>(난수 번호)를 지정하지 않으면 이렇게 <b>실행할 때마다 무작위로 다르게</b> 나뉩니다.
+                그래서 정확도도 그때그때 조금씩 달라져요. 항상 같은 분할을 재현하고 싶을 때만 random_state = 7처럼 번호를 정해 줍니다.
             </div>
             <div class="stat-row">
                 <div class="stat-box"><div class="num" id="stat-train">–</div><div class="lbl">훈련 데이터 수</div></div>
@@ -143,16 +157,11 @@
         <div class="card" id="acc-card" style="display:none;">
             <h3>정확도 구하기</h3>
             <p>테스트 결과가 나왔어요. 위의 <b>맞힌 수</b>와 <b>테스트 데이터 수</b>로 정확도를 분수로 입력해 보세요.</p>
-            <span class="frac-cell" id="acc-frac">
-                <span>정확도 =</span>
-                <input type="number" id="acc-num" min="0" max="200">
-                <span>/</span>
-                <input type="number" id="acc-den" min="1" max="200">
-                <button class="frac-check" id="acc-check">확인</button>
-            </span>
+            <span class="frac-cell" id="acc-frac"></span>
             <div class="tip-box" id="done-tip" style="display:none; margin-top:12px;">
                 💡 훈련에 쓴 데이터로 시험을 보면 답을 외운 것과 같아서 성능이 부풀려져요(과대적합).
-                그래서 꼭 <b>학습에 쓰지 않은 테스트 데이터</b>로 평가합니다. 테스트 30개 기준의 혼동행렬은 <b>3. 모델 평가</b> 탭에서 이어집니다.
+                그래서 꼭 <b>학습에 쓰지 않은 테스트 데이터</b>로 평가합니다. 다시 나눠서 정확도가 어떻게 달라지는지도 비교해 보세요.
+                테스트 30개 기준의 혼동행렬은 <b>3. 모델 평가</b> 탭에서 이어집니다.
             </div>
         </div>
     </div>
@@ -167,16 +176,6 @@
         return !hasMissing(r) && OUTLIER_IDS.indexOf(r.id) === -1;
     });
 
-    // 시드 고정 난수 — 항상 같은 분할이 되도록 (교과서 random_state와 같은 역할)
-    function mulberry32(seed) {
-        return function () {
-            seed |= 0; seed = seed + 0x6D2B79F5 | 0;
-            var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-            return ((t ^ t >>> 14) >>> 0) / 4294967296;
-        };
-    }
-
     var statusBanner = document.getElementById('status-banner');
     function setBanner(kind, text) {
         statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
@@ -184,7 +183,7 @@
     }
 
     var dotsEl = document.getElementById('dots');
-    var train = [], test = [], correctCount = 0;
+    var train = [], test = [], correctCount = 0, splitCount = 0, evaluated = false;
 
     function renderDots(assignment) {
         dotsEl.innerHTML = '';
@@ -208,11 +207,23 @@
         return best;
     }
 
+    function resetAccCard() {
+        var cell = document.getElementById('acc-frac');
+        cell.classList.remove('ok', 'shake');
+        cell.innerHTML = '<span>정확도 =</span>' +
+            '<input type="number" id="acc-num" min="0" max="200">' +
+            '<span>/</span>' +
+            '<input type="number" id="acc-den" min="1" max="200">' +
+            '<button class="frac-check" id="acc-check">확인</button>';
+        document.getElementById('acc-card').style.display = 'none';
+        document.getElementById('done-tip').style.display = 'none';
+    }
+
     function doSplit() {
-        var rand = mulberry32(7);
+        // random_state를 지정하지 않은 train_test_split처럼, 누를 때마다 무작위로 나눈다.
         var idx = DATA.map(function (_, i) { return i; });
         for (var i = idx.length - 1; i > 0; i--) {
-            var j = Math.floor(rand() * (i + 1));
+            var j = Math.floor(Math.random() * (i + 1));
             var t = idx[i]; idx[i] = idx[j]; idx[j] = t;
         }
         var nTest = Math.round(DATA.length * 0.2);
@@ -225,17 +236,32 @@
             else { train.push(r); assignment.push('train'); }
         });
         renderDots(assignment);
+
+        splitCount++;
+        evaluated = false;
+        correctCount = 0;
+        document.getElementById('split-count').textContent = splitCount;
         document.getElementById('stat-train').textContent = train.length;
         document.getElementById('stat-test').textContent = test.length;
+        document.getElementById('stat-correct').textContent = '–';
         document.getElementById('strip-legend').innerHTML =
             '<span class="sw" style="background:var(--blue);"></span>훈련 데이터 (' + train.length + ')' +
             '<span class="sw" style="background:var(--gold);"></span>테스트 데이터 (' + test.length + ')';
-        document.getElementById('btn-split').disabled = true;
+        document.getElementById('btn-split').textContent = '① 다시 나누기 🎲';
         document.getElementById('btn-evaluate').disabled = false;
-        setBanner('info', '전체 ' + DATA.length + '개를 훈련 ' + train.length + '개 : 테스트 ' + test.length + '개로 나눴어요. 이제 훈련 데이터로만 학습시키고, 테스트 데이터로 채점해 봅시다.');
+        document.getElementById('random-tip').style.display = 'block';
+        resetAccCard();
+
+        if (splitCount === 1) {
+            setBanner('info', '전체 ' + DATA.length + '개를 훈련 ' + train.length + '개 : 테스트 ' + test.length + '개로 나눴어요. 이제 훈련 데이터로만 학습시키고, 테스트 데이터로 채점해 봅시다.');
+        } else {
+            setBanner('info', splitCount + '번째 나누기! 노란 점의 위치가 아까와 달라졌죠? random_state를 지정하지 않으면 매번 이렇게 무작위로 나뉩니다.');
+        }
     }
 
     function doEvaluate() {
+        if (evaluated) return;
+        evaluated = true;
         correctCount = 0;
         var results = [];
         test.forEach(function (r) {
@@ -244,7 +270,6 @@
             if (ok) correctCount++;
             results.push(ok);
         });
-        // 테스트 점들만 채점 색으로 갱신
         var ti = 0;
         var assignment = [];
         var testSet = {};
@@ -267,27 +292,26 @@
     document.getElementById('btn-split').addEventListener('click', doSplit);
     document.getElementById('btn-evaluate').addEventListener('click', doEvaluate);
 
-    document.getElementById('acc-check').addEventListener('click', function () {
+    // 확인 버튼은 나누기마다 다시 만들어지므로 이벤트 위임으로 처리
+    document.getElementById('acc-frac').addEventListener('click', function (ev) {
+        if (!ev.target.classList.contains('frac-check')) return;
         var a = parseInt(document.getElementById('acc-num').value, 10);
         var b = parseInt(document.getElementById('acc-den').value, 10);
+        var cell = document.getElementById('acc-frac');
         if (isNaN(a) || isNaN(b)) { setBanner('info', '분자(맞힌 수)와 분모(테스트 데이터 수)를 모두 입력하세요.'); return; }
         if (a === correctCount && b === test.length) {
-            var cell = document.getElementById('acc-frac');
             cell.classList.add('ok');
             cell.innerHTML = '<span class="frac-result">정확도 = ' + a + '/' + b + ' ≈ ' + (a / b).toFixed(3) + '</span>';
             document.getElementById('done-tip').style.display = 'block';
-            setBanner('ok', '🎉 정확도 ' + (a / b).toFixed(3) + '! 학습에 쓰지 않은 데이터로 평가한 진짜 성능이에요.');
+            setBanner('ok', '🎉 정확도 ' + (a / b).toFixed(3) + '! 학습에 쓰지 않은 데이터로 평가한 진짜 성능이에요. 다시 나눠서 정확도가 달라지는 것도 확인해 보세요.');
             if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 68, origin: { x: 0.5, y: 0.4 } });
         } else {
-            var cell2 = document.getElementById('acc-frac');
-            cell2.classList.remove('shake');
-            void cell2.offsetWidth;
-            cell2.classList.add('shake');
+            cell.classList.remove('shake');
+            void cell.offsetWidth;
+            cell.classList.add('shake');
             setBanner('bad', '아쉬워요. 위의 통계 상자에서 맞힌 수와 테스트 데이터 수를 다시 확인해 보세요.');
         }
     });
-
-    document.getElementById('btn-reset').addEventListener('click', function () { location.reload(); });
 
     renderDots(null);
 })();
