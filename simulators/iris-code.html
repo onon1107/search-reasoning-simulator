@@ -62,53 +62,67 @@
     .stage { flex: 1; padding: 16px 18px 24px; overflow: auto; }
     .code-card { border: 1.5px solid var(--blue-light); border-radius: 14px; background: var(--white); padding: 14px 16px; margin-bottom: 14px; }
     .code-card.done { border-color: var(--green); background: #f7fdf9; }
-    .code-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-    .code-num {
-        font-family: var(--font-title); font-weight: 700; font-size: 11.5px; color: var(--white);
-        background: var(--blue); border-radius: 999px; padding: 4px 12px; white-space: nowrap;
-    }
-    .code-card.done .code-num { background: var(--green); }
+    .code-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
     .code-title { font-family: var(--font-title); font-weight: 700; font-size: 13px; }
     .code-page { font-size: 11px; color: var(--text-muted); font-weight: 700; }
-    pre.code-block {
-        font-family: 'Consolas', 'SFMono-Regular', monospace;
-        font-size: 12.5px;
-        line-height: 1.9;
-        background: #f6f8fd;
-        border: 1px solid var(--blue-light);
-        border-radius: 10px;
-        padding: 12px 14px;
-        margin: 0 0 10px;
+    .code-status {
+        margin-left: auto;
+        font-family: var(--font-body); font-weight: 700; font-size: 11px;
+        color: #94a1bd; background: #eef1f8; border-radius: 999px; padding: 3px 10px;
+    }
+    .code-status.done { color: #166534; background: var(--green-light); }
+    .code-note { font-size: 12.5px; color: var(--text-muted); line-height: 1.7; margin: 0 0 10px; }
+
+    .code-block {
+        background: #1e1e2e;
+        color: #d6d9ea;
+        border-radius: 12px;
+        padding: 14px 16px;
         overflow-x: auto;
+        font-family: 'Cascadia Code', Consolas, 'D2Coding', monospace;
+        font-size: 12.5px;
+        line-height: 2.0;
         white-space: pre;
     }
-    pre.code-block .cmt { color: #6a8759; }
-    pre.code-block .blank-slot {
-        display: inline-block;
-        min-width: 74px;
-        text-align: center;
-        border-bottom: 2px dashed var(--blue);
-        color: var(--blue);
+    .code-block .cmt { color: #7a80a0; }
+    .code-block .kw { color: #ff9d76; }
+    .code-block .str { color: #a5d6a7; }
+
+    select.blank {
+        background: #343453;
+        color: #ffd43b;
+        border: 1.5px solid #565a80;
+        border-radius: 6px;
+        padding: 2px 6px;
+        font-family: inherit;
+        font-size: 12.5px;
         font-weight: 700;
+        margin: 0 2px;
+        cursor: pointer;
     }
-    pre.code-block .blank-slot.filled {
-        border-bottom: none;
-        background: var(--green-light);
-        color: var(--green);
-        border-radius: 5px;
-        padding: 0 5px;
+    select.blank.correct { border-color: #51cf66; color: #b2f2bb; background: #1f3a24; }
+    select.blank.wrong { border-color: #ff6b6b; color: #ffc9c9; background: #3a1f1f; animation: shakeN 0.35s ease; }
+    select.blank:disabled { cursor: default; opacity: 1; }
+
+    .code-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+    .btn-check {
+        font-family: var(--font-body); font-weight: 700; font-size: 12.5px; border-radius: 8px; padding: 8px 16px;
+        border: 1px solid var(--blue); background: var(--blue); color: var(--white); cursor: pointer;
     }
-    .blank-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-    .blank-label { font-family: var(--font-title); font-weight: 700; font-size: 12px; color: var(--blue); }
-    .code-opt {
-        font-family: 'Consolas', monospace; font-weight: 700; font-size: 12px;
-        border: 2px solid var(--blue-light); border-radius: 8px; background: var(--white); color: var(--text);
-        padding: 6px 11px; cursor: pointer; transition: all 0.12s ease;
+    .btn-check:hover:not(:disabled) { background: #164fce; }
+    .btn-check:disabled { opacity: 0.4; cursor: default; }
+    .code-feedback { font-size: 12.5px; font-weight: 700; }
+    .code-explain {
+        display: none;
+        margin-top: 10px;
+        border: 1px dashed rgba(28,96,239,0.35); border-radius: 10px; background: #f7faff;
+        padding: 10px 14px; font-size: 12px; color: var(--text-muted); line-height: 1.8;
     }
-    .code-opt:hover { border-color: var(--blue); }
-    .code-opt.wrong { animation: shakeN 0.35s ease; border-color: var(--red); background: var(--red-light); }
-    .code-opt.right { border-color: var(--green); background: var(--green-light); color: var(--green); cursor: default; }
-    @keyframes shakeN { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    .code-explain code {
+        font-family: Consolas, monospace; font-weight: 700; color: #3557a7;
+        background: #eef2fb; border-radius: 4px; padding: 0 4px;
+    }
+    @keyframes shakeN { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 </style>
 </head>
 <body>
@@ -116,9 +130,9 @@
     <div class="topbar">
         <div>
             <h1>파이썬 코드 완성하기</h1>
-            <div class="sub">교과서에서 배운 붓꽃 분류 코드입니다. 빈칸에 알맞은 것을 골라 전체 코드를 완성해 보세요.</div>
+            <div class="sub">교과서에서 배운 붓꽃 분류 코드입니다. 드롭박스에서 알맞은 것을 골라 채우고 정답 확인을 누르세요.</div>
         </div>
-        <span class="mission-chip">빈칸 <b id="blank-count">0</b> / <span id="blank-total">0</span></span>
+        <span class="mission-chip">완성한 카드 <b id="card-count">0</b> / <span id="card-total">0</span></span>
     </div>
 
     <div class="status-banner" id="status-banner"></div>
@@ -128,59 +142,11 @@
 
 <script>
 (function () {
-    // 코드 카드: text 안의 {{정답}} 이 빈칸이 된다. wrongs[i] 는 i번째 빈칸의 오답 보기.
-    var CARDS = [
-        {
-            title: '데이터 불러오기', page: '교과서 65·67쪽',
-            code: "import pandas as pd  # 판다스 모듈 불러오기\ndf1 = pd.{{read_csv}}('Iris1.csv', encoding = 'cp949')\ndf2 = pd.read_csv('Iris2.csv', encoding = 'cp949')",
-            wrongs: [['open_file', 'get_table']]
-        },
-        {
-            title: '두 데이터 파일 합치기', page: '교과서 67쪽',
-            code: "df = pd.{{concat}}([df1, df2])  # df1 뒤에 df2를 위아래로 붙이기",
-            wrongs: [['split', 'divide']]
-        },
-        {
-            title: '결측치 확인하기', page: '교과서 68쪽',
-            code: "df.{{isna}}().sum()  # 속성별 결측치 개수 세기",
-            wrongs: [['count_full', 'describe']]
-        },
-        {
-            title: '결측치가 있는 행 제거하기', page: '교과서 68쪽',
-            code: "df3 = df.{{dropna}}(axis = 0)  # 결측치가 있는 행 삭제",
-            wrongs: [['isna', 'fillup']]
-        },
-        {
-            title: '기초 통계량으로 이상치 확인하기', page: '교과서 69쪽',
-            code: "df3.{{describe}}()  # 평균·최솟값·최댓값 등 기초 통계량 출력",
-            wrongs: [['summary', 'statistics']]
-        },
-        {
-            title: '훈련 데이터와 테스트 데이터 나누기', page: '교과서 76쪽',
-            code: "X = df3[['꽃잎 길이', '꽃잎 너비']]  # 독립 변수(핵심 속성)\ny = df3['종류']  # 종속 변수\nX_train, X_test, y_train, y_test = {{train_test_split}}(X, y, test_size = {{0.2}})",
-            wrongs: [['data_divide', 'make_group'], ['2', '0.8']]
-        },
-        {
-            title: '모델 만들고 학습시키기', page: '교과서 77쪽',
-            code: "from sklearn.neighbors import KNeighborsClassifier\nmodel = {{KNeighborsClassifier}}()  # k-최근접 이웃 모델 생성\nmodel.{{fit}}(X_train, y_train)  # 훈련 데이터로 학습",
-            wrongs: [['LinearRegression', 'KMeans'], ['score', 'predict']]
-        },
-        {
-            title: '평가하고 새로운 붓꽃 예측하기', page: '교과서 78·81쪽',
-            code: "acc = model.{{score}}(X_test, y_test)  # 테스트 데이터로 정확도 계산\nnew = [[1.0, 1.5]]  # 꽃잎 길이 1.0, 꽃잎 너비 1.5\nprint(model.{{predict}}(new))  # 출력: ['세토사']",
-            wrongs: [['fit', 'check'], ['guess', 'fit']]
-        }
-    ];
-
     var statusBanner = document.getElementById('status-banner');
-    var cardsEl = document.getElementById('cards');
-    var totalBlanks = 0, solvedBlanks = 0, doneCards = 0;
-
     function setBanner(kind, text) {
         statusBanner.className = 'status-banner' + (kind ? ' show ' + kind : '');
         statusBanner.textContent = text || '';
     }
-    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function shuffle(arr) {
         var a = arr.slice();
         for (var i = a.length - 1; i > 0; i--) {
@@ -190,75 +156,178 @@
         return a;
     }
 
-    var CIRCLED = ['①', '②', '③'];
+    var blankCounter = 0;
+    // 빈칸 드롭박스: 정답 1개 + 오답들을 섞어 "?" 상태로 시작
+    function blank(correct, wrongs) {
+        blankCounter++;
+        var opts = shuffle([correct].concat(wrongs)).map(function (o) {
+            return '<option value="' + o + '">' + o + '</option>';
+        }).join('');
+        return '<select class="blank" data-correct="' + correct + '"><option value="">?</option>' + opts + '</select>';
+    }
+
+    // 교과서 65~81쪽의 실제 코드 흐름
+    var CARDS = [
+        {
+            title: '① 데이터 불러오고 합치기', page: '교과서 65·67쪽',
+            note: 'Iris1.csv, Iris2.csv 두 파일을 각각 불러와 하나로 합칩니다.',
+            code: '<span class="kw">import</span> pandas <span class="kw">as</span> pd  <span class="cmt"># 판다스 모듈 불러오기</span>\n\n' +
+                'df1 = pd.' + blankHolder(0) + '(<span class="str">\'Iris1.csv\'</span>, encoding = <span class="str">\'cp949\'</span>)\n' +
+                'df2 = pd.read_csv(<span class="str">\'Iris2.csv\'</span>, encoding = <span class="str">\'cp949\'</span>)\n\n' +
+                'df = pd.' + blankHolder(1) + '([df1, df2])  <span class="cmt"># df1 뒤에 df2를 위아래로 붙이기</span>',
+            blanks: [
+                { correct: 'read_csv', wrongs: ['read_excel', 'open_file', 'load_csv'] },
+                { correct: 'concat', wrongs: ['merge', 'split', 'append_rows'] }
+            ],
+            explain: '💡 <code>pd.read_csv()</code>로 CSV 파일을 읽고, <code>pd.concat()</code>으로 여러 데이터프레임을 위아래로 이어 붙입니다.'
+        },
+        {
+            title: '② 결측치 확인하고 제거하기', page: '교과서 68~69쪽',
+            note: '결측치 개수를 확인한 뒤 결측치가 있는 행을 제거하고, 기초 통계량을 살펴봅니다.',
+            code: 'df.' + blankHolder(0) + '().sum()  <span class="cmt"># 속성별 결측치 개수 세기</span>\n\n' +
+                'df3 = df.' + blankHolder(1) + '(axis = 0)  <span class="cmt"># 결측치가 있는 행 제거</span>\n' +
+                'df3.' + blankHolder(2) + '()  <span class="cmt"># 평균·최솟값·최댓값 등 기초 통계량 확인</span>',
+            blanks: [
+                { correct: 'isna', wrongs: ['dropna', 'fillna', 'count_full'] },
+                { correct: 'dropna', wrongs: ['isna', 'drop_all', 'fillna'] },
+                { correct: 'describe', wrongs: ['summary', 'statistics', 'info_all'] }
+            ],
+            explain: '💡 <code>isna().sum()</code>으로 결측치 개수를 세고, <code>dropna()</code>로 제거합니다. <code>describe()</code>의 max에서 이상하게 큰 값(이상치)을 발견할 수 있어요.'
+        },
+        {
+            title: '③ IQR로 이상치 범위 구하기', page: '교과서 70~71쪽',
+            note: '사분위수 범위(IQR)를 이용해 정상 범위를 벗어난 이상치를 찾습니다.',
+            code: 'Q1 = df3.groupby(<span class="str">\'종류\'</span>)[<span class="str">\'꽃받침 길이\'</span>].' + blankHolder(0) + '(0.25)  <span class="cmt"># 제1사분위수</span>\n' +
+                'Q3 = df3.groupby(<span class="str">\'종류\'</span>)[<span class="str">\'꽃받침 길이\'</span>].quantile(' + blankHolder(1) + ')  <span class="cmt"># 제3사분위수</span>\n' +
+                'IQR = Q3 - Q1  <span class="cmt"># 사분위수 범위</span>\n\n' +
+                'lower = Q1 - ' + blankHolder(2) + ' * IQR  <span class="cmt"># 안 울타리값</span>\n' +
+                'upper = Q3 + 1.5 * IQR  <span class="cmt"># 밖 울타리값</span>',
+            blanks: [
+                { correct: 'quantile', wrongs: ['quarter', 'median', 'percent'] },
+                { correct: '0.75', wrongs: ['0.25', '0.5', '3'] },
+                { correct: '1.5', wrongs: ['0.5', '2.5', '15'] }
+            ],
+            explain: '💡 <code>quantile(0.25)</code>는 1사분위수(Q1), <code>quantile(0.75)</code>는 3사분위수(Q3)입니다. Q1 − 1.5×IQR보다 작거나 Q3 + 1.5×IQR보다 크면 보통 이상치로 판단합니다.'
+        },
+        {
+            title: '④ 특성·정답 나누고 학습·평가 데이터 분할하기', page: '교과서 76쪽',
+            note: '핵심 속성을 특성(X), 종류를 정답(y)으로 나누고, 전체를 8:2로 분할합니다.',
+            code: 'X = df3[[<span class="str">\'꽃잎 길이\'</span>, <span class="str">\'꽃잎 너비\'</span>]]  <span class="cmt"># 특성(독립 변수)</span>\n' +
+                'y = df3[<span class="str">\'종류\'</span>]  <span class="cmt"># 정답(종속 변수)</span>\n\n' +
+                '<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> train_test_split\n' +
+                'X_train, X_test, y_train, y_test = ' + blankHolder(0) + '(X, y, test_size = ' + blankHolder(1) + ', random_state = 7)',
+            blanks: [
+                { correct: 'train_test_split', wrongs: ['data_divide', 'split_train', 'make_group'] },
+                { correct: '0.2', wrongs: ['2', '0.8', '20'] }
+            ],
+            explain: '💡 <code>test_size = 0.2</code>는 전체의 20%를 평가(테스트)용으로 떼어 놓는다는 뜻입니다. <code>random_state</code>를 지정하지 않으면 실행할 때마다 다르게 나뉘어요.'
+        },
+        {
+            title: '⑤ k-NN 모델 만들고 학습·평가하기', page: '교과서 77~78쪽',
+            note: 'k-최근접 이웃 모델을 만들어 훈련 데이터로 학습시키고, 테스트 데이터로 정확도를 확인합니다.',
+            code: '<span class="kw">from</span> sklearn.neighbors <span class="kw">import</span> ' + blankHolder(0) + '\n\n' +
+                'model = KNeighborsClassifier()  <span class="cmt"># k-최근접 이웃 모델 생성</span>\n' +
+                'model.' + blankHolder(1) + '(X_train, y_train)  <span class="cmt"># 훈련 데이터로 학습</span>\n\n' +
+                'acc = model.' + blankHolder(2) + '(X_test, y_test)  <span class="cmt"># 테스트 데이터로 정확도 계산</span>\n' +
+                '<span class="kw">print</span>(<span class="str">\'테스트 데이터 점수: {:.3f}\'</span>.format(acc))  <span class="cmt"># 0.967</span>',
+            blanks: [
+                { correct: 'KNeighborsClassifier', wrongs: ['KMeans', 'LinearRegression', 'DecisionTree'] },
+                { correct: 'fit', wrongs: ['score', 'predict', 'teach'] },
+                { correct: 'score', wrongs: ['fit', 'predict', 'check'] }
+            ],
+            explain: '💡 <code>fit()</code>은 학습, <code>score()</code>는 정확도 계산에 사용합니다. 학습은 훈련 데이터로, 평가는 테스트 데이터로 하는 것에 주의하세요.'
+        },
+        {
+            title: '⑥ 혼동행렬 만들기', page: '교과서 80쪽',
+            note: '테스트 데이터의 예측값과 실젯값을 비교하는 혼동행렬을 만듭니다.',
+            code: '<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> ' + blankHolder(0) + '\n\n' +
+                'predicted = model.' + blankHolder(1) + '(X_test)  <span class="cmt"># 테스트 데이터에 대한 예측값</span>\n' +
+                'cm = confusion_matrix(y_test, predicted)  <span class="cmt"># 실젯값과 예측값 비교</span>',
+            blanks: [
+                { correct: 'confusion_matrix', wrongs: ['accuracy_score', 'truth_table', 'error_matrix'] },
+                { correct: 'predict', wrongs: ['fit', 'score', 'guess'] }
+            ],
+            explain: '💡 <code>model.predict()</code>로 예측값을 구한 뒤, <code>confusion_matrix(실젯값, 예측값)</code>으로 혼동행렬을 만듭니다. 3. 모델 평가 탭에서 본 그 표예요.'
+        },
+        {
+            title: '⑦ 새로운 붓꽃 예측하기', page: '교과서 81쪽',
+            note: '완성된 모델로 꽃잎 길이 1.0cm, 꽃잎 너비 1.5cm인 새로운 붓꽃의 품종을 판별합니다.',
+            code: 'new = [[1.0, 1.5]]  <span class="cmt"># 꽃잎 길이 1.0, 꽃잎 너비 1.5</span>\n' +
+                '<span class="kw">print</span>(model.predict(new))\n\n' +
+                '<span class="cmt"># 출력:</span> [<span class="str">\'</span>' + blankHolder(0) + '<span class="str">\'</span>]',
+            blanks: [
+                { correct: '세토사', wrongs: ['버시컬러', '버지니카'] }
+            ],
+            explain: '💡 2. 분류 탭의 교과서 예제 버튼으로 직접 확인했던 그 붓꽃입니다. 꽃잎이 작으므로 세토사로 분류돼요.'
+        }
+    ];
+
+    function blankHolder(i) { return '{{B' + i + '}}'; }
+
+    var cardsEl = document.getElementById('cards');
+    var doneCards = 0;
+    document.getElementById('card-total').textContent = CARDS.length;
 
     CARDS.forEach(function (card, ci) {
-        var answers = [];
-        var codeHtml = esc(card.code).replace(/\{\{([^}]+)\}\}/g, function (m, ans) {
-            var bi = answers.length;
-            answers.push(ans);
-            return '<span class="blank-slot" data-b="' + bi + '">____' + (card.wrongs.length > 1 ? CIRCLED[bi] : '') + '</span>';
-        }).replace(/(#[^\n<]*)/g, '<span class="cmt">$1</span>');
-
-        totalBlanks += answers.length;
+        var codeHtml = card.code.replace(/\{\{B(\d+)\}\}/g, function (m, bi) {
+            var b = card.blanks[parseInt(bi, 10)];
+            return blank(b.correct, b.wrongs);
+        });
 
         var div = document.createElement('div');
         div.className = 'code-card';
-        var head = '<div class="code-head"><span class="code-num">' + (ci + 1) + '</span><span class="code-title">' + card.title + '</span><span class="code-page">' + card.page + '</span></div>';
-        div.innerHTML = head + '<pre class="code-block">' + codeHtml + '</pre>';
+        div.innerHTML =
+            '<div class="code-head"><span class="code-title">' + card.title + '</span><span class="code-page">' + card.page + '</span><span class="code-status">미완료</span></div>' +
+            '<p class="code-note">' + card.note + '</p>' +
+            '<div class="code-block">' + codeHtml + '</div>' +
+            '<div class="code-actions"><button class="btn-check">정답 확인</button><span class="code-feedback"></span></div>' +
+            '<div class="code-explain">' + card.explain + '</div>';
 
-        var solvedInCard = 0;
-        answers.forEach(function (ans, bi) {
-            var row = document.createElement('div');
-            row.className = 'blank-row';
-            var label = document.createElement('span');
-            label.className = 'blank-label';
-            label.textContent = '빈칸' + (answers.length > 1 ? ' ' + CIRCLED[bi] : '');
-            row.appendChild(label);
-            var opts = shuffle([ans].concat(card.wrongs[bi]));
-            var done = false;
-            opts.forEach(function (opt) {
-                var btn = document.createElement('button');
-                btn.className = 'code-opt';
-                btn.textContent = opt;
-                btn.addEventListener('click', function () {
-                    if (done) return;
-                    if (opt === ans) {
-                        done = true;
-                        btn.classList.add('right');
-                        row.querySelectorAll('.code-opt').forEach(function (b) { if (b !== btn) b.style.opacity = 0.4; });
-                        var slot = div.querySelector('.blank-slot[data-b="' + bi + '"]');
-                        slot.textContent = ans;
-                        slot.classList.add('filled');
-                        solvedBlanks++;
-                        solvedInCard++;
-                        document.getElementById('blank-count').textContent = solvedBlanks;
-                        if (solvedInCard === answers.length) {
-                            div.classList.add('done');
-                            doneCards++;
-                        }
-                        if (solvedBlanks === totalBlanks) {
-                            setBanner('ok', '🎉 코드 완성! 데이터 불러오기부터 전처리, 학습, 평가, 예측까지 — 교과서의 전체 코드를 완성했어요.');
-                            if (typeof confetti === 'function') confetti({ particleCount: 110, spread: 75, origin: { x: 0.5, y: 0.4 } });
-                            try { window.parent.postMessage({ type: 'iris-badge', id: 'm5' }, '*'); } catch (e) {}
-                        } else {
-                            setBanner('', '');
-                        }
-                    } else {
-                        btn.classList.remove('wrong');
-                        void btn.offsetWidth;
-                        btn.classList.add('wrong');
-                        setBanner('bad', '아쉬워요. 주석(#)의 설명과 코드가 하는 일을 다시 비교해 보세요.');
-                    }
-                });
-                row.appendChild(btn);
+        var checkBtn = div.querySelector('.btn-check');
+        var feedback = div.querySelector('.code-feedback');
+        checkBtn.addEventListener('click', function () {
+            if (div.classList.contains('done')) return;
+            var selects = div.querySelectorAll('select.blank');
+            var empty = 0, correct = 0;
+            selects.forEach(function (s) {
+                if (s.value === '') { empty++; s.classList.remove('correct', 'wrong'); return; }
+                var ok = s.value === s.dataset.correct;
+                s.classList.toggle('correct', ok);
+                s.classList.remove('wrong');
+                if (!ok) { void s.offsetWidth; s.classList.add('wrong'); }
+                if (ok) correct++;
             });
-            div.appendChild(row);
+            if (empty > 0) {
+                feedback.textContent = '아직 고르지 않은 빈칸(?)이 ' + empty + '개 있어요.';
+                feedback.style.color = '#16419e';
+                return;
+            }
+            if (correct === selects.length) {
+                div.classList.add('done');
+                div.querySelector('.code-status').textContent = '완료';
+                div.querySelector('.code-status').classList.add('done');
+                div.querySelector('.code-explain').style.display = 'block';
+                selects.forEach(function (s) { s.disabled = true; });
+                checkBtn.disabled = true;
+                feedback.textContent = '🎉 정확히 완성했어요! (' + correct + '/' + selects.length + ')';
+                feedback.style.color = '#166534';
+                doneCards++;
+                document.getElementById('card-count').textContent = doneCards;
+                if (doneCards === CARDS.length) {
+                    setBanner('ok', '🎉 코드 완성! 데이터 불러오기부터 전처리, IQR 이상치, 학습, 평가, 예측까지 — 교과서의 전체 코드를 완성했어요.');
+                    if (typeof confetti === 'function') confetti({ particleCount: 110, spread: 75, origin: { x: 0.5, y: 0.4 } });
+                    try { window.parent.postMessage({ type: 'iris-badge', id: 'm5' }, '*'); } catch (e) {}
+                } else {
+                    setBanner('', '');
+                }
+            } else {
+                feedback.textContent = correct + '/' + selects.length + '개 정답 — 빨간 칸을 다시 골라 보세요.';
+                feedback.style.color = '#b91c1c';
+                setBanner('bad', '아쉬워요. 주석(#)의 설명과 코드가 하는 일을 비교하며 빨간 칸을 다시 골라 보세요.');
+            }
         });
         cardsEl.appendChild(div);
     });
-
-    document.getElementById('blank-total').textContent = totalBlanks;
 })();
 </script>
 </body>
