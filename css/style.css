@@ -1053,10 +1053,14 @@ a.tax-item:hover {
     margin: 0 auto;
 }
 
+/* 한 줄에 2개씩 고정. 단원이 늘어나면 다음 줄에 같은 크기로 쌓인다. */
 .hub-buttons {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 28px;
+}
+@media (max-width: 760px) {
+    .hub-buttons { grid-template-columns: 1fr; }
 }
 
 .hub-btn {
