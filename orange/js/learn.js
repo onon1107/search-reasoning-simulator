@@ -200,7 +200,7 @@ const Learn = (() => {
     function draw() {
       const k = +$('#kk').value; $('#kv').textContent = k;
       g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height);
-      g.fillStyle = '#444'; g.font = '11px sans-serif'; g.textAlign = 'center';
+      g.fillStyle = '#444'; g.font = '11px "A2z", "Malgun Gothic", sans-serif'; g.textAlign = 'center';
       for (let v = 35; v <= 60; v += 5) g.fillText(v, X(v), cv.height - m + 14);
       g.textAlign = 'right'; for (let v = 170; v <= 230; v += 10) g.fillText(v, m - 4, Y(v) + 4);
       g.textAlign = 'center'; g.fillText('culmen_length_mm (부리 길이)', cv.width / 2, cv.height - 6);

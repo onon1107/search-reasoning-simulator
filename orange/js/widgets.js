@@ -504,12 +504,12 @@ function drawScatter(cv, t, xn, yn, cn) {
   const ext = a => { const mn = Math.min(...a), mx = Math.max(...a), p = (mx - mn) * 0.05 || 1; return [mn - p, mx + p]; };
   const [x0, x1] = ext(xs), [y0, y1] = ext(ys);
   const X = v => m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r), Y = v => H - m.b - (v - y0) / (y1 - y0) * (H - m.t - m.b);
-  g.strokeStyle = '#e6e6e6'; g.fillStyle = '#555'; g.font = '11px sans-serif'; g.lineWidth = 1;
+  g.strokeStyle = '#e6e6e6'; g.fillStyle = '#555'; g.font = '11px "A2z", "Malgun Gothic", sans-serif'; g.lineWidth = 1;
   const ticks = (a, b) => { const st = Math.pow(10, Math.floor(Math.log10((b - a) / 5))); const s2 = [1, 2, 5, 10].map(k => k * st).find(s => (b - a) / s <= 7); const out = []; for (let v = Math.ceil(a / s2) * s2; v <= b; v += s2) out.push(+v.toFixed(6)); return out; };
   ticks(x0, x1).forEach(v => { g.beginPath(); g.moveTo(X(v), m.t); g.lineTo(X(v), H - m.b); g.stroke(); g.textAlign = 'center'; g.fillText(v, X(v), H - m.b + 15); });
   ticks(y0, y1).forEach(v => { g.beginPath(); g.moveTo(m.l, Y(v)); g.lineTo(W - m.r, Y(v)); g.stroke(); g.textAlign = 'right'; g.fillText(v, m.l - 6, Y(v) + 4); });
   g.strokeStyle = '#999'; g.strokeRect(m.l, m.t, W - m.l - m.r, H - m.t - m.b);
-  g.fillStyle = '#222'; g.font = 'bold 13px sans-serif'; g.textAlign = 'center'; g.fillText(xn, m.l + (W - m.l - m.r) / 2, H - 12);
+  g.fillStyle = '#222'; g.font = 'bold 13px "A2z", "Malgun Gothic", sans-serif'; g.textAlign = 'center'; g.fillText(xn, m.l + (W - m.l - m.r) / 2, H - 12);
   g.save(); g.translate(16, m.t + (H - m.t - m.b) / 2); g.rotate(-Math.PI / 2); g.fillText(yn, 0, 0); g.restore();
   const vals = ci >= 0 ? t.columns[ci].values : null;
   pts.forEach(r => {
@@ -517,8 +517,8 @@ function drawScatter(cv, t, xn, yn, cn) {
     g.fillStyle = c + 'aa'; g.strokeStyle = c; g.beginPath(); g.arc(X(r[xi]), Y(r[yi]), 4.5, 0, Math.PI * 2); g.fill(); g.stroke();
   });
   if (vals) {
-    g.textAlign = 'left'; g.font = 'bold 12px sans-serif'; g.fillStyle = '#222'; g.fillText(cn, W - m.r + 15, m.t + 14);
-    g.font = '12px sans-serif';
+    g.textAlign = 'left'; g.font = 'bold 12px "A2z", "Malgun Gothic", sans-serif'; g.fillStyle = '#222'; g.fillText(cn, W - m.r + 15, m.t + 14);
+    g.font = '12px "A2z", "Malgun Gothic", sans-serif';
     vals.forEach((v, i) => { g.fillStyle = PALETTE_COLORS[i]; g.beginPath(); g.arc(W - m.r + 22, m.t + 34 + i * 20, 5, 0, Math.PI * 2); g.fill(); g.fillStyle = '#222'; g.fillText(v, W - m.r + 32, m.t + 38 + i * 20); });
   }
 }

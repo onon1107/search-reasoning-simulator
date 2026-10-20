@@ -299,3 +299,13 @@ dt { font-weight: 700; } dd { margin: 0; color: #444; }
   .hub-back .hb-short { display: inline; }
 }
 @media (max-width: 520px) { .hub-back { font-size: .8rem; padding: 4px 9px; } }
+
+/* ===== 인공지능 기초 시뮬레이터와 폰트 통일 (onon1107 사이트에 넣으며 추가) =====
+   본문: 에이투지체(A2z), 제목·로고: KIMM — 메인 사이트 css/style.css와 같은 파일 */
+@font-face { font-family: 'KIMM'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Light.woff2') format('woff2'); font-weight: 300; font-display: swap; }
+@font-face { font-family: 'KIMM'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'A2z'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-4Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'A2z'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/%EC%97%90%EC%9D%B4%ED%88%AC%EC%A7%80%EC%B2%B4-7Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+:root { --font-title: 'KIMM', 'Malgun Gothic', sans-serif; --font-body: 'A2z', 'Malgun Gothic', sans-serif; }
+html, body { font-family: var(--font-body); }
+h1, h2, h3, h4, .logo { font-family: var(--font-title); }
