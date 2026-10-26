@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>기대수명 예측 AI 실습실</title>
+<meta name="description" content="인공지능 기초 Ⅳ단원 '기대 수명 예측하기' 프로젝트를 코랩처럼 단계별로 실습하고 복습하는 시뮬레이터">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=20261026">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">🩺</span>
+    <div>
+      <h1>기대수명 예측 AI 실습실</h1>
+      <p class="sub">Ⅳ. 인공지능 프로젝트 · 정형 데이터 인공지능 프로젝트 실제 1 (191~200쪽)</p>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-view="practice" role="tab">🧪 실습</button>
+    <button class="tab" data-view="quiz" role="tab">📝 복습 퀴즈</button>
+    <button class="tab" data-view="cards" role="tab">📚 명령어 정리</button>
+    <button class="tab" data-view="notes" role="tab">❗ 오답 노트 <span id="noteCount" class="badge" hidden>0</span></button>
+  </nav>
+  <a class="hub-back" href="../index.html" title="인공지능 기초 시뮬레이터 처음 화면으로">← <span class="hb-full">인공지능 기초 시뮬레이터</span><span class="hb-short">처음으로</span></a>
+</header>
+
+<div class="progressbar" aria-label="실습 진행률"><div id="progFill"></div></div>
+
+<main>
+  <!-- 실습 -->
+  <section id="view-practice" class="view active">
+    <aside class="steps" id="stepNav"></aside>
+    <div class="notebook" id="notebook"></div>
+  </section>
+
+  <!-- 복습 퀴즈 -->
+  <section id="view-quiz" class="view">
+    <div class="wrap" id="quizRoot"></div>
+  </section>
+
+  <!-- 명령어 정리 -->
+  <section id="view-cards" class="view">
+    <div class="wrap">
+      <div class="view-head">
+        <h2>📚 핵심 명령어 정리</h2>
+        <p>카드를 눌러 뜻을 확인하세요. <b>가리기 모드</b>를 켜면 명령어를 보고 뜻을 먼저 떠올려 볼 수 있어요.</p>
+        <label class="switch"><input type="checkbox" id="hideMode"> <span>가리기 모드</span></label>
+      </div>
+      <div id="cardRoot"></div>
+    </div>
+  </section>
+
+  <!-- 오답 노트 -->
+  <section id="view-notes" class="view">
+    <div class="wrap" id="notesRoot"></div>
+  </section>
+</main>
+
+<footer class="foot">
+  데이터: WHO GHO Life Expectancy Dataset (Kaggle) · 결측치 제거 후 1,649행으로 차트를 그립니다.
+  <button id="resetAll" class="link">진행 기록 초기화</button>
+</footer>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="data.js?v=20261026"></script>
+<script src="charts.js?v=20261026"></script>
+<script src="content.js?v=20261026"></script>
+<script src="app.js?v=20261026"></script>
+</body>
+</html>
