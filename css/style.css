@@ -1124,6 +1124,12 @@ a.tax-item:hover {
     box-shadow: 0 4px 14px rgba(28, 96, 239, 0.28);
 }
 
+/* 수업 전 단원: 링크 없이 '준비 중...'으로 표시. 열 때는 <div>를 원래 <a href>로 되돌린다. */
+.hub-btn-locked { cursor: default; }
+.hub-btn-locked:hover { transform: none; border-color: rgba(28, 96, 239, 0.16); box-shadow: 0 10px 30px rgba(28, 96, 239, 0.08); }
+.hub-btn-locked:hover .hub-btn-title { color: var(--text); }
+.hub-btn-locked .hub-btn-go { background: #F28C28; box-shadow: 0 4px 14px rgba(242, 140, 40, 0.3); }
+
 @media (max-width: 720px) {
     .hub-hero h2 { font-size: 26px; }
     .hub-btn { min-height: 220px; padding: 40px 24px 32px; }
