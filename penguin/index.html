@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>펭귄 분류 프로젝트 시뮬레이터 | 인공지능 기초 Ⅳ단원</title>
+<meta name="description" content="인공지능 기초 Ⅳ단원(181~188쪽) 펭귄 분류 프로젝트를 브라우저에서 실습하는 시뮬레이터. 교과서 핵심 코드 17개를 빈칸으로 채우며 복습합니다.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐧</text></svg>">
+<link rel="stylesheet" href="css/style.css?v=20261026">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">🐧</span>
+    <div>
+      <h1>펭귄 분류 프로젝트 시뮬레이터</h1>
+      <div class="sub">인공지능 기초 Ⅳ단원 · 교과서 181~188쪽</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div class="progress-wrap">
+    <span class="progress-label">핵심 코드 <b id="pgNow">0</b>/<b id="pgAll">17</b></span>
+    <div class="progress" role="progressbar" aria-label="핵심 코드 복습 진행률"
+         aria-valuemin="0" aria-valuemax="17" aria-valuenow="0" id="pgBar"><i></i></div>
+  </div>
+  <button class="icon-btn" id="themeBtn" title="밝은 화면 / 어두운 화면 전환">◐ 화면</button>
+  <button class="icon-btn" id="resetBtn" title="저장된 진행 상황 지우기">초기화</button>
+  <a class="icon-btn hub-back" href="../index.html" title="인공지능 기초 시뮬레이터 처음 화면으로">← <span class="hb-full">인공지능 기초 시뮬레이터</span><span class="hb-short">처음으로</span></a>
+</header>
+
+<div class="shell">
+
+  <!-- ============================ 사이드바 ============================ -->
+  <nav class="sidebar" aria-label="프로젝트 수행 과정">
+    <ul class="steps" id="stepNav"></ul>
+    <div class="side-note">
+      <b>실습 방법</b><br>
+      파란 빈칸에 코드를 직접 입력하고 <b>실행</b>을 누르세요. 코드가 맞으면 실제 계산 결과가
+      그대로 나타납니다.<br><br>
+      <a href="data/penguins_size.csv" download>penguins_size.csv 내려받기</a><br>
+      <span style="color:var(--ink-muted)">코랩에서 같은 코드를 실습할 때 사용</span>
+    </div>
+  </nav>
+
+  <main id="main">
+
+  <!-- ======================= STEP 1 · 문제 정의 ======================= -->
+  <section class="step active" id="step0" data-title="문제 정의">
+    <div class="step-head">
+      <span class="eyebrow">STEP 1 · 문제 정의 <span class="page">· 179~181쪽</span></span>
+      <h2>남극 펭귄의 종류를 구별하는 모델을 만들 수 있을까?</h2>
+      <p>인공지능 프로젝트는 <b>문제 정의 → 데이터 수집 → 데이터 전처리 → 알고리즘 선정 →
+        모델 학습 → 성능 평가</b>의 여섯 단계로 진행됩니다. 이 시뮬레이터는 그 여섯 단계를
+        순서대로 따라가며, 각 단계의 핵심 코드를 직접 완성해 보도록 만들어졌습니다.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">!</span>상황</h3>
+      <div class="scenario">
+        남극 연구소에서 <strong>부상당한 펭귄</strong>을 발견했지만, 현재 어떤 종인지 확인할 수
+        없는 상황입니다. 각 종마다 먹이와 치료 방법이 다르기 때문에 종을 분류하는 일은 매우
+        중요합니다. 급한 대로 한국 기지에 연락했지만 <strong>카메라도 작동하지 않는</strong>
+        난처한 상황에 놓여 있습니다.<br><br>
+        어떻게 하면 펭귄의 <strong>부리와 날개 등 생김새만으로</strong> 펭귄의 종을 분류하는
+        인공지능 모델을 개발할 수 있을까요?
+      </div>
+      <p style="margin:14px 0 0"><span class="badge sdg">◉ SDGs 14 · 해양 생태계 보전</span>
+        <span class="badge">기계학습 유형 · 분류(Classification)</span></p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">?</span>어떤 정보가 필요할까</h3>
+      <p class="lead">팔머(Palmer) 군도에서 2007~2009년에 수집된 펭귄 344마리의 측정 기록을
+        사용합니다. 모델은 아래 네 가지 신체 측정값만으로 종을 맞혀야 합니다.</p>
+      <div class="grid2">
+        <div>
+          <svg viewBox="0 0 320 240" style="width:100%;max-width:320px" role="img"
+               aria-label="펭귄의 부리 길이, 부리 깊이, 지느러미 길이를 표시한 그림">
+            <!-- 몸통 -->
+            <ellipse cx="150" cy="150" rx="58" ry="72" fill="var(--surface-2)"
+                     stroke="var(--line-strong)" stroke-width="1.5"/>
+            <ellipse cx="150" cy="158" rx="34" ry="56" fill="var(--surface-1)"
+                     stroke="var(--line)" stroke-width="1"/>
+            <!-- 머리 -->
+            <circle cx="150" cy="70" r="36" fill="var(--surface-2)"
+                    stroke="var(--line-strong)" stroke-width="1.5"/>
+            <circle cx="163" cy="62" r="3.4" fill="var(--ink)"/>
+            <!-- 부리 -->
+            <path d="M184 72 L232 78 L184 86 Z" fill="var(--sp-1)" stroke="var(--sp-1)"
+                  stroke-width="1"/>
+            <!-- 지느러미(날개) -->
+            <path d="M96 120 C58 150 48 196 70 212 C86 200 104 168 108 140 Z"
+                  fill="var(--sp-0)" fill-opacity=".22" stroke="var(--sp-0)" stroke-width="1.5"/>
+            <!-- 부리 길이 -->
+            <line x1="184" y1="46" x2="232" y2="46" stroke="var(--ink-2)" stroke-width="1.3"/>
+            <line x1="184" y1="42" x2="184" y2="72" stroke="var(--ink-2)" stroke-width="1"
+                  stroke-dasharray="2 3"/>
+            <line x1="232" y1="42" x2="232" y2="78" stroke="var(--ink-2)" stroke-width="1"
+                  stroke-dasharray="2 3"/>
+            <text x="208" y="38" font-size="11.5" fill="var(--ink)" text-anchor="middle"
+                  font-weight="600">부리 길이</text>
+            <!-- 부리 깊이 -->
+            <line x1="254" y1="78" x2="254" y2="86" stroke="var(--ink-2)" stroke-width="1.3"/>
+            <line x1="232" y1="78" x2="258" y2="78" stroke="var(--ink-2)" stroke-width="1"
+                  stroke-dasharray="2 3"/>
+            <line x1="232" y1="86" x2="258" y2="86" stroke="var(--ink-2)" stroke-width="1"
+                  stroke-dasharray="2 3"/>
+            <text x="264" y="86" font-size="11.5" fill="var(--ink)" font-weight="600">부리 깊이</text>
+            <!-- 지느러미 길이 -->
+            <line x1="40" y1="120" x2="40" y2="212" stroke="var(--ink-2)" stroke-width="1.3"/>
+            <line x1="36" y1="120" x2="96" y2="120" stroke="var(--ink-2)" stroke-width="1"
+                  stroke-dasharray="2 3"/>
+            <line x1="36" y1="212" x2="70" y2="212" stroke="var(--ink-2)" stroke-width="1"
+                  stroke-dasharray="2 3"/>
+            <text x="34" y="170" font-size="11.5" fill="var(--ink)" text-anchor="middle"
+                  font-weight="600" transform="rotate(-90 34 170)">지느러미 길이</text>
+            <!-- 발 -->
+            <path d="M132 218 l-16 12 h30 z" fill="var(--sp-1)" fill-opacity=".5"/>
+            <path d="M168 218 l16 12 h-30 z" fill="var(--sp-1)" fill-opacity=".5"/>
+          </svg>
+        </div>
+        <div class="attrs">
+          <div><code>species</code><span>펭귄의 종류 — <b>맞혀야 하는 값</b>(Adelie·Chinstrap·Gentoo)</span></div>
+          <div><code>island</code><span>관측한 섬의 이름 (Torgersen·Biscoe·Dream)</span></div>
+          <div><code>culmen_length_mm</code><span>부리의 길이 (mm)</span></div>
+          <div><code>culmen_depth_mm</code><span>부리의 깊이 (mm)</span></div>
+          <div><code>flipper_length_mm</code><span>지느러미 길이 (mm)</span></div>
+          <div><code>body_mass_g</code><span>펭귄의 체질량 (g)</span></div>
+          <div><code>sex</code><span>펭귄의 성별 (MALE·FEMALE)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">Q</span>확인 문제</h3>
+      <div class="quiz" data-quiz="q-type">
+        <p class="q">펭귄의 측정값으로 <b>종(Adelie·Chinstrap·Gentoo)</b>을 맞히는 이 문제는
+          어떤 기계학습 유형일까요?</p>
+        <div class="opts">
+          <button class="opt" data-ok="0"><span class="mk">A</span><span>회귀 — 연속적인 숫자값을 예측한다</span></button>
+          <button class="opt" data-ok="1"><span class="mk">B</span><span>분류 — 정해진 몇 개의 범주 중 하나를 예측한다</span></button>
+          <button class="opt" data-ok="0"><span class="mk">C</span><span>군집 — 정답 없이 비슷한 것끼리 묶는다</span></button>
+        </div>
+        <div class="feedback" hidden></div>
+      </div>
+    </div>
+
+    <div class="navrow"><span></span><button class="btn" data-go="1">다음 단계 · 데이터 수집 →</button></div>
+  </section>
+
+  <!-- ====================== STEP 2 · 데이터 수집 ====================== -->
+  <section class="step" id="step1" data-title="데이터 수집">
+    <div class="step-head">
+      <span class="eyebrow">STEP 2 · 데이터 수집 <span class="page">· 181~182쪽</span></span>
+      <h2>데이터를 불러와 데이터프레임으로 만들기</h2>
+      <p>캐글(Kaggle)에서 내려받은 <code>penguins_size.csv</code> 파일을 판다스(pandas)
+        라이브러리로 읽어 <code>df</code> 변수에 데이터프레임으로 저장합니다.</p>
+    </div>
+
+    <div class="tip"><b>알아두면 쓸모 있는</b> — <code>import pandas as pd</code> 는 판다스를
+      <code>pd</code> 라는 짧은 별명으로 가져오는 코드입니다. 이후 판다스 기능은 모두
+      <code>pd.</code> 로 시작합니다.</div>
+
+    <div class="codeblock" data-id="load" data-run="runLoad">
+      <div class="cb-head"><span class="dot"></span><span class="t">① 판다스 라이브러리를 가져오고 데이터 불러오기</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>import pandas as pd
+df = <b class="blank" data-a="pd.read_csv" data-w="11" data-hint="판다스(pd)로 CSV 파일을 읽는 함수입니다. 「pd.」 로 시작합니다."></b>('<span class="str">penguins_size.csv</span>')</code></pre>
+      <div class="cb-actions">
+        <button class="btn" data-act="run">실행</button>
+        <button class="btn ghost" data-act="hint">힌트</button>
+        <button class="btn ghost" data-act="answer">정답 보기</button>
+        <span class="msg"></span>
+      </div>
+      <div class="cb-out"></div>
+    </div>
+
+    <div class="navrow">
+      <button class="btn ghost" data-go="0">← 문제 정의</button>
+      <button class="btn" data-go="2">다음 단계 · 데이터 전처리 →</button>
+    </div>
+  </section>
+
+  <!-- ===================== STEP 3 · 데이터 전처리 ===================== -->
+  <section class="step" id="step2" data-title="데이터 전처리">
+    <div class="step-head">
+      <span class="eyebrow">STEP 3 · 데이터 전처리 <span class="page">· 182~185쪽</span></span>
+      <h2>데이터를 모델이 학습할 수 있는 형태로 다듬기</h2>
+      <p>전처리는 프로젝트에서 가장 손이 많이 가는 단계입니다. 데이터 정보를 확인하고,
+        <b>결측치</b>와 <b>이상치</b>를 처리하고, 시각화로 속성 사이의 관계를 살펴본 뒤,
+        학습에 쓸 속성을 골라 훈련·테스트 데이터로 나눕니다.</p>
+    </div>
+
+    <!-- ② 정보 확인 -->
+    <div class="card">
+      <h3><span class="num">②</span>데이터 정보 확인하기</h3>
+      <p class="lead"><code>info()</code>로 행 수·속성·결측치 여부를, <code>head()</code>로 앞의
+        5개 행을, <code>describe()</code>로 수치형 속성의 요약 통계를 확인합니다.</p>
+
+      <div class="codeblock" data-id="info" data-run="runInfo">
+        <div class="cb-head"><span class="dot"></span><span class="t">df 의 전체 정보 확인</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>df.<b class="blank" data-a="info()" data-w="7" data-hint="데이터프레임의 행 수·열 이름·결측치가 아닌 개수·자료형을 한 번에 보여 줍니다. 괄호까지 입력하세요."></b></code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <button class="btn ghost" data-act="hint">힌트</button>
+          <button class="btn ghost" data-act="answer">정답 보기</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+
+      <div class="codeblock" data-id="head" data-run="runHead">
+        <div class="cb-head"><span class="dot"></span><span class="t">앞의 5개 행 출력 (코드가 모두 주어진 블록)</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>df.head()</code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+
+      <div class="codeblock" data-id="describe" data-run="runDescribe">
+        <div class="cb-head"><span class="dot"></span><span class="t">수치형 속성의 요약 통계</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>df.<b class="blank" data-a="describe()" data-w="11" data-hint="개수·평균·표준편차·최솟값·사분위수·최댓값을 한 번에 계산합니다."></b></code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <button class="btn ghost" data-act="hint">힌트</button>
+          <button class="btn ghost" data-act="answer">정답 보기</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+    </div>
+
+    <!-- ③ 결측치 -->
+    <div class="card">
+      <h3><span class="num">③</span>결측치 확인 및 처리하기</h3>
+      <p class="lead"><b>결측치</b>는 값이 비어 있는 칸입니다. <code>isna()</code>는 칸마다
+        비었는지를 True/False 로 알려 주고, 뒤에 <code>sum()</code>을 붙이면 속성별 개수를 셉니다.</p>
+
+      <div class="codeblock" data-id="isna" data-run="runIsna">
+        <div class="cb-head"><span class="dot"></span><span class="t">셀 단위 결측치 확인</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>df.isna()</code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+
+      <div class="codeblock" data-id="isnasum" data-run="runIsnaSum">
+        <div class="cb-head"><span class="dot"></span><span class="t">속성별 결측치 개수 세기</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>df.<b class="blank" data-a="isna().sum()|isnull().sum()" data-w="13" data-hint="isna() 뒤에 합계를 구하는 함수를 이어 붙입니다. 「isna().sum()」"></b></code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <button class="btn ghost" data-act="hint">힌트</button>
+          <button class="btn ghost" data-act="answer">정답 보기</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+
+      <div class="codeblock" data-id="dropna" data-run="runDropna">
+        <div class="cb-head"><span class="dot"></span><span class="t">결측치가 있는 행 삭제</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>df = df.dropna()   <span class="cmt"># 결측치 행 삭제</span>
+df.isna().sum()    <span class="cmt"># 결측치 개수 확인</span></code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+    </div>
+
+    <!-- ④ 이상치 -->
+    <div class="card">
+      <h3><span class="num">④</span>이상치 확인 및 처리하기</h3>
+      <p class="lead"><code>unique()</code>는 그 속성에 들어 있는 <b>고유한 값</b>만 보여 줍니다.
+        범주형 속성에 이상한 값이 섞여 있는지 확인하는 데 쓰입니다.</p>
+
+      <div class="codeblock" data-id="unique" data-run="runUnique">
+        <div class="cb-head"><span class="dot"></span><span class="t">세 범주형 속성의 고유한 값 확인</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>df['<span class="str">species</span>'].<b class="blank" data-a="unique()" data-w="9" data-hint="중복을 없애고 고유한 값만 배열로 돌려주는 함수입니다."></b>   <span class="cmt"># 고유한 값(세 종류의 펭귄) 확인</span>
+df['<span class="str">island</span>'].unique()      <span class="cmt"># 고유한 값(세 종류의 섬) 확인</span>
+df['<span class="str">sex</span>'].unique()         <span class="cmt"># 고유한 값(두 종류의 성별) 확인</span></code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <button class="btn ghost" data-act="hint">힌트</button>
+          <button class="btn ghost" data-act="answer">정답 보기</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+
+      <div class="tip warn"><b>이상치 발견</b> — <code>sex</code> 속성에 <code>'MALE'</code>,
+        <code>'FEMALE'</code> 말고 <code>'.'</code> 이라는 값이 섞여 있습니다. 이 행을
+        <code>drop()</code>으로 지워야 합니다.</div>
+
+      <div class="codeblock" data-id="outlier" data-run="runOutlier">
+        <div class="cb-head"><span class="dot"></span><span class="t">sex 속성의 이상치 제거</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>df = df.drop(df[<b class="blank" data-a="df['sex'] == '.'|df['sex']=='.'" data-w="16" data-hint="sex 값이 마침표인 행만 고르는 조건식입니다. 「df['sex'] == '.'」"></b>].index)   <span class="cmt"># 이상치 제거</span>
+df['<span class="str">sex</span>'].unique()   <span class="cmt"># 고유한 값 확인</span></code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <button class="btn ghost" data-act="hint">힌트</button>
+          <button class="btn ghost" data-act="answer">정답 보기</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+    </div>
+
+    <!-- ⑤ 시각화 -->
+    <div class="card">
+      <h3><span class="num">⑤</span>시각화로 변수의 관계와 분포 살펴보기</h3>
+      <p class="lead"><code>seaborn</code>의 <code>pairplot()</code>은 모든 속성 쌍의 산점도를
+        한 번에 그려 줍니다. <code>hue='species'</code>를 주면 종별로 색을 달리 칠합니다.
+        어떤 속성이 세 종을 가장 잘 나누는지 찾아봅시다.</p>
+
+      <div class="codeblock" data-id="pairplot" data-run="runPairplot">
+        <div class="cb-head"><span class="dot"></span><span class="t">속성 쌍 산점도 행렬</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>import seaborn as sns
+sns.<b class="blank" data-a="pairplot" data-w="9" data-hint="모든 속성 쌍(pair)의 그래프(plot)를 격자로 그려 주는 함수입니다."></b>(df, hue = '<span class="str">species</span>')</code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <button class="btn ghost" data-act="hint">힌트</button>
+          <button class="btn ghost" data-act="answer">정답 보기</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+
+      <p class="lead" style="margin-top:18px">더 직관적으로 관계를 보려면 <b>상관계수</b>를
+        히트맵으로 그립니다. 그런데 상관계수는 숫자끼리만 계산할 수 있으므로, 먼저
+        <code>map()</code>으로 범주형 값을 숫자로 바꿔야 합니다.</p>
+
+      <div class="tip"><b>여기서 잠깐!</b> 범주형 데이터를 컴퓨터로 처리하려면 수치형으로 바꾸는
+        과정이 필요합니다. <code>map()</code> 함수에 <code>{'값': 숫자}</code> 형태의 딕셔너리를
+        넘기면 간단하게 변환됩니다.</div>
+
+      <div class="codeblock" data-id="corrmap" data-run="runCorr">
+        <div class="cb-head"><span class="dot"></span><span class="t">범주형 → 수치형 변환 후 상관계수 히트맵</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>df['<span class="str">species</span>'] = df['<span class="str">species</span>'].<b class="blank" data-a="map" data-w="5" data-hint="딕셔너리의 규칙대로 값을 하나씩 바꿔 주는 함수입니다."></b>(<b class="blank" data-a="{'Adelie': 0, 'Chinstrap': 1, 'Gentoo': 2}" data-w="34" data-hint="아래 두 줄과 같은 형태입니다. Adelie→0, Chinstrap→1, Gentoo→2"></b>)
+df['<span class="str">sex</span>'] = df['<span class="str">sex</span>'].map({'<span class="str">MALE</span>': 1, '<span class="str">FEMALE</span>': 0})
+df['<span class="str">island</span>'] = df['<span class="str">island</span>'].map({'<span class="str">Torgersen</span>': 0, '<span class="str">Biscoe</span>': 1, '<span class="str">Dream</span>': 2})
+corr_matrix = df.<b class="blank" data-a="corr()" data-w="7" data-hint="속성끼리의 상관계수 행렬을 계산하는 함수입니다."></b>   <span class="cmt"># 상관계수</span>
+sns.heatmap(corr_matrix, annot = True, cmap = '<span class="str">coolwarm</span>')   <span class="cmt"># coolwarm 색 설정</span></code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <button class="btn ghost" data-act="hint">힌트</button>
+          <button class="btn ghost" data-act="answer">정답 보기</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+    </div>
+
+    <!-- ⑥⑦⑧ -->
+    <div class="card">
+      <h3><span class="num">⑥</span>학습에 필요한 속성 선택하기</h3>
+      <p class="lead">히트맵에서 <code>island</code>와 <code>sex</code>는 <code>species</code>와
+        상관관계가 거의 없었습니다(0.01 수준). 의미 있는 네 개의 신체 측정값만 남깁니다.</p>
+      <div class="codeblock" data-id="select" data-run="runSelect">
+        <div class="cb-head"><span class="dot"></span><span class="t">필요한 열만 남기기</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>df = df[['<span class="str">species</span>', '<span class="str">culmen_length_mm</span>', '<span class="str">culmen_depth_mm</span>',
+         '<span class="str">flipper_length_mm</span>', '<span class="str">body_mass_g</span>']]</code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">⑦</span>독립 변수와 종속 변수로 나누기</h3>
+      <p class="lead">맞혀야 하는 값 <code>species</code>는 <b>종속 변수 y</b>, 나머지 네 측정값은
+        <b>독립 변수 X</b>가 됩니다. <code>axis=1</code>은 '열 방향으로 삭제'를 뜻합니다.</p>
+      <div class="codeblock" data-id="xy" data-run="runXY">
+        <div class="cb-head"><span class="dot"></span><span class="t">X(독립 변수)와 y(종속 변수) 만들기</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>X = df.<b class="blank" data-a="drop" data-w="6" data-hint="지정한 열을 떨어뜨려(삭제해) 나머지만 남기는 함수입니다."></b>('<span class="str">species</span>', axis=1)
+y = df['<span class="str">species</span>']</code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <button class="btn ghost" data-act="hint">힌트</button>
+          <button class="btn ghost" data-act="answer">정답 보기</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">⑧</span>훈련 데이터와 테스트 데이터 분리하기</h3>
+      <p class="lead">모델을 공부시킬 <b>훈련 데이터</b>와, 실력을 시험할 <b>테스트 데이터</b>를
+        나눕니다. 테스트 데이터의 비율은 20%로 합니다. <code>random_state=42</code>는 섞는 방식을
+        고정해 누가 실행해도 같은 결과가 나오게 하는 장치입니다.</p>
+      <div class="codeblock" data-id="split" data-run="runSplit">
+        <div class="cb-head"><span class="dot"></span><span class="t">8 : 2 로 데이터 분리</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = <b class="blank" data-a="train_test_split" data-w="16" data-hint="바로 위 줄에서 가져온(import) 함수의 이름을 그대로 적습니다."></b>(X, y, test_size=<b class="blank" data-a="0.2|.2|0.20" data-w="5" data-hint="테스트 데이터 비율 20% 를 소수로 적습니다."></b>, random_state=42)</code></pre>
+        <div class="cb-actions">
+          <button class="btn" data-act="run">실행</button>
+          <button class="btn ghost" data-act="hint">힌트</button>
+          <button class="btn ghost" data-act="answer">정답 보기</button>
+          <span class="msg"></span>
+        </div>
+        <div class="cb-out"></div>
+      </div>
+    </div>
+
+    <div class="navrow">
+      <button class="btn ghost" data-go="1">← 데이터 수집</button>
+      <button class="btn" data-go="3">다음 단계 · 알고리즘 선정 →</button>
+    </div>
+  </section>
+
+  <!-- ==================== STEP 4 · 알고리즘 선정 ==================== -->
+  <section class="step" id="step3" data-title="알고리즘 선정">
+    <div class="step-head">
+      <span class="eyebrow">STEP 4 · 기계학습 유형과 알고리즘 선정 <span class="page">· 186쪽</span></span>
+      <h2>분류에 적합한 알고리즘 두 가지를 준비하기</h2>
+      <p>문제 유형이 <b>분류</b>이고 데이터 크기가 <b>작기</b>(333행) 때문에
+        <b>k-최근접 이웃(k-NN)</b>과 <b>로지스틱 회귀</b>가 적합합니다. 두 가지로 각각 학습시킨 뒤
+        정확도를 비교하겠습니다.</p>
+    </div>
+
+    <div>
+      <div class="card">
+        <h3><span class="num">k</span>k-최근접 이웃 (k-NN)</h3>
+        <p class="lead">새 펭귄과 <b>가장 가까운 k마리</b>를 찾아, 그중 가장 많은 종으로
+          결정합니다. <code>n_neighbors</code>가 바로 그 k 값입니다.</p>
+        <div class="codeblock" data-id="knninit" data-run="runKnnInit" style="margin-bottom:0">
+          <div class="cb-head"><span class="dot"></span><span class="t">k-NN 모델 준비</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>from sklearn.neighbors import KNeighborsClassifier
+knn = <b class="blank" data-a="KNeighborsClassifier" data-w="20" data-hint="위 줄에서 가져온 분류기 이름을 그대로 적습니다. 대문자에 주의하세요."></b>(n_neighbors = <b class="blank" data-a="3" data-w="4" data-hint="교과서에서는 이웃 3마리를 봅니다."></b>)</code></pre>
+          <div class="cb-actions">
+            <button class="btn" data-act="run">실행</button>
+            <button class="btn ghost" data-act="hint">힌트</button>
+            <button class="btn ghost" data-act="answer">정답 보기</button>
+            <span class="msg"></span>
+          </div>
+          <div class="cb-out"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="num">L</span>로지스틱 회귀</h3>
+        <p class="lead">각 종에 속할 <b>확률</b>을 계산해 확률이 가장 높은 종으로 결정합니다.
+          <code>max_iter</code>는 최대 반복 횟수입니다.</p>
+        <div class="codeblock" data-id="loginit" data-run="runLogInit" style="margin-bottom:0">
+          <div class="cb-head"><span class="dot"></span><span class="t">로지스틱 회귀 모델 준비</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>from sklearn.linear_model import LogisticRegression
+log_reg = <b class="blank" data-a="LogisticRegression" data-w="18" data-hint="위 줄에서 가져온 클래스 이름을 그대로 적습니다."></b>(random_state=42, max_iter = 2000)</code></pre>
+          <div class="cb-actions">
+            <button class="btn" data-act="run">실행</button>
+            <button class="btn ghost" data-act="hint">힌트</button>
+            <button class="btn ghost" data-act="answer">정답 보기</button>
+            <span class="msg"></span>
+          </div>
+          <div class="cb-out"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">▶</span>k-NN은 어떻게 판단할까 — 직접 움직여 보기</h3>
+      <p class="lead">테스트 데이터에서 펭귄 한 마리를 골라 보세요. 훈련 데이터 중
+        <b>가장 가까운 k마리</b>를 선으로 연결하고, 그 k마리의 <b>투표 결과</b>를 보여 줍니다.
+        k를 바꾸면 판단이 어떻게 달라지는지 확인해 보세요.</p>
+      <div class="controls" style="margin-bottom:14px">
+        <div class="ctrl">
+          <label for="knnPick">테스트 펭귄</label>
+          <select id="knnPick"></select>
+        </div>
+        <div class="ctrl">
+          <label for="knnK">이웃 수 k = <span class="val" id="knnKv">3</span></label>
+          <input type="range" id="knnK" min="1" max="15" step="2" value="3">
+        </div>
+        <div class="ctrl">
+          <label for="knnAxis">보여 줄 두 속성</label>
+          <select id="knnAxis">
+            <option value="0,2">부리 길이 × 지느러미 길이</option>
+            <option value="0,1">부리 길이 × 부리 깊이</option>
+            <option value="2,3">지느러미 길이 × 체질량</option>
+            <option value="1,3">부리 깊이 × 체질량</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div><div class="chart" id="knnChart"></div>
+          <p class="chart-cap">거리는 네 속성 모두를 사용해 계산하고, 그림에는 선택한 두 속성만
+            나타냅니다. 진한 마커가 선택된 이웃입니다.</p></div>
+        <div id="knnVote"></div>
+      </div>
+      <div style="margin-top:12px" id="knnLegend"></div>
+    </div>
+
+    <div class="navrow">
+      <button class="btn ghost" data-go="2">← 데이터 전처리</button>
+      <button class="btn" data-go="4">다음 단계 · 모델 학습 →</button>
+    </div>
+  </section>
+
+  <!-- ====================== STEP 5 · 모델 학습 ====================== -->
+  <section class="step" id="step4" data-title="모델 학습">
+    <div class="step-head">
+      <span class="eyebrow">STEP 5 · 모델 학습 <span class="page">· 186쪽</span></span>
+      <h2>fit() 으로 학습하고 predict() 로 예측하기</h2>
+      <p><code>fit(X_train, y_train)</code>은 훈련 데이터로 모델을 <b>공부시키는</b> 함수,
+        <code>predict(X_test)</code>는 학습한 모델로 <b>답을 적어 내는</b> 함수입니다.
+        이 두 함수 이름은 scikit-learn의 모든 모델에서 똑같이 쓰입니다.</p>
+    </div>
+
+    <div class="codeblock" data-id="knnfit" data-run="runKnnFit">
+      <div class="cb-head"><span class="dot"></span><span class="t">k-NN 학습 &amp; 예측</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>knn.<b class="blank" data-a="fit" data-w="5" data-hint="훈련 데이터를 모델에 맞추어(fit) 학습시키는 함수입니다."></b>(X_train, y_train)
+y_pred_knn = knn.<b class="blank" data-a="predict" data-w="8" data-hint="학습한 모델로 예측(predict)하는 함수입니다."></b>(X_test)</code></pre>
+      <div class="cb-actions">
+        <button class="btn" data-act="run">실행</button>
+        <button class="btn ghost" data-act="hint">힌트</button>
+        <button class="btn ghost" data-act="answer">정답 보기</button>
+        <span class="msg"></span>
+      </div>
+      <div class="cb-out"></div>
+    </div>
+
+    <div class="codeblock" data-id="logfit" data-run="runLogFit">
+      <div class="cb-head"><span class="dot"></span><span class="t">로지스틱 회귀 학습 &amp; 예측</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>log_reg.<b class="blank" data-a="fit" data-w="5" data-hint="k-NN 과 똑같은 함수 이름을 씁니다."></b>(X_train, y_train)
+y_pred_log_reg = log_reg.<b class="blank" data-a="predict" data-w="8" data-hint="k-NN 과 똑같은 함수 이름을 씁니다."></b>(X_test)</code></pre>
+      <div class="cb-actions">
+        <button class="btn" data-act="run">실행</button>
+        <button class="btn ghost" data-act="hint">힌트</button>
+        <button class="btn ghost" data-act="answer">정답 보기</button>
+        <span class="msg"></span>
+      </div>
+      <div class="cb-out"></div>
+    </div>
+
+    <div class="navrow">
+      <button class="btn ghost" data-go="3">← 알고리즘 선정</button>
+      <button class="btn" data-go="5">다음 단계 · 성능 평가 →</button>
+    </div>
+  </section>
+
+  <!-- ====================== STEP 6 · 성능 평가 ====================== -->
+  <section class="step" id="step5" data-title="성능 평가">
+    <div class="step-head">
+      <span class="eyebrow">STEP 6 · 성능 평가 <span class="page">· 187쪽</span></span>
+      <h2>정확도와 혼동행렬로 두 모델을 비교하기</h2>
+      <p><b>정확도</b>는 전체 중 맞힌 비율입니다. 그런데 정확도 하나만으로는 '어떤 종을
+        어떻게 틀렸는지' 알 수 없습니다. 그래서 실젯값과 예측값을 표로 펼친
+        <b>혼동행렬</b>을 함께 봅니다.</p>
+    </div>
+
+    <div class="codeblock" data-id="acc" data-run="runAcc">
+      <div class="cb-head"><span class="dot"></span><span class="t">정확도 계산</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>from sklearn.metrics import accuracy_score
+accuracy_knn = <b class="blank" data-a="accuracy_score" data-w="14" data-hint="위 줄에서 가져온 함수 이름을 그대로 적습니다."></b>(<b class="blank" data-a="y_test" data-w="7" data-hint="정답(실젯값)을 먼저 넣습니다."></b>, <b class="blank" data-a="y_pred_knn" data-w="11" data-hint="k-NN 이 예측한 값을 담은 변수입니다."></b>)
+accuracy_log_reg = accuracy_score(y_test, y_pred_log_reg)
+print('<span class="str">kNN Accuracy :</span>', accuracy_knn)
+print('<span class="str">logistic regression Accuracy:</span>', accuracy_log_reg)</code></pre>
+      <div class="cb-actions">
+        <button class="btn" data-act="run">실행</button>
+        <button class="btn ghost" data-act="hint">힌트</button>
+        <button class="btn ghost" data-act="answer">정답 보기</button>
+        <span class="msg"></span>
+      </div>
+      <div class="cb-out"></div>
+    </div>
+
+    <div class="codeblock" data-id="conf" data-run="runConf">
+      <div class="cb-head"><span class="dot"></span><span class="t">혼동행렬 출력</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code>from sklearn.metrics import confusion_matrix
+conf_mat_knn = <b class="blank" data-a="confusion_matrix" data-w="16" data-hint="위 줄에서 가져온 함수 이름을 그대로 적습니다."></b>(<b class="blank" data-a="y_test" data-w="7" data-hint="정확도와 마찬가지로 실젯값을 먼저 넣습니다."></b>, <b class="blank" data-a="y_pred_knn" data-w="11" data-hint="k-NN 의 예측값입니다."></b>)
+conf_mat_log_reg = confusion_matrix(y_test, y_pred_log_reg)
+print('<span class="str">kNN Confusion Matrix:\n</span>', conf_mat_knn)
+print('<span class="str">logistic regression Confusion Matrix:\n</span>', conf_mat_log_reg)</code></pre>
+      <div class="cb-actions">
+        <button class="btn" data-act="run">실행</button>
+        <button class="btn ghost" data-act="hint">힌트</button>
+        <button class="btn ghost" data-act="answer">정답 보기</button>
+        <span class="msg"></span>
+      </div>
+      <div class="cb-out"></div>
+    </div>
+
+    <div class="navrow">
+      <button class="btn ghost" data-go="4">← 모델 학습</button>
+      <button class="btn" data-go="6">스스로 해결하기 · 표준화 →</button>
+    </div>
+  </section>
+
+  <!-- ================= STEP 7 · 스스로 해결하기(표준화) ================= -->
+  <section class="step" id="step6" data-title="스스로 해결하기">
+    <div class="step-head">
+      <span class="eyebrow">스스로 해결하기 · 성능 개선 <span class="page">· 188쪽</span></span>
+      <h2>표준화를 하면 k-NN의 성능은 어떻게 달라질까?</h2>
+      <p>k-NN은 '거리'로 판단하기 때문에 <b>숫자의 크기(단위)에 매우 민감</b>합니다.
+        체질량은 3000~6000, 부리 깊이는 13~22 범위입니다. 거리를 계산하면 체질량의 차이가
+        모든 것을 압도해 버립니다. <code>StandardScaler</code>로 모든 속성을
+        <b>평균 0, 표준편차 1</b>로 맞춰 봅시다.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">?</span>왜 표준화가 필요할까</h3>
+      <div id="scaleWhy"></div>
+    </div>
+
+    <div class="codeblock" data-id="scaler" data-run="runScaler">
+      <div class="cb-head"><span class="dot"></span><span class="t">훈련·테스트 분리 전에 표준화하기</span><span class="spacer"></span><span class="solved" hidden>✓ 완료</span></div>
+<pre><code><span class="cmt"># 사이킷런의 라이브러리의 StandardScaler를 이용하여 표준화하기</span>
+from sklearn.preprocessing import StandardScaler
+scaler = <b class="blank" data-a="StandardScaler()" data-w="17" data-hint="위 줄에서 가져온 클래스의 객체를 만듭니다. 괄호까지 입력하세요."></b>
+X = scaler.fit_transform(X)</code></pre>
+      <div class="cb-actions">
+        <button class="btn" data-act="run">실행</button>
+        <button class="btn ghost" data-act="hint">힌트</button>
+        <button class="btn ghost" data-act="answer">정답 보기</button>
+        <span class="msg"></span>
+      </div>
+      <div class="cb-out"></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">⚙</span>실험실 — 조건을 바꿔 가며 성능 확인하기</h3>
+      <p class="lead">교과서 188쪽처럼 조건을 바꿔 코드를 다시 돌려 보는 활동입니다.
+        값을 움직이면 전체 과정이 즉시 다시 계산됩니다.</p>
+      <div class="controls" style="margin-bottom:16px">
+        <div class="ctrl">
+          <label for="labK">n_neighbors (k) = <span class="val" id="labKv">3</span></label>
+          <input type="range" id="labK" min="1" max="25" step="1" value="3">
+        </div>
+        <div class="ctrl">
+          <label for="labTest">test_size = <span class="val" id="labTestv">0.2</span></label>
+          <input type="range" id="labTest" min="10" max="40" step="5" value="20">
+        </div>
+        <div class="ctrl">
+          <label>표준화</label>
+          <label class="switch"><input type="checkbox" id="labStd"> StandardScaler 적용</label>
+        </div>
+      </div>
+      <div class="tiles" id="labTiles"></div>
+      <div class="grid2" style="margin-top:18px">
+        <div>
+          <h3 style="font-size:14px;margin:0 0 8px">정확도 비교 · 표준화 전 vs 후</h3>
+          <div class="chart" id="labBars"></div>
+          <p class="chart-cap">현재 k = <b id="labBarsK">3</b>, test_size = <b id="labBarsT">0.2</b> 기준</p>
+        </div>
+        <div>
+          <h3 style="font-size:14px;margin:0 0 8px">k 값에 따른 k-NN 정확도</h3>
+          <div class="chart" id="labLine"></div>
+          <div class="legend" style="margin-top:8px">
+            <span class="item"><span class="swatch ci" style="background:var(--sp-0)"></span>표준화 전</span>
+            <span class="item"><span class="swatch" style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:11px solid var(--sp-1)"></span>표준화 후</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid2" style="margin-top:20px">
+        <div><h3 style="font-size:14px;margin:0 0 8px">k-NN 혼동행렬</h3><div id="labConfKnn"></div></div>
+        <div><h3 style="font-size:14px;margin:0 0 8px">로지스틱 회귀 혼동행렬</h3><div id="labConfLog"></div></div>
+      </div>
+      <div class="tip" id="labRead" style="margin-top:18px"></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">✓</span>성취도 평가</h3>
+      <div class="checklist" id="achieve">
+        <label><input type="checkbox" data-ck="a1"><span>표준화를 사용하는 이유를 이해하고,
+          표준화 사용 전과 후를 비교할 수 있다. <span style="color:var(--ink-muted)">(188쪽)</span></span></label>
+        <label><input type="checkbox" data-ck="a2"><span>k-NN이 거리로 판단하기 때문에 단위의 영향을
+          크게 받는다는 점을 설명할 수 있다.</span></label>
+        <label><input type="checkbox" data-ck="a3"><span>정확도와 혼동행렬을 함께 보아야 하는 이유를
+          말할 수 있다.</span></label>
+      </div>
+    </div>
+
+    <div class="navrow">
+      <button class="btn ghost" data-go="5">← 성능 평가</button>
+      <button class="btn" data-go="7">마지막 · 코드 복습 →</button>
+    </div>
+  </section>
+
+  <!-- ==================== STEP 8 · 정리와 코드 복습 ==================== -->
+  <section class="step" id="step7" data-title="정리 · 코드 복습">
+    <div class="step-head">
+      <span class="eyebrow">프로젝트 정리 <span class="page">· 189쪽</span></span>
+      <h2>전체 코드를 한눈에 보고, 핵심 코드를 복습하기</h2>
+      <p>지금까지 완성한 코드를 모두 모았습니다. 아래 <b>코드 복습 퀴즈</b>로 핵심 함수를
+        한 번 더 점검해 보세요.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">▤</span>완성된 전체 코드</h3>
+      <p class="lead">코랩(Colab)에 그대로 붙여 넣어 실행할 수 있습니다.</p>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="btn ghost" id="copyCode">코드 복사</button>
+        <a class="btn ghost" style="text-decoration:none;display:inline-flex;align-items:center"
+           href="data/penguins_size.csv" download>penguins_size.csv 내려받기</a>
+        <span class="msg" id="copyMsg" style="font-size:12.5px;color:var(--good-ink);align-self:center"></span>
+      </div>
+      <pre class="fullcode" id="fullCode"></pre>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">Q</span>코드 복습 퀴즈</h3>
+      <p class="lead">교과서 핵심 코드에서 무작위로 10문항을 뽑습니다. 함수의 <b>역할</b>을 읽고
+        알맞은 코드를 고르세요.</p>
+      <div id="reviewQuiz"></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="num">▣</span>프로젝트 되돌아보기</h3>
+      <p class="lead">교과서 189쪽 자기 평가입니다. 체크한 내용은 이 브라우저에 저장됩니다.</p>
+      <div class="checklist" id="selfEval">
+        <label><input type="checkbox" data-ck="s1"><span><b>문제 정의</b> — 지속가능발전목표와 관련 있는
+          주제를 선정하고, 문제를 명확하게 정의하였다.</span></label>
+        <label><input type="checkbox" data-ck="s2"><span><b>데이터 수집 및 전처리</b> — 필요한 데이터를
+          수집하고 모델에 입력할 수 있도록 전처리하였다.</span></label>
+        <label><input type="checkbox" data-ck="s3"><span><b>알고리즘 선정</b> — 여러 개의 알고리즘을
+          비교하여 최적의 알고리즘을 선정하였다.</span></label>
+        <label><input type="checkbox" data-ck="s4"><span><b>모델 학습</b> — 훈련 데이터와 테스트
+          데이터를 사용하여 적합한 모델을 생성하였다.</span></label>
+        <label><input type="checkbox" data-ck="s5"><span><b>성능 평가 및 수정</b> — 평가 지표로 성능을
+          평가한 후, 성능을 높이기 위한 방법을 사용하였다.</span></label>
+      </div>
+    </div>
+
+    <div class="navrow">
+      <button class="btn ghost" data-go="6">← 스스로 해결하기</button>
+      <button class="btn ghost" data-go="0">처음으로 ↺</button>
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<footer class="pagefoot">
+  <p>수업용 시뮬레이터 · <b>인공지능 기초</b> Ⅳ단원 「지속 가능 발전 문제 해결」 181~188쪽 실습.
+    데이터: Palmer Archipelago (Antarctica) penguin data — Kristen Gorman &amp; Palmer Station LTER
+    (CC0). 브라우저에서 계산한 결과이며 scikit-learn의 동일 코드와 같은 값이 나오도록 구현했습니다.</p>
+</footer>
+
+<script src="js/data.js?v=20261026"></script>
+<script src="js/ml.js?v=20261026"></script>
+<script src="js/charts.js?v=20261026"></script>
+<script src="js/app.js?v=20261026"></script>
+</body>
+</html>
