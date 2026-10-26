@@ -1053,14 +1053,22 @@ a.tax-item:hover {
     margin: 0 auto;
 }
 
-/* 한 줄에 2개씩 고정. 단원이 늘어나면 다음 줄에 같은 크기로 쌓인다. */
+/* 6칸 격자: 첫 줄 1·2단원은 3칸씩(2개), 둘째 줄 4단원(.hub-btn-sm)은 2칸씩(3개) */
 .hub-buttons {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 28px;
+}
+.hub-buttons > .hub-btn { grid-column: span 3; }
+.hub-buttons > .hub-btn-sm { grid-column: span 2; padding: 44px 20px 36px; min-height: 280px; }
+.hub-btn-sm .hub-btn-title { font-size: 22px; }
+.hub-btn-sm .hub-btn-desc { font-size: 13px; }
+@media (max-width: 1000px) {
+    .hub-buttons > .hub-btn-sm { grid-column: span 3; }
 }
 @media (max-width: 760px) {
     .hub-buttons { grid-template-columns: 1fr; }
+    .hub-buttons > .hub-btn, .hub-buttons > .hub-btn-sm { grid-column: auto; }
 }
 
 .hub-btn {
