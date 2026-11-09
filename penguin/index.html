@@ -6,7 +6,7 @@
 <title>펭귄 분류 프로젝트 시뮬레이터 | 인공지능 기초 Ⅳ단원</title>
 <meta name="description" content="인공지능 기초 Ⅳ단원(181~188쪽) 펭귄 분류 프로젝트를 브라우저에서 실습하는 시뮬레이터. 교과서 핵심 코드 17개를 빈칸으로 채우며 복습합니다.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐧</text></svg>">
-<link rel="stylesheet" href="css/style.css?v=20261026">
+<link rel="stylesheet" href="css/style.css?v=20261109">
 </head>
 <body>
 
@@ -169,7 +169,6 @@ df = <b class="blank" data-a="pd.read_csv" data-w="11" data-hint="판다스(pd)�
       <div class="cb-actions">
         <button class="btn" data-act="run">실행</button>
         <button class="btn ghost" data-act="hint">힌트</button>
-        <button class="btn ghost" data-act="answer">정답 보기</button>
         <span class="msg"></span>
       </div>
       <div class="cb-out"></div>
@@ -203,7 +202,6 @@ df = <b class="blank" data-a="pd.read_csv" data-w="11" data-hint="판다스(pd)�
         <div class="cb-actions">
           <button class="btn" data-act="run">실행</button>
           <button class="btn ghost" data-act="hint">힌트</button>
-          <button class="btn ghost" data-act="answer">정답 보기</button>
           <span class="msg"></span>
         </div>
         <div class="cb-out"></div>
@@ -225,7 +223,6 @@ df = <b class="blank" data-a="pd.read_csv" data-w="11" data-hint="판다스(pd)�
         <div class="cb-actions">
           <button class="btn" data-act="run">실행</button>
           <button class="btn ghost" data-act="hint">힌트</button>
-          <button class="btn ghost" data-act="answer">정답 보기</button>
           <span class="msg"></span>
         </div>
         <div class="cb-out"></div>
@@ -254,7 +251,6 @@ df = <b class="blank" data-a="pd.read_csv" data-w="11" data-hint="판다스(pd)�
         <div class="cb-actions">
           <button class="btn" data-act="run">실행</button>
           <button class="btn ghost" data-act="hint">힌트</button>
-          <button class="btn ghost" data-act="answer">정답 보기</button>
           <span class="msg"></span>
         </div>
         <div class="cb-out"></div>
@@ -286,7 +282,6 @@ df['<span class="str">sex</span>'].unique()         <span class="cmt"># 고유�
         <div class="cb-actions">
           <button class="btn" data-act="run">실행</button>
           <button class="btn ghost" data-act="hint">힌트</button>
-          <button class="btn ghost" data-act="answer">정답 보기</button>
           <span class="msg"></span>
         </div>
         <div class="cb-out"></div>
@@ -303,7 +298,6 @@ df['<span class="str">sex</span>'].unique()   <span class="cmt"># 고유한 값 
         <div class="cb-actions">
           <button class="btn" data-act="run">실행</button>
           <button class="btn ghost" data-act="hint">힌트</button>
-          <button class="btn ghost" data-act="answer">정답 보기</button>
           <span class="msg"></span>
         </div>
         <div class="cb-out"></div>
@@ -324,7 +318,6 @@ sns.<b class="blank" data-a="pairplot" data-w="9" data-hint="모든 속성 쌍(p
         <div class="cb-actions">
           <button class="btn" data-act="run">실행</button>
           <button class="btn ghost" data-act="hint">힌트</button>
-          <button class="btn ghost" data-act="answer">정답 보기</button>
           <span class="msg"></span>
         </div>
         <div class="cb-out"></div>
@@ -348,7 +341,6 @@ sns.heatmap(corr_matrix, annot = True, cmap = '<span class="str">coolwarm</span>
         <div class="cb-actions">
           <button class="btn" data-act="run">실행</button>
           <button class="btn ghost" data-act="hint">힌트</button>
-          <button class="btn ghost" data-act="answer">정답 보기</button>
           <span class="msg"></span>
         </div>
         <div class="cb-out"></div>
@@ -383,7 +375,6 @@ y = df['<span class="str">species</span>']</code></pre>
         <div class="cb-actions">
           <button class="btn" data-act="run">실행</button>
           <button class="btn ghost" data-act="hint">힌트</button>
-          <button class="btn ghost" data-act="answer">정답 보기</button>
           <span class="msg"></span>
         </div>
         <div class="cb-out"></div>
@@ -402,7 +393,6 @@ X_train, X_test, y_train, y_test = <b class="blank" data-a="train_test_split" da
         <div class="cb-actions">
           <button class="btn" data-act="run">실행</button>
           <button class="btn ghost" data-act="hint">힌트</button>
-          <button class="btn ghost" data-act="answer">정답 보기</button>
           <span class="msg"></span>
         </div>
         <div class="cb-out"></div>
@@ -437,7 +427,6 @@ knn = <b class="blank" data-a="KNeighborsClassifier" data-w="20" data-hint="위 
           <div class="cb-actions">
             <button class="btn" data-act="run">실행</button>
             <button class="btn ghost" data-act="hint">힌트</button>
-            <button class="btn ghost" data-act="answer">정답 보기</button>
             <span class="msg"></span>
           </div>
           <div class="cb-out"></div>
@@ -455,7 +444,6 @@ log_reg = <b class="blank" data-a="LogisticRegression" data-w="18" data-hint="�
           <div class="cb-actions">
             <button class="btn" data-act="run">실행</button>
             <button class="btn ghost" data-act="hint">힌트</button>
-            <button class="btn ghost" data-act="answer">정답 보기</button>
             <span class="msg"></span>
           </div>
           <div class="cb-out"></div>
@@ -519,7 +507,6 @@ y_pred_knn = knn.<b class="blank" data-a="predict" data-w="8" data-hint="학습�
       <div class="cb-actions">
         <button class="btn" data-act="run">실행</button>
         <button class="btn ghost" data-act="hint">힌트</button>
-        <button class="btn ghost" data-act="answer">정답 보기</button>
         <span class="msg"></span>
       </div>
       <div class="cb-out"></div>
@@ -532,7 +519,6 @@ y_pred_log_reg = log_reg.<b class="blank" data-a="predict" data-w="8" data-hint=
       <div class="cb-actions">
         <button class="btn" data-act="run">실행</button>
         <button class="btn ghost" data-act="hint">힌트</button>
-        <button class="btn ghost" data-act="answer">정답 보기</button>
         <span class="msg"></span>
       </div>
       <div class="cb-out"></div>
@@ -564,7 +550,6 @@ print('<span class="str">logistic regression Accuracy:</span>', accuracy_log_reg
       <div class="cb-actions">
         <button class="btn" data-act="run">실행</button>
         <button class="btn ghost" data-act="hint">힌트</button>
-        <button class="btn ghost" data-act="answer">정답 보기</button>
         <span class="msg"></span>
       </div>
       <div class="cb-out"></div>
@@ -580,7 +565,6 @@ print('<span class="str">logistic regression Confusion Matrix:\n</span>', conf_m
       <div class="cb-actions">
         <button class="btn" data-act="run">실행</button>
         <button class="btn ghost" data-act="hint">힌트</button>
-        <button class="btn ghost" data-act="answer">정답 보기</button>
         <span class="msg"></span>
       </div>
       <div class="cb-out"></div>
@@ -617,7 +601,6 @@ X = scaler.fit_transform(X)</code></pre>
       <div class="cb-actions">
         <button class="btn" data-act="run">실행</button>
         <button class="btn ghost" data-act="hint">힌트</button>
-        <button class="btn ghost" data-act="answer">정답 보기</button>
         <span class="msg"></span>
       </div>
       <div class="cb-out"></div>
@@ -742,9 +725,9 @@ X = scaler.fit_transform(X)</code></pre>
     (CC0). 브라우저에서 계산한 결과이며 scikit-learn의 동일 코드와 같은 값이 나오도록 구현했습니다.</p>
 </footer>
 
-<script src="js/data.js?v=20261026"></script>
-<script src="js/ml.js?v=20261026"></script>
-<script src="js/charts.js?v=20261026"></script>
-<script src="js/app.js?v=20261026"></script>
+<script src="js/data.js?v=20261109"></script>
+<script src="js/ml.js?v=20261109"></script>
+<script src="js/charts.js?v=20261109"></script>
+<script src="js/app.js?v=20261109"></script>
 </body>
 </html>

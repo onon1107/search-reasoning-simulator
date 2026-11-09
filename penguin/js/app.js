@@ -241,15 +241,6 @@
           msg.textContent = '💡 ' + (target ? target.input.dataset.hint : '');
           if (target) target.input.focus();
         }
-        if (act === 'answer') {
-          blanks.forEach(function (b) {
-            b.input.value = b.answers[0];
-            b.input.classList.add('ok');
-            b.input.classList.remove('bad');
-          });
-          msg.className = 'msg';
-          msg.textContent = '정답을 채웠습니다. 실행을 눌러 결과를 확인하세요.';
-        }
       });
     });
 

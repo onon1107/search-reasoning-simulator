@@ -542,42 +542,6 @@ const App = (() => {
     const cur = $('.step.cur', el); if (cur && !el.dataset.scrolled) { }
   }
 
-  // ---------- 정답 워크플로 ----------
-  function buildSolution() {
-    const L = (a, b, o, i) => addLink(node(a), node(b), o, i, true);
-    S.nodes = []; S.links = [];
-    const mk = (type, x, y, settings, title) => { const n = { id: 'n' + S.nextId++, type, x, y, title: title || type, settings: { ...WIDGETS[type].defaults(), ...settings }, out: {}, inputs: {} }; S.nodes.push(n); return n.id; };
-    if (activity === 'penguin') {
-      const f = mk('File', 70, 220, { dataset: 'penguins', roles: { species: 'target' } });
-      const p = mk('Preprocess', 190, 220, { steps: [{ type: 'impute', method: 'remove' }] });
-      const d = mk('Data Table', 310, 220);
-      const sc = mk('Scatter Plot', 440, 90, { color: 'species', x: 'culmen_length_mm', y: 'flipper_length_mm' });
-      const ds = mk('Data Sampler', 440, 300, { prop: 80 });
-      const k = mk('kNN', 580, 210), lr = mk('Logistic Regression', 580, 390);
-      const ts = mk('Test and Score', 730, 300, { method: 'test' });
-      L(f, p, 'Data', 'Data'); L(p, d, 'Preprocessed Data', 'Data'); L(d, sc, 'Data', 'Data'); L(d, ds, 'Data', 'Data');
-      L(ds, k, 'Data Sample', 'Data'); L(ds, lr, 'Data Sample', 'Data'); L(ds, ts, 'Data Sample', 'Data'); L(ds, ts, 'Remaining Data', 'Test Data');
-      L(k, ts, 'Learner', 'Learner'); L(lr, ts, 'Learner', 'Learner');
-    } else if (activity === 'lung') {
-      addons.image = true; store.set('addons', addons); renderPalette();
-      const im = mk('Import Images', 70, 220, { folder: 'train' });
-      const iv = mk('Image Viewer', 200, 80);
-      const em = mk('Image Embedding', 210, 240);
-      const dt = mk('Data Table', 360, 80);
-      const rf = mk('Random Forest', 370, 200), kn = mk('kNN', 370, 310), nn = mk('Neural Network', 370, 420);
-      const ts = mk('Test and Score', 530, 260), cm = mk('Confusion Matrix', 680, 260);
-      const im2 = mk('Import Images', 70, 560, { folder: 'test' }, 'Import Images (1)');
-      const em2 = mk('Image Embedding', 210, 560, {}, 'Image Embedding (1)');
-      const pr = mk('Predictions', 560, 560);
-      L(im, iv, 'Data', 'Data'); L(im, em, 'Data', 'Images'); L(em, dt, 'Embeddings', 'Data');
-      [rf, kn, nn].forEach(m => { L(em, m, 'Embeddings', 'Data'); L(m, ts, 'Learner', 'Learner'); });
-      L(em, ts, 'Embeddings', 'Data'); L(ts, cm, 'Evaluation Results', 'Evaluation Results');
-      L(im2, em2, 'Data', 'Images'); L(em2, pr, 'Embeddings', 'Data'); L(nn, pr, 'Model', 'Predictors');
-    }
-    selected = null; closeDialog(); evaluate();
-    toast('정답 워크플로를 만들었어요. 각 위젯을 더블 클릭해 결과를 확인해 보세요!');
-  }
-
   // ---------- 화면 전환 ----------
   function showSim(act) {
     $$('.view').forEach(v => v.hidden = v.id !== 'view-sim');
@@ -595,13 +559,6 @@ const App = (() => {
       r.querySelector('[data-act=c]').onclick = closeModal;
       r.querySelector('[data-act=ok]').onclick = () => { closeModal(); S = blank(); closeDialog(); evaluate(); renderMission(); };
     });
-    $('#btnSolution').onclick = () => {
-      if (!MISSIONS[activity]) return toast('자유 실습에는 정답 워크플로가 없어요.');
-      modal(`<h3>✔ 정답 워크플로 보기</h3><p>현재 캔버스를 지우고 교과서 활동의 완성된 워크플로를 만들까요?<br><small>먼저 스스로 해 본 다음에 확인하는 것을 추천해요!</small></p><div class="btnrow"><button data-act="c">취소</button><button class="primary" data-act="ok">만들기</button></div>`, r => {
-        r.querySelector('[data-act=c]').onclick = closeModal;
-        r.querySelector('[data-act=ok]').onclick = () => { closeModal(); buildSolution(); };
-      });
-    };
   }
 
   return { init, showSim, setSetting, rerenderDialog, toast, cache, hasCache, runAsync, checkMissions, markView, embedDone, closeDialog, MISSIONS };
