@@ -149,14 +149,13 @@
       ${files}
       <div class="code-row"><div><button class="runbtn" title="실행 (Ctrl+Enter)" aria-label="셀 실행">▶</button><div class="exec">[${P.done[c.id] ? '✓' : ' '}]</div></div>
         <div class="code">${codeWithBlanks(c.code, c.blanks, vals)}</div></div>
-      <div class="cell-tools"><button class="chipbtn" data-hint>💡 힌트</button><button class="chipbtn" data-reveal hidden>🔑 정답 보기</button></div>
+      <div class="cell-tools"><button class="chipbtn" data-hint>💡 힌트</button></div>
       <div class="hintbox" hidden></div>
       <div class="output"></div></div>`;
   }
 
   function bindCell(c) {
     const el = $('#cell-' + c.id), inputs = $$('input.blank', el);
-    let fails = 0;
     if (P.done[c.id]) inputs.forEach((x) => x.classList.add(P.revealed[c.id] ? 'revealed' : 'right'));
     inputs.forEach((inp) => {
       inp.addEventListener('input', () => {
@@ -179,13 +178,6 @@
       hintBox.innerHTML = c.blanks.map((b, i) => `<div>💡 빈칸 ${i + 1}: ${b.hint}</div>`).join('');
       if (inputs[k]) inputs[k].focus();
     };
-    $('[data-reveal]', el).onclick = () => {
-      inputs.forEach((x, i) => { x.value = c.blanks[i].a[0]; x.classList.remove('wrong'); x.classList.add('revealed'); x.dispatchEvent(new Event('input')); x.classList.add('revealed'); });
-      P.revealed[c.id] = true;
-      const st = STEPS.find((s) => s.cells.includes(c));
-      addNote({ key: 'cell-' + c.id, src: `실습 ${st.id}단계 · ${c.title}`, q: c.code.replace(/\[\[(\d+)\]\]/g, (_, k) => `[ ${c.blanks[k].a[0]} ]`), a: c.blanks.map((b) => b.a[0]).join(' , '), exp: c.blanks.map((b) => b.hint).join(' / ') });
-      toast('정답을 채웠어요. ▶ 실행해 보세요!');
-    };
     $('.runbtn', el).onclick = run;
     if (c.file && !P.uploaded) bindUpload(el);
 
@@ -201,8 +193,6 @@
       S.exec++;
       $('.exec', el).textContent = `[${S.exec}]`;
       if (first) {
-        fails++;
-        if (fails >= 2) $('[data-reveal]', el).hidden = false;
         save();
         return showOutput(c, { error: first.err, help: first.help });
       }
@@ -458,7 +448,7 @@
   function renderNotes() {
     const root = $('#notesRoot');
     if (!P.notes.length) {
-      root.innerHTML = '<div class="view-head"><h2>❗ 오답 노트</h2></div><div class="empty">아직 기록이 없어요.<br>실습에서 <b>정답 보기</b>를 누르거나 퀴즈에서 틀린 문제가 여기에 모여요.</div>';
+      root.innerHTML = '<div class="view-head"><h2>❗ 오답 노트</h2></div><div class="empty">아직 기록이 없어요.<br>퀴즈에서 틀린 문제가 여기에 모여요.</div>';
       return;
     }
     root.innerHTML = `<div class="view-head"><h2>❗ 오답 노트</h2><p>헷갈렸던 명령어를 다시 확인하세요. 이해했다면 <b>✓ 이해했어요</b>를 눌러 지울 수 있어요.</p>
