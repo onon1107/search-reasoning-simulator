@@ -327,15 +327,28 @@ input[type=range] { accent-color: var(--accent); width: min(320px, 100%); }
 }
 .hub-back:hover { background: var(--accent-soft); }
 .hub-back .hb-short { display: none; }
-/* 한 줄에 제목·탭·버튼이 다 안 들어가는 폭: 1줄 = 제목 + 처음으로, 2줄 = 탭 */
-@media (max-width: 1200px) {
+/* 한 줄에 제목·탭·버튼이 다 안 들어가는 폭: 1줄 = 제목 + 초기화 + 처음으로, 2줄 = 탭 */
+@media (max-width: 1300px) {
   .hub-back .hb-full { display: none; }
   .hub-back .hb-short { display: inline; }
   .topbar { row-gap: 8px; }
-  .brand { width: auto; flex: 1 1 calc(100% - 110px); }
-  .hub-back { order: 1; }
-  .tabs { order: 2; width: 100%; }
+  .brand { width: auto; flex: 1 1 calc(100% - 220px); }
+  .reset-top { order: 1; }
+  .hub-back { order: 2; }
+  .tabs { order: 3; width: 100%; }
   .brand h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+/* 처음부터 다시 하기(펭귄 사이트의 초기화 버튼과 같은 자리) */
+.reset-top {
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+  border: 1px solid var(--border); color: var(--muted); background: var(--surface);
+  padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 14px;
+}
+.reset-top:hover { border-color: var(--err); color: var(--err); }
+@media (max-width: 640px) {
+  .reset-top { padding: 6px 11px; }
+  .reset-top .rt-label { display: none; }
+  .brand { flex-basis: calc(100% - 170px); }
 }
 /* 폰트 통일: 본문 에이투지체(A2z), 제목 KIMM — 메인 사이트 css/style.css와 같은 파일. 코드(--mono)는 그대로 */
 @font-face { font-family: 'KIMM'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Light.woff2') format('woff2'); font-weight: 300; font-display: swap; }

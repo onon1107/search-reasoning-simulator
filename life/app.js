@@ -477,11 +477,13 @@
     const g = e.target.closest('[data-go]'); if (g && g.dataset.go) return goStep(+g.dataset.go);
     const vg = e.target.closest('[data-view-go]'); if (vg) return switchView(vg.dataset.viewGo);
   });
-  $('#resetAll').onclick = () => {
+  const resetAll = () => {
     if (!window.confirm || !confirm('모든 실습 기록과 오답 노트를 지울까요?')) return;
     try { localStorage.removeItem(KEY); } catch (e) { /* 무시 */ }
     location.reload();
   };
+  $('#resetAll').onclick = resetAll;
+  $('#resetTop').onclick = resetAll;
 
   renderNav(); renderStep(); updateBadge();
 })();
